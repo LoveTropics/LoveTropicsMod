@@ -78,7 +78,7 @@ public final class SetBlocksAction implements IGameBehavior {
 		BlockStateProvider set = this.set;
 		RandomSource random = world.random;
 
-		this.loadRegionChunks(region, world);
+		loadRegionChunks(region, world);
 
 		int flags = Block.UPDATE_ALL;
 		if (!notifyNeighbors) {

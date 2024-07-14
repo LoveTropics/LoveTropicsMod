@@ -93,40 +93,40 @@ public class SpleefBehavior implements IGameBehavior {
     public SpleefBehavior(int forcedProgressionSeconds, int floors, int breakInterval, int breakCount, Block floorMaterial, Block floorBreakingMaterial, String flavourText) {
         this.forcedProgressionSeconds = forcedProgressionSeconds;
         this.floors = floors;
-        this.floorRegions = new BlockBox[floors];
+        floorRegions = new BlockBox[floors];
         this.breakInterval = breakInterval;
         this.breakCount = breakCount;
         this.floorMaterial = floorMaterial;
         this.floorBreakingMaterial = floorBreakingMaterial;
         this.flavourText = flavourText;
-        this.gameOver = false;
+        gameOver = false;
     }
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
-        this.widgets = GlobalGameWidgets.registerTo(game, events);
+        widgets = GlobalGameWidgets.registerTo(game, events);
 
-        for (int floor = 0; floor < this.floors; floor++) {
-            this.floorRegions[floor] = game.getMapRegions().getOrThrow("floor" + (floor + 1));
+        for (int floor = 0; floor < floors; floor++) {
+            floorRegions[floor] = game.getMapRegions().getOrThrow("floor" + (floor + 1));
         }
 
-        this.deathRegion = game.getMapRegions().getOrThrow("death");
+        deathRegion = game.getMapRegions().getOrThrow("death");
 
         Style style = Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F)).withBold(true);
-        this.bossBar = this.widgets.openBossBar(MinigameTexts.SPLEEF_TITLE_PREPARE.copy().withStyle(style), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
+        bossBar = widgets.openBossBar(MinigameTexts.SPLEEF_TITLE_PREPARE.copy().withStyle(style), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
 
-        for (var floor : this.floorRegions) {
-            BlockPlacer.replace(game.getWorld(), floor, this.floorMaterial, BlockPlacer.Mode.REPLACE, Blocks.WHITE_STAINED_GLASS);
+        for (var floor : floorRegions) {
+            BlockPlacer.replace(game.getWorld(), floor, floorMaterial, BlockPlacer.Mode.REPLACE, Blocks.WHITE_STAINED_GLASS);
         }
 
         events.listen(GamePhaseEvents.START, () -> {
 
             // Shouldn't affect a typical game but has a bug in dev with 1 player.
-            this.lastTickPlayers = this.game.getParticipants().stream().toList();
+            lastTickPlayers = this.game.getParticipants().stream().toList();
 
             if(this.game.getParticipants().size() == 1) {
-                this.blockSinglePlayerWin = true;
+                blockSinglePlayerWin = true;
             }
 
             int tickDelay = 5 * 20;
@@ -148,7 +148,7 @@ public class SpleefBehavior implements IGameBehavior {
             countdownMessage(1, 0x77A12F, 1.5f, tickDelay);
 
             tickDelay += 20;
-            this.scheduler.delayedTickEvent("start_game", this::startGame, tickDelay);
+            scheduler.delayedTickEvent("start_game", this::startGame, tickDelay);
         });
 
         events.listen(GamePhaseEvents.TICK, scheduler::tick);
@@ -160,7 +160,7 @@ public class SpleefBehavior implements IGameBehavior {
 
 
     private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
-        this.killPlayer(player);
+        killPlayer(player);
 
         return InteractionResult.FAIL;
     }
@@ -169,37 +169,37 @@ public class SpleefBehavior implements IGameBehavior {
      * This is after the countdown has finished.
      */
     private void startGame() {
-        this.progressionTimer = this.forcedProgressionSeconds;
-        this.scheduler.intervalTickEvent("forced_progression", this::updateForcedProgression, 0, 20);
+        progressionTimer = forcedProgressionSeconds;
+        scheduler.intervalTickEvent("forced_progression", this::updateForcedProgression, 0, 20);
 
-        this.game.getAllPlayers().playSound(SoundEvents.ANVIL_PLACE, SoundSource.MASTER, Integer.MAX_VALUE, 1);
-        this.game.getAllPlayers().playSound(SoundEvents.BASALT_BREAK, SoundSource.MASTER, Integer.MAX_VALUE, 1);
+        game.getAllPlayers().playSound(SoundEvents.ANVIL_PLACE, SoundSource.MASTER, Integer.MAX_VALUE, 1);
+        game.getAllPlayers().playSound(SoundEvents.BASALT_BREAK, SoundSource.MASTER, Integer.MAX_VALUE, 1);
     }
 
     private void checkForWinner() {
-        if(this.gameOver) {
+        if(gameOver) {
             return;
         }
-        var participants = this.game.getParticipants();
+        var participants = game.getParticipants();
 
         if(participants.size() <= 1) {
 
-            if (this.game.getParticipants().size() == 1 && !blockSinglePlayerWin) {
-                this.winTitle(participants.stream().toList());
+            if (game.getParticipants().size() == 1 && !blockSinglePlayerWin) {
+                winTitle(participants.stream().toList());
                 var displayName = participants.iterator().next().getDisplayName();
                 var style = displayName.getStyle();
                 if(style.getColor() == null) {
                     style = style.withColor(ChatFormatting.WHITE);
                 }
-                this.game.getAllPlayers().playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, Integer.MAX_VALUE, 0.8f);
-                this.announceWinner(Component.translatable(getFlavourTextKey("win"), displayName.copy().withStyle(style)));
-            } else if(this.game.getParticipants().isEmpty()) {
+                game.getAllPlayers().playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, Integer.MAX_VALUE, 0.8f);
+                announceWinner(Component.translatable(getFlavourTextKey("win"), displayName.copy().withStyle(style)));
+            } else if(game.getParticipants().isEmpty()) {
                 // Join the winners with a comma from the last tick though add an & for the last join.
-                var winners = this.lastTickPlayers.stream().toList();
+                var winners = lastTickPlayers.stream().toList();
                 MutableComponent winnerText = Component.literal("");
 
                 for (int i = 0; i < winners.size(); i++) {
-                    this.winTitle(winners);
+                    winTitle(winners);
                     var displayName = winners.get(i).getDisplayName();
                     var style = displayName.getStyle();
                     if(style.getColor() == null) {
@@ -213,11 +213,11 @@ public class SpleefBehavior implements IGameBehavior {
                     }
                 }
 
-                this.game.getAllPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.MASTER, Integer.MAX_VALUE, 0.75f);
-                this.announceWinner(Component.translatable(getFlavourTextKey("winners"), winnerText));
+                game.getAllPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.MASTER, Integer.MAX_VALUE, 0.75f);
+                announceWinner(Component.translatable(getFlavourTextKey("winners"), winnerText));
             }
         } else {
-            this.lastTickPlayers = participants.stream().toList();
+            lastTickPlayers = participants.stream().toList();
         }
     }
 
@@ -230,9 +230,9 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void checkPlayerDeath() {
-        for (ServerPlayer player : this.game.getParticipants()) {
-            if (this.deathRegion.intersects(player.getBoundingBox())) {
-                this.killPlayer(player);
+        for (ServerPlayer player : game.getParticipants()) {
+            if (deathRegion.intersects(player.getBoundingBox())) {
+                killPlayer(player);
             }
         }
     }
@@ -241,54 +241,54 @@ public class SpleefBehavior implements IGameBehavior {
      * Trigger the end game timer as well as show the winner.
      */
     private void announceWinner(MutableComponent winner) {
-        this.gameOver = true;
+        gameOver = true;
 
-        this.scheduler.clearAllEvents();
+        scheduler.clearAllEvents();
 
         specialMessage(Component.literal("★").withStyle(ChatFormatting.GOLD),
                 winner.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F))));
 
-        this.bossBar.close();
+        bossBar.close();
 
-        this.scheduler.delayedTickEvent("end_game", () -> {
-            this.game.requestStop(GameStopReason.finished());
+        scheduler.delayedTickEvent("end_game", () -> {
+            game.requestStop(GameStopReason.finished());
         }, 20 * 8);
     }
 
     private void killPlayer(ServerPlayer player) {
         if(!gameOver) {
-            this.specialMessage(Component.literal("☠").withStyle(ChatFormatting.RED), player.getDisplayName().copy().withStyle(ChatFormatting.DARK_GRAY));
+            specialMessage(Component.literal("☠").withStyle(ChatFormatting.RED), player.getDisplayName().copy().withStyle(ChatFormatting.DARK_GRAY));
             title(player, MinigameTexts.SPLEEF_ELIMINATED.copy().withStyle(ChatFormatting.RED),
                     Component.translatable(getFlavourTextKey("eliminated")).withStyle(ChatFormatting.YELLOW),
                     20, 20 * 3, 20);
             player.playNotifySound(SoundEvents.ANVIL_PLACE, SoundSource.MASTER, Integer.MAX_VALUE, 1);
         }
-        this.game.setPlayerRole(player, PlayerRole.SPECTATOR);
+        game.setPlayerRole(player, PlayerRole.SPECTATOR);
     }
 
     private void specialMessage(Component sender, Component message) {
-        this.game.getAllPlayers().sendMessage(Component.literal("[").withStyle(ChatFormatting.GRAY)
+        game.getAllPlayers().sendMessage(Component.literal("[").withStyle(ChatFormatting.GRAY)
                 .append(sender).append("]: ")
                 .append(message), false);
     }
 
     private String getFlavourTextKey(String key) {
-        return "ltminigames.minigame.spleef.flavor." + this.flavourText + "." + key;
+        return "ltminigames.minigame.spleef.flavor." + flavourText + "." + key;
     }
 
     private void startFloor() {
-        this.progressionTimer = this.forcedProgressionSeconds;
+        progressionTimer = forcedProgressionSeconds;
     }
 
     private void updateForcedProgression() {
-        if(this.currentFloor >= this.floors) {
+        if(currentFloor >= floors) {
             return;
         }
-        if(this.progressionTimer <= 0) {
-            this.progressionTimer = this.forcedProgressionSeconds;
-            this.spleefMessage(Component.translatable(getFlavourTextKey("forced_progression"), Component.translatable("ltminigames.minigame.position." + (this.currentFloor + 1))).withStyle(ChatFormatting.YELLOW));
-            BlockPlacer.replace(game.getWorld(), this.floorRegions[this.currentFloor], this.floorBreakingMaterial, BlockPlacer.Mode.REPLACE, this.floorMaterial, this.scheduler,
-                    (pos) -> (game.getWorld().random.nextInt(this.breakCount) * this.breakInterval),
+        if(progressionTimer <= 0) {
+            progressionTimer = forcedProgressionSeconds;
+            spleefMessage(Component.translatable(getFlavourTextKey("forced_progression"), Component.translatable("ltminigames.minigame.position." + (currentFloor + 1))).withStyle(ChatFormatting.YELLOW));
+            BlockPlacer.replace(game.getWorld(), floorRegions[currentFloor], floorBreakingMaterial, BlockPlacer.Mode.REPLACE, floorMaterial, scheduler,
+                    (pos) -> (game.getWorld().random.nextInt(breakCount) * breakInterval),
                     (pos) -> {
                         scheduler.delayedTickEvent("delayed_break", () -> {
                             game.getWorld().destroyBlock(pos, false);
@@ -298,37 +298,37 @@ public class SpleefBehavior implements IGameBehavior {
             currentFloor++;
         }
 
-        switch (this.progressionTimer) {
-            case 10 -> this.spleefMessage(Component.translatable(getFlavourTextKey("layer_countdown"), Component.literal(Integer.toString(this.progressionTimer)).withStyle(DARK_YELLOW)).withStyle(ChatFormatting.YELLOW));
+        switch (progressionTimer) {
+            case 10 -> spleefMessage(Component.translatable(getFlavourTextKey("layer_countdown"), Component.literal(Integer.toString(progressionTimer)).withStyle(DARK_YELLOW)).withStyle(ChatFormatting.YELLOW));
             case 5, 4, 3, 2, 1 -> {
-                this.spleefMessage(Component.literal(Integer.toString(this.progressionTimer)).withStyle(DARK_YELLOW), false);
-                this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (this.progressionTimer * 0.25f));
+                spleefMessage(Component.literal(Integer.toString(progressionTimer)).withStyle(DARK_YELLOW), false);
+                game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (progressionTimer * 0.25f));
             }
         }
 
-        this.updateForcedProgressionBossbar();
-        this.progressionTimer--;
+        updateForcedProgressionBossbar();
+        progressionTimer--;
     }
 
     private void updateForcedProgressionBossbar() {
         Style style = Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F)).withBold(true);
-        this.bossBar.setTitle(MinigameTexts.SPLEEF_TITLE_FORCED_PROGRESSION.copy().withStyle(style)
-                .append(Component.literal(Integer.toString(this.progressionTimer)).withStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))));
+        bossBar.setTitle(MinigameTexts.SPLEEF_TITLE_FORCED_PROGRESSION.copy().withStyle(style)
+                .append(Component.literal(Integer.toString(progressionTimer)).withStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))));
     }
 
     private void countdownMessage(int seconds, int color, float soundPitch, int delayTicks) {
-        this.scheduler.delayedTickEvent("countdown", () -> {
+        scheduler.delayedTickEvent("countdown", () -> {
             title(MinigameTexts.SPLEEF_COUNTDOWN_TITLE.apply(
                                     Component.literal(Integer.toString(seconds)).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(color))))
                             .withStyle(ChatFormatting.GRAY),
                     MinigameTexts.SPLEEF_COUNTDOWN_SUBTITLE.copy().withStyle(ChatFormatting.YELLOW),
                     5, 20, seconds == 1 ? 0 : 5);
-            this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
+            game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
         }, delayTicks);
     }
 
     private void spleefMessage(Component message) {
-        this.spleefMessage(message, true);
+        spleefMessage(message, true);
     }
 
     private void spleefMessage(Component message, boolean showGameName) {
@@ -337,12 +337,12 @@ public class SpleefBehavior implements IGameBehavior {
             fullMessage = fullMessage.append(MinigameTexts.SPLEEF).append(Component.literal(" ❯ "));
         }
         fullMessage = fullMessage.append(message);
-        this.game.getAllPlayers().sendMessage(fullMessage.withStyle(ChatFormatting.YELLOW), false);
+        game.getAllPlayers().sendMessage(fullMessage.withStyle(ChatFormatting.YELLOW), false);
     }
 
 
     private void title(Component title, Component subtitle, int pFadeIn, int pStay, int pFadeOut) {
-        PlayerSet players = this.game.getAllPlayers();
+        PlayerSet players = game.getAllPlayers();
         title(players, title, subtitle, pFadeIn, pStay, pFadeOut);
     }
 
@@ -353,7 +353,7 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void title(ServerPlayer player, Component title, Component subtitle, int pFadeIn, int pStay, int pFadeOut) {
-        PlayerSet players = this.game.getAllPlayers();
+        PlayerSet players = game.getAllPlayers();
         player.connection.send(new ClientboundSetTitlesAnimationPacket(pFadeIn, pStay, pFadeOut));
         player.connection.send(new ClientboundSetTitleTextPacket(title));
         player.connection.send(new ClientboundSetSubtitleTextPacket(subtitle));

@@ -17,27 +17,27 @@ public final class BbMerchantContainer extends MerchantMenu {
 		// copied from MerchantContainer.transferStackInSlot removing a problematic cast
 
 		ItemStack resultStack = ItemStack.EMPTY;
-		Slot slot = this.slots.get(index);
+		Slot slot = slots.get(index);
 
 		if (slot != null && slot.hasItem()) {
 			ItemStack slotStack = slot.getItem();
 			resultStack = slotStack.copy();
 
 			if (index == 2) {
-				if (!this.moveItemStackTo(slotStack, 3, 39, true)) {
+				if (!moveItemStackTo(slotStack, 3, 39, true)) {
 					return ItemStack.EMPTY;
 				}
 
 				slot.onQuickCraft(slotStack, resultStack);
 			} else if (index != 0 && index != 1) {
 				if (index >= 3 && index < 30) {
-					if (!this.moveItemStackTo(slotStack, 30, 39, false)) {
+					if (!moveItemStackTo(slotStack, 30, 39, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (index >= 30 && index < 39 && !this.moveItemStackTo(slotStack, 3, 30, false)) {
+				} else if (index >= 30 && index < 39 && !moveItemStackTo(slotStack, 3, 30, false)) {
 					return ItemStack.EMPTY;
 				}
-			} else if (!this.moveItemStackTo(slotStack, 3, 39, false)) {
+			} else if (!moveItemStackTo(slotStack, 3, 39, false)) {
 				return ItemStack.EMPTY;
 			}
 

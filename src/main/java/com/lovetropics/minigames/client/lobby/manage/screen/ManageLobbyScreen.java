@@ -97,7 +97,7 @@ public final class ManageLobbyScreen extends Screen {
 		gameConfig = addWidget(new GameConfig(this, layout.edit, () -> {
 			int selectedId = selectedGameId;
 			if (selectedId != -1) {
-				this.session.configure(selectedId);
+				session.configure(selectedId);
 			}
 		}));
 
@@ -141,9 +141,9 @@ public final class ManageLobbyScreen extends Screen {
 	// TODO: custom text field instance
 	@Override
 	public void setFocused(@Nullable GuiEventListener listener) {
-		GuiEventListener lastListener = this.getFocused();
+		GuiEventListener lastListener = getFocused();
 		if (lastListener != null && lastListener != listener) {
-			this.onLoseFocus(lastListener);
+			onLoseFocus(lastListener);
 		}
 		super.setFocused(listener);
 	}

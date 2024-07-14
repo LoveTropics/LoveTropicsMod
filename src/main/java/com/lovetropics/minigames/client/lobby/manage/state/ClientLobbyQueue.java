@@ -21,17 +21,17 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 	private final Int2ObjectMap<ClientLobbyQueuedGame> games = new Int2ObjectOpenHashMap<>();
 
 	public void add(int id, ClientLobbyQueuedGame game) {
-		this.queue.add(id);
-		this.games.put(id, game);
+		queue.add(id);
+		games.put(id, game);
 	}
 
 	public void update(int id, ClientLobbyQueuedGame game) {
-		this.games.replace(id, game);
+		games.replace(id, game);
 	}
 
 	public void applyUpdates(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
-		this.games.keySet().removeIf((IntPredicate) id -> !queue.contains(id));
-		this.games.putAll(updated);
+		games.keySet().removeIf((IntPredicate) id -> !queue.contains(id));
+		games.putAll(updated);
 
 		this.queue.clear();
 		this.queue.addAll(queue);
@@ -39,7 +39,7 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 
 	@Nullable
 	public ClientLobbyQueuedGame byId(int id) {
-		return this.games.get(id);
+		return games.get(id);
 	}
 
 	@Nonnull
@@ -53,7 +53,7 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 	}
 
 	public int size() {
-		return this.queue.size();
+		return queue.size();
 	}
 
 	public boolean isEmpty() {

@@ -50,11 +50,11 @@ public final class RemoveFromBlockBehavior implements IGameBehavior {
     private InteractionResult onUseBlock(ServerPlayer player, ServerLevel world, BlockPos pos, InteractionHand hand, BlockHitResult result) {
         Plot plot = plots.getPlotFor(player);
         if (plot != null && plot.bounds.contains(pos)) {
-            if (world.getBlockState(pos).getBlock() == this.in.getBlock()) {
-                world.setBlockAndUpdate(pos, this.out);
+            if (world.getBlockState(pos).getBlock() == in.getBlock()) {
+                world.setBlockAndUpdate(pos, out);
 
                 BlockPos spawnPos = pos.relative(result.getDirection());
-                world.addFreshEntity(new ItemEntity(world, spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5, this.drop.copy()));
+                world.addFreshEntity(new ItemEntity(world, spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5, drop.copy()));
 
                 return InteractionResult.SUCCESS;
             }

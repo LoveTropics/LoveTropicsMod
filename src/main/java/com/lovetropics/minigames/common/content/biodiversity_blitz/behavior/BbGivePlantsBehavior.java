@@ -20,7 +20,7 @@ public record BbGivePlantsBehavior(List<PlantConfig> plants) implements IGameBeh
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
-			for (PlantConfig plant : this.plants) {
+			for (PlantConfig plant : plants) {
 				ItemStack stack = plant.create(game);
 				if (!stack.isEmpty()) {
 					player.addItem(stack);

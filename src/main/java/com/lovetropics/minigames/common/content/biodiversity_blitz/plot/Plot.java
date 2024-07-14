@@ -90,9 +90,9 @@ public final class Plot {
 	public BlockBox regionByName(String name) {
 		// TODO: we need a better generic system for systems of region names that can be referenced
 		return switch (name) {
-			case "shop" -> this.shop;
-			case "plant_shop" -> this.plantShop;
-			case "mob_shop" -> this.mobShop;
+			case "shop" -> shop;
+			case "plant_shop" -> plantShop;
+			case "mob_shop" -> mobShop;
 			default -> null;
 		};
 	}

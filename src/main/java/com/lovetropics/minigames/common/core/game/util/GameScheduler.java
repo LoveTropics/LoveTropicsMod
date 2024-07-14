@@ -21,9 +21,9 @@ public final class GameScheduler {
 	private final ArrayList<BlockChangeNotify> blockChangeNotifies = new ArrayList<>();
 
 	public void tick() {
-		this.delayedTickEvents.addAll(this.newTickEvents);
-		this.newTickEvents.clear();
-		Iterator<DelayedGameTickEvent> tickEventIterator = this.delayedTickEvents.iterator();
+		delayedTickEvents.addAll(newTickEvents);
+		newTickEvents.clear();
+		Iterator<DelayedGameTickEvent> tickEventIterator = delayedTickEvents.iterator();
 		while (tickEventIterator.hasNext()) {
 			DelayedGameTickEvent event = tickEventIterator.next();
 			event.tick();
@@ -33,10 +33,10 @@ public final class GameScheduler {
 					tickEventIterator.remove();
 			}
 		}
-		for (BlockChangeNotify blockChangeNotify : this.blockChangeNotifies) {
+		for (BlockChangeNotify blockChangeNotify : blockChangeNotifies) {
 			blockChangeNotify.level.blockUpdated(blockChangeNotify.pos, blockChangeNotify.block);
 		}
-		this.blockChangeNotifies.clear();
+		blockChangeNotifies.clear();
 	}
 
 	/**
@@ -51,20 +51,20 @@ public final class GameScheduler {
 	}
 
 	public void notifyBlockChange(BlockPos pos, Level level, Block block) {
-		this.blockChangeNotifies.add(new BlockChangeNotify(level, pos, block));
+		blockChangeNotifies.add(new BlockChangeNotify(level, pos, block));
 	}
 
 	public void delayedTickEvent(String name, Runnable consumer, int tickDelay) {
-		this.newTickEvents.add(new DelayedGameTickEvent(name, consumer, tickDelay));
+		newTickEvents.add(new DelayedGameTickEvent(name, consumer, tickDelay));
 	}
 
 	public void intervalTickEvent(String name, Runnable consumer, int tickDelay, int interval) {
-		this.newTickEvents.add(new DelayedGameIntervalEvent(name, consumer, tickDelay, interval));
+		newTickEvents.add(new DelayedGameIntervalEvent(name, consumer, tickDelay, interval));
 	}
 
 	public void clearAllEvents() {
-		this.newTickEvents.clear();
-		this.delayedTickEvents.clear();
+		newTickEvents.clear();
+		delayedTickEvents.clear();
 	}
 
 	public static class DelayedGameTickEvent {
@@ -81,15 +81,15 @@ public final class GameScheduler {
 		}
 
 		public void tick() {
-			this.ticks--;
+			ticks--;
 		}
 
 		public boolean shouldRun() {
-			return this.ticks <= 0;
+			return ticks <= 0;
 		}
 
 		public void run() {
-			this.consumer.run();
+			consumer.run();
 		}
 	}
 
@@ -104,7 +104,7 @@ public final class GameScheduler {
 
 		@Override
         public void run() {
-			this.ticks = interval;
+			ticks = interval;
 			super.run();
 		}
 

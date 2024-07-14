@@ -41,7 +41,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		public Set setName(String name) {
-			this.add(new SetName(name));
+			add(new SetName(name));
 			return this;
 		}
 
@@ -54,7 +54,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 				clientQueue.add(game.networkId(), ClientLobbyQueuedGame.from(game));
 			}
 
-			this.add(new Initialize(installedGames, clientQueue));
+			add(new Initialize(installedGames, clientQueue));
 			return this;
 		}
 
@@ -62,17 +62,17 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			List<ClientLobbyPlayer> players = lobby.getPlayers().stream()
 					.map(player -> ClientLobbyPlayer.from(lobby, player))
 					.collect(Collectors.toList());
-			this.add(new SetPlayers(players));
+			add(new SetPlayers(players));
 			return this;
 		}
 
 		public Set setControlState(LobbyControls.State controlsState) {
-			this.add(new SetControlsState(controlsState));
+			add(new SetControlsState(controlsState));
 			return this;
 		}
 
 		public Set setCurrentGame(@Nullable ClientCurrentGame currentGame) {
-			this.add(new SetCurrentGame(currentGame));
+			add(new SetCurrentGame(currentGame));
 			return this;
 		}
 
@@ -91,13 +91,13 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 				}
 			}
 
-			this.add(new UpdateQueue(order, updated));
+			add(new UpdateQueue(order, updated));
 
 			return this;
 		}
 
 		public Set setVisibility(LobbyVisibility visibility, boolean canFocusLive) {
-			this.add(new SetVisibility(visibility, canFocusLive));
+			add(new SetVisibility(visibility, canFocusLive));
 			return this;
 		}
 

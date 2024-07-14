@@ -10,7 +10,7 @@ public final class TimedGameState implements IGameState {
 	private boolean paused;
 
 	public TimedGameState(long length, long closeDuration) {
-		this.ticksRemaining = length;
+		ticksRemaining = length;
 		this.closeDuration = closeDuration;
 	}
 

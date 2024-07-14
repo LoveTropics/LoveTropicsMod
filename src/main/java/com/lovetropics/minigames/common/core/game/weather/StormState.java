@@ -4,8 +4,8 @@ import net.minecraft.network.FriendlyByteBuf;
 
 public record StormState(int buildupTickRate, int maxStackable) {
 	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(this.buildupTickRate);
-		buffer.writeVarInt(this.maxStackable);
+		buffer.writeVarInt(buildupTickRate);
+		buffer.writeVarInt(maxStackable);
 	}
 
 	public static StormState decode(FriendlyByteBuf buffer) {

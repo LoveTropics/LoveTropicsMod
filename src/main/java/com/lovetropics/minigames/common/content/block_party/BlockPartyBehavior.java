@@ -101,7 +101,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			state = startCountingDown(0);
 		});
 
-		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> this.spawnPlayer(spawn));
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> spawnPlayer(spawn));
 
 		events.listen(GamePhaseEvents.TICK, this::tick);
 
@@ -254,7 +254,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				}
 			}
 
-			if (time > this.breakAt) {
+			if (time > breakAt) {
 				return startInterval(round, floor);
 			}
 
@@ -279,7 +279,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		@Override
 		public State tick(IGamePhase game) {
 			long time = game.ticks();
-			if (time > this.nextAt) {
+			if (time > nextAt) {
 				return startCountingDown(round + 1);
 			}
 			return this;

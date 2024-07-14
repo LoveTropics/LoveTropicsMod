@@ -25,17 +25,17 @@ public class DestroyCropGoal extends MoveToBlockGoal {
 
         double distance2 = mob.position().distanceToSqr(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
         if (distance2 <= getDistanceSq(mob.level().getBlockState(targetPos))) {
-            this.ticksAtTarget--;
+            ticksAtTarget--;
             if (mob.level().random.nextInt(4) == 0) {
-                Util.spawnDamageParticles(mob, this.targetPos, 0);
+                Util.spawnDamageParticles(mob, targetPos, 0);
             }
             
-            if (this.ticksAtTarget <= 0) {
-                this.ticksAtTarget = DAMAGE_INTERVAL;
-                this.tryDamagePlant(mob);
+            if (ticksAtTarget <= 0) {
+                ticksAtTarget = DAMAGE_INTERVAL;
+                tryDamagePlant(mob);
             }
         } else {
-            this.ticksAtTarget = DAMAGE_INTERVAL;
+            ticksAtTarget = DAMAGE_INTERVAL;
         }
     }
 
@@ -44,7 +44,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     protected void tryDamagePlant(Mob mob) {
-        Plant plant = bbMob.getPlot().plants.getPlantAt(this.targetPos);
+        Plant plant = bbMob.getPlot().plants.getPlantAt(targetPos);
         if (plant != null) {
             PlantHealth health = plant.state(PlantHealth.KEY);
 
@@ -52,7 +52,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
                 int damage = bbMob.meleeDamage(mob.level().getRandom());
                 health.decrement(damage);
 
-                Util.spawnDamageParticles(mob, this.targetPos, damage);
+                Util.spawnDamageParticles(mob, targetPos, damage);
             }
         }
     }

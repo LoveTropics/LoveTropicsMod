@@ -77,7 +77,7 @@ public enum TrashType implements NonNullSupplier<Block> {
         			}
         		}
         	}
-            this.shape[i] = Block.box(minX, minY, minZ, maxX, maxY, maxZ);
+            shape[i] = Block.box(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
     

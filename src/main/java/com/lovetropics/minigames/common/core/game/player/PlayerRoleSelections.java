@@ -26,14 +26,14 @@ public final class PlayerRoleSelections {
 	}
 
 	public void clear() {
-		this.roles.clear();
-		this.pendingResponses.clear();
+		roles.clear();
+		pendingResponses.clear();
 	}
 
 	public void clearAndPromptAll(PlayerSet players) {
-		this.clear();
+		clear();
 		for (ServerPlayer player : players) {
-			this.prompt(player);
+			prompt(player);
 		}
 	}
 
@@ -58,7 +58,7 @@ public final class PlayerRoleSelections {
 	}
 
 	public void remove(ServerPlayer player) {
-		this.roles.remove(player.getUUID());
+		roles.remove(player.getUUID());
 	}
 
 	public void acceptResponse(ServerPlayer player, PlayerRole role) {
@@ -70,7 +70,7 @@ public final class PlayerRoleSelections {
 	}
 
 	public void setRole(ServerPlayer player, PlayerRole role) {
-		this.roles.put(player.getUUID(), role);
+		roles.put(player.getUUID(), role);
 	}
 
 	@Nonnull
@@ -84,6 +84,6 @@ public final class PlayerRoleSelections {
 
 	@Override
 	public String toString() {
-		return this.roles.toString();
+		return roles.toString();
 	}
 }

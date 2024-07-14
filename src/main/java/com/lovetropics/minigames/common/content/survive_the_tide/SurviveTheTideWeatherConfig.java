@@ -51,7 +51,7 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	private float getEventChance(WeatherEventType event, GameProgressionState progression) {
-		DiscreteProgressionMap<Float> chances = this.eventChancesByTime.get(event);
+		DiscreteProgressionMap<Float> chances = eventChancesByTime.get(event);
 		if (chances == null) {
 			return 0.0f;
 		}

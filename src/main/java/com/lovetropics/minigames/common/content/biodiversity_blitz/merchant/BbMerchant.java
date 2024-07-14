@@ -20,7 +20,7 @@ public final class BbMerchant implements Merchant {
     private final MerchantOffers offers;
 
     public BbMerchant(Player player, MerchantOffers offers) {
-        this.customer = player;
+        customer = player;
         this.offers = offers;
     }
 
@@ -31,12 +31,12 @@ public final class BbMerchant implements Merchant {
 
     @Override
     public Player getTradingPlayer() {
-        return this.customer;
+        return customer;
     }
 
     @Override
     public MerchantOffers getOffers() {
-        return this.offers;
+        return offers;
     }
 
     @Override
@@ -78,9 +78,9 @@ public final class BbMerchant implements Merchant {
     public void openTradingScreen(Player player, Component displayName, int level) {
         OptionalInt container = player.openMenu(new SimpleMenuProvider(this::createContainer, displayName));
         if (container.isPresent()) {
-            MerchantOffers offers = this.getOffers();
+            MerchantOffers offers = getOffers();
             if (!offers.isEmpty()) {
-                player.sendMerchantOffers(container.getAsInt(), offers, level, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
+                player.sendMerchantOffers(container.getAsInt(), offers, level, getVillagerXp(), showProgressBar(), canRestock());
             }
         }
     }

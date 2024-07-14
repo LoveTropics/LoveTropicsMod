@@ -129,7 +129,7 @@ final class ManageLobbyLayout {
 		this.edit = solve.layout(edit);
 
 		this.play = solve.layout(play);
-		this.skip = solve.layout(stop);
+		skip = solve.layout(stop);
 		this.restart = solve.layout(restart);
 
 		this.rightColumn = solve.layout(rightColumn);
@@ -141,6 +141,6 @@ final class ManageLobbyLayout {
 		this.close = solve.layout(close);
 		this.done = solve.layout(done);
 
-		this.marginals = new Layout[] { this.header, this.leftFooter, this.centerFooter, this.rightFooter };
+		marginals = new Layout[] { this.header, this.leftFooter, this.centerFooter, this.rightFooter };
 	}
 }

@@ -41,7 +41,7 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior {
 
 	public SpawnEntitiesAroundPlayersAction(final EntityTemplate entity, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick, final int maxEntityCount) {
 		this.entity = entity;
-		this.entityCountPerPlayer = entityCount;
+		entityCountPerPlayer = entityCount;
 		this.spawnDistanceMin = spawnDistanceMin;
 		this.spawnDistanceMax = spawnDistanceMax;
 		this.spawnRangeY = spawnRangeY;

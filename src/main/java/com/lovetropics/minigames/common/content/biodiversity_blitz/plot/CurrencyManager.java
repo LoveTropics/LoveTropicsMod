@@ -34,34 +34,34 @@ public final class CurrencyManager implements IGameState {
 	public CurrencyManager(IGamePhase game, Item item) {
 		this.game = game;
 		this.item = item;
-		this.itemPredicate = stack -> stack.getItem() == item;
+		itemPredicate = stack -> stack.getItem() == item;
 
-		this.trackedValues.defaultReturnValue(0);
+		trackedValues.defaultReturnValue(0);
 	}
 
 	public void tickTracked() {
 		for (ServerPlayer player : game.getParticipants()) {
 			if (player.tickCount % 5 == 0) {
-				int value = this.get(player);
-				this.setTracked(player, value);
+				int value = get(player);
+				setTracked(player, value);
 			}
 		}
 	}
 
 	private void setTracked(ServerPlayer player, int value) {
-		int lastValue = this.trackedValues.put(player.getUUID(), value);
+		int lastValue = trackedValues.put(player.getUUID(), value);
 		if (lastValue != value) {
-			this.game.invoker(BbEvents.CURRENCY_CHANGED).onCurrencyChanged(player, value, lastValue);
+			game.invoker(BbEvents.CURRENCY_CHANGED).onCurrencyChanged(player, value, lastValue);
 		}
 	}
 
 	private void incrementTracked(ServerPlayer player, int amount) {
-		int value = this.trackedValues.getInt(player.getUUID());
-		this.setTracked(player, value + amount);
+		int value = trackedValues.getInt(player.getUUID());
+		setTracked(player, value + amount);
 	}
 
 	public int set(ServerPlayer player, int value) {
-		int oldValue = this.get(player);
+		int oldValue = get(player);
 		if (value > oldValue) {
 			int increment = value - oldValue;
 			return oldValue + add(player, increment);
@@ -74,18 +74,18 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	public int add(ServerPlayer player, int amount) {
-		int added = this.addToInventory(player, amount);
-		this.incrementTracked(player, added);
+		int added = addToInventory(player, amount);
+		incrementTracked(player, added);
 		return added;
 	}
 
 	public void accumulate(GameTeamKey team, int amount) {
-		int lastValue = this.accumulator.addTo(team, amount);
+		int lastValue = accumulator.addTo(team, amount);
 		int newValue = lastValue + amount;
 
 		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 		for (ServerPlayer player : teams.getPlayersForTeam(team)) {
-			this.game.getStatistics().forPlayer(player)
+			game.getStatistics().forPlayer(player)
 					.set(StatisticKey.POINTS, newValue);
 		}
 
@@ -93,8 +93,8 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	public int remove(ServerPlayer player, int amount) {
-		int removed = this.removeFromInventory(player, amount);
-		this.incrementTracked(player, -removed);
+		int removed = removeFromInventory(player, amount);
+		incrementTracked(player, -removed);
 		return removed;
 	}
 
@@ -110,7 +110,7 @@ public final class CurrencyManager implements IGameState {
 
 		List<Slot> slots = player.containerMenu.slots;
 		for (Slot slot : slots) {
-			remaining -= this.removeFromSlot(slot, remaining);
+			remaining -= removeFromSlot(slot, remaining);
 			if (remaining <= 0) break;
 		}
 
@@ -160,12 +160,12 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	public void equalize() {
-		int sum = IntStream.of(this.accumulator.values().toIntArray()).sum();
-		int count = this.accumulator.keySet().size();
+		int sum = IntStream.of(accumulator.values().toIntArray()).sum();
+		int count = accumulator.keySet().size();
 		int newSum = sum / count;
 
-		for (GameTeamKey team : this.accumulator.keySet()) {
-			int lastValue = this.accumulator.put(team, newSum);
+		for (GameTeamKey team : accumulator.keySet()) {
+			int lastValue = accumulator.put(team, newSum);
 			game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(team, newSum, lastValue);
 		}
 	}

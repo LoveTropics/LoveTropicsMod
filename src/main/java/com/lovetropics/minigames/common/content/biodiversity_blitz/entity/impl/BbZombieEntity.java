@@ -31,7 +31,7 @@ public class BbZombieEntity extends Zombie implements BbMobEntity {
 
 	public BbZombieEntity(EntityType<? extends Zombie> type, Level world, Plot plot) {
 		super(type, world);
-		this.mobBrain = new BbMobBrain(plot.walls);
+		mobBrain = new BbMobBrain(plot.walls);
 		this.plot = plot;
 
 		// Ignore sweet berry bushes and water
@@ -45,21 +45,21 @@ public class BbZombieEntity extends Zombie implements BbMobEntity {
 
 	@Override
 	protected void addBehaviourGoals() {
-		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, BbMobEntity.ATTACK_MOVE_SPEED, false));
-		this.goalSelector.addGoal(3, new DestroyCropGoal(this));
+		goalSelector.addGoal(2, new ZombieAttackGoal(this, BbMobEntity.ATTACK_MOVE_SPEED, false));
+		goalSelector.addGoal(3, new DestroyCropGoal(this));
 
-		this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
+		targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
 	}
 
 	@Override
 	protected Vec3 maybeBackOffFromEdge(Vec3 offset, MoverType mover) {
-		return mobBrain.getPlotWalls().collide(this.getBoundingBox(), offset);
+		return mobBrain.getPlotWalls().collide(getBoundingBox(), offset);
 	}
 
 	@Nullable
 	@Override
 	public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
-		this.setLeftHanded(this.random.nextFloat() < 0.05F);
+		setLeftHanded(random.nextFloat() < 0.05F);
 		return spawnData;
 	}
 
@@ -80,7 +80,7 @@ public class BbZombieEntity extends Zombie implements BbMobEntity {
 
 	@Override
 	public Plot getPlot() {
-		return this.plot;
+		return plot;
 	}
 
 	@Override

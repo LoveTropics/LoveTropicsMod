@@ -16,18 +16,18 @@ public final class ControlCommands implements IGameState {
 	private final Map<String, ControlCommand> commands = new Object2ObjectOpenHashMap<>();
 
 	public void add(String name, ControlCommand command) {
-		this.commands.put(name, command);
+		commands.put(name, command);
 	}
 
 	public void invoke(GameLobbyMetadata lobby, String name, CommandSourceStack source) throws CommandSyntaxException {
-		ControlCommand command = this.commands.get(name);
+		ControlCommand command = commands.get(name);
 		if (command != null) {
 			command.invoke(source, lobby.initiator());
 		}
 	}
 
 	public Stream<String> list(GameLobbyMetadata lobby, CommandSourceStack source) {
-		return this.commands.entrySet().stream()
+		return commands.entrySet().stream()
 				.filter(entry -> entry.getValue().canUse(source, lobby.initiator()))
 				.map(Map.Entry::getKey);
 	}

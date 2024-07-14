@@ -37,8 +37,8 @@ public final class NotificationToast implements Toast {
 		lines.addAll(fontRenderer.split(message, MAX_WIDTH));
 
 		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::width).max().orElse(MAX_WIDTH), MAX_WIDTH);
-		this.width = TEXT_LEFT + textWidth + 4;
-		this.height = Math.max(lines.size() * LINE_HEIGHT + 8, 26);
+		width = TEXT_LEFT + textWidth + 4;
+		height = Math.max(lines.size() * LINE_HEIGHT + 8, 26);
 
 		this.lines = lines;
 		this.style = style;
@@ -49,10 +49,10 @@ public final class NotificationToast implements Toast {
 	public Visibility render(GuiGraphics graphics, ToastComponent gui, long time) {
 		graphics.blitSprite(backgroundSprite, 0, 0, width, height);
 
-		this.drawText(graphics);
-		this.drawIcon(graphics);
+		drawText(graphics);
+		drawIcon(graphics);
 
-		return time >= this.style.visibleTimeMs() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+		return time >= style.visibleTimeMs() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
 	}
 
 	private void drawText(GuiGraphics graphics) {
@@ -64,9 +64,9 @@ public final class NotificationToast implements Toast {
 	}
 
 	private void drawIcon(GuiGraphics graphics) {
-		int y = (this.height - ICON_SIZE) / 2;
+		int y = (height - ICON_SIZE) / 2;
 
-		NotificationIcon icon = this.style.icon();
+		NotificationIcon icon = style.icon();
 		if (icon.item != null) {
 			graphics.renderFakeItem(icon.item, 6, y);
 		} else if (icon.effect != null) {
@@ -77,11 +77,11 @@ public final class NotificationToast implements Toast {
 
 	@Override
 	public int width() {
-		return this.width;
+		return width;
 	}
 
 	@Override
 	public int height() {
-		return this.height;
+		return height;
 	}
 }

@@ -11,16 +11,16 @@ public record RegionPattern(String pattern) {
 	public static final Codec<RegionPattern> CODEC = Codec.STRING.xmap(RegionPattern::new, p -> p.pattern);
 
 	public Collection<BlockBox> get(MapRegions regions, Object... args) {
-		return regions.get(this.resolveKey(args));
+		return regions.get(resolveKey(args));
 	}
 
 	public BlockBox getOrThrow(MapRegions regions, Object... args) {
-		return regions.getOrThrow(this.resolveKey(args));
+		return regions.getOrThrow(resolveKey(args));
 	}
 
 	@Nullable
 	public BlockBox getAny(MapRegions regions, Object... args) {
-		return regions.getAny(this.resolveKey(args));
+		return regions.getAny(resolveKey(args));
 	}
 
 	private String resolveKey(Object[] args) {

@@ -29,42 +29,42 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		public Set setName(String name) {
-			this.add(new SetName(name));
+			add(new SetName(name));
 			return this;
 		}
 
 		public Set enqueue(ClientGameDefinition definition) {
-			this.add(new Enqueue(definition.id));
+			add(new Enqueue(definition.id));
 			return this;
 		}
 
 		public Set removeQueuedGame(int id) {
-			this.add(new RemoveQueuedGame(id));
+			add(new RemoveQueuedGame(id));
 			return this;
 		}
 
 		public Set reorderQueuedGame(int id, int newIndex) {
-			this.add(new ReorderQueuedGame(id, newIndex));
+			add(new ReorderQueuedGame(id, newIndex));
 			return this;
 		}
 
 		public Set selectControl(LobbyControls.Type control) {
-			this.add(new SelectControl(control));
+			add(new SelectControl(control));
 			return this;
 		}
 
 		public Set setVisibility(LobbyVisibility visibility) {
-			this.add(new SetVisibility(visibility));
+			add(new SetVisibility(visibility));
 			return this;
 		}
 
 		public Set close() {
-			this.add(new Close());
+			add(new Close());
 			return this;
 		}
 
 		public Set configure(int id, ClientLobbyQueuedGame game) {
-			this.add(new Configure(id, game));
+			add(new Configure(id, game));
 			return this;
 		}
 

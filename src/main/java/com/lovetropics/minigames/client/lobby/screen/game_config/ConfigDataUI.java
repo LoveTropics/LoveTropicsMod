@@ -30,10 +30,10 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 		this.configs = configs;
 		
 
-		this.label = new TextLabel(ltree.child(1, Axis.X), 11, Component.translatable(name), Align.Cross.START, Align.Cross.START);
+		label = new TextLabel(ltree.child(1, Axis.X), 11, Component.translatable(name), Align.Cross.START, Align.Cross.START);
 		IConfigWidget widget = parent.createWidget(ltree.child(1, Axis.X), configs);
 		children.add(widget);
-		this.mainLayout = ltree.pop();
+		mainLayout = ltree.pop();
 	}
 
 	@Override
@@ -43,13 +43,13 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 	
 	@Override
 	public int getHeight() {
-		return this.mainLayout.background().height();
+		return mainLayout.background().height();
 	}
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		super.render(graphics, mouseX, mouseY, partialTicks);
-		this.label.render(graphics, mouseX, mouseY, partialTicks);
+		label.render(graphics, mouseX, mouseY, partialTicks);
 		for (ContainerEventHandler child : children) {
 			if (child instanceof Renderable renderable) {
 				renderable.render(graphics, mouseX, mouseY, partialTicks);

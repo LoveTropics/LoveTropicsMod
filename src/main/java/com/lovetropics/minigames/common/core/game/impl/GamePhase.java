@@ -63,7 +63,7 @@ public class GamePhase implements IGamePhase {
 
 	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
-		this.server = game.getServer();
+		server = game.getServer();
 		this.definition = definition;
 		this.phaseType = phaseType;
 
@@ -72,7 +72,7 @@ public class GamePhase implements IGamePhase {
 
 		for (PlayerRole role : PlayerRole.ROLES) {
 			MutablePlayerSet rolePlayers = new MutablePlayerSet(server);
-			this.roles.put(role, rolePlayers);
+			roles.put(role, rolePlayers);
 		}
 	}
 
@@ -239,7 +239,7 @@ public class GamePhase implements IGamePhase {
 
 	public void cancelWithError(Exception exception) {
 		LoveTropics.LOGGER.warn("Game canceled due to exception", exception);
-		this.requestStop(GameStopReason.errored(Component.literal("Game stopped due to exception: " + exception)));
+		requestStop(GameStopReason.errored(Component.literal("Game stopped due to exception: " + exception)));
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public class BbVindicatorEntity extends Vindicator implements BbMobEntity {
     public BbVindicatorEntity(EntityType<? extends Vindicator> pEntityType, Level pLevel, Plot plot) {
         super(pEntityType, pLevel);
 
-        this.mobBrain = new BbMobBrain(plot.walls);
+        mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
         // Ignore sweet berry bushes and water
@@ -43,14 +43,14 @@ public class BbVindicatorEntity extends Vindicator implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(3, new DestroyCropGoal(this));
+        goalSelector.addGoal(3, new DestroyCropGoal(this));
 
-        this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
+        targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
     }
 
     @Override
     protected Vec3 maybeBackOffFromEdge(Vec3 offset, MoverType mover) {
-        return mobBrain.getPlotWalls().collide(this.getBoundingBox(), offset);
+        return mobBrain.getPlotWalls().collide(getBoundingBox(), offset);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class BbVindicatorEntity extends Vindicator implements BbMobEntity {
 
     @Override
     public BbMobBrain getMobBrain() {
-        return this.mobBrain;
+        return mobBrain;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class BbVindicatorEntity extends Vindicator implements BbMobEntity {
 
     @Override
     public Plot getPlot() {
-        return this.plot;
+        return plot;
     }
 
     @Override

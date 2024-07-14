@@ -82,21 +82,21 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			if (!ended) {
-				this.triggerEnd(game);
+				triggerEnd(game);
 			}
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			if (this.ended) {
-				this.tickEnded(game);
+			if (ended) {
+				tickEnded(game);
 			}
 		});
 	}
 
 	private void triggerEnd(IGamePhase game) {
-		this.ended = true;
+		ended = true;
 
-		if (this.title != null && winner != null) {
+		if (title != null && winner != null) {
 			Component title = this.title.apply(Map.of("winner", winner));
 			PlayerSet players = game.getAllPlayers();
 			players.sendPacket(new ClientboundClearTitlesPacket(true));
@@ -155,7 +155,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	}
 
 	private void tickEnded(IGamePhase game) {
-		this.sendScheduledMessages(game, stopTime);
+		sendScheduledMessages(game, stopTime);
 
 		if (stopDelay != NO_STOP_DELAY && stopTime == stopDelay) {
 			game.requestStop(GameStopReason.finished());
@@ -165,7 +165,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	}
 
 	private void sendScheduledMessages(IGamePhase game, long stopTime) {
-		TemplatedText message = this.scheduledMessages.remove(stopTime);
+		TemplatedText message = scheduledMessages.remove(stopTime);
 		if (message != null) {
 			game.getAllPlayers().sendMessage(message.apply(Map.of("winner", winner)));
 		}

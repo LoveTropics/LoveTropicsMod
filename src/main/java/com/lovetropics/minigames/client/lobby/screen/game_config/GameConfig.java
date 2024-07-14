@@ -46,14 +46,14 @@ public final class GameConfig extends ScrollPanel {
 	public GameConfig(Screen screen, Layout main, Handlers handlers) {
 		super(screen.getMinecraft(), main.background().width(), main.background().height(), main.background().top(),
 				main.background().left());
-		this.mainLayout = main;
+		mainLayout = main;
 		this.screen = screen;
 		this.handlers = handlers;
-		this.content = main;
+		content = main;
 
-		children.add(this.saveButton = Button.builder(Component.literal("Save"), $ -> handlers.saveConfigs())
+		children.add(saveButton = Button.builder(Component.literal("Save"), $ -> handlers.saveConfigs())
 				.bounds(main.content().right() - 46, main.content().bottom() - 20, 40, 20).build());
-		this.saveButton.active = false;
+		saveButton.active = false;
 	}
 
 	@Override
@@ -71,34 +71,34 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	public void setGame(@Nullable ClientLobbyQueuedGame game) {
-		this.saveButton.active = game != null;
+		saveButton.active = game != null;
 
-		this.configuring = game;
-		this.configData.clear();
+		configuring = game;
+		configData.clear();
 		if (game != null) {
 			if (game.waitingConfigs() != null) {
-				this.configData.add(game.waitingConfigs());
+				configData.add(game.waitingConfigs());
 			}
-			this.configData.add(game.playingConfigs());
+			configData.add(game.playingConfigs());
 		}
 		reflow();
 	}
 
 	public void reflow() {
-		this.configMenus.values().forEach(children::remove);
-		this.configMenus.clear();
-		LayoutTree ltree = new LayoutTree(this.mainLayout.unboundedY());
+		configMenus.values().forEach(children::remove);
+		configMenus.clear();
+		LayoutTree ltree = new LayoutTree(mainLayout.unboundedY());
 		ltree.child(new Box(0, 0, 6, 0), new Box()); // Add margin where the scroll bar is
 		for (ClientBehaviorList configSet : configData) {
 			for (ClientConfigList behavior : configSet.behaviors()) {
 				if (!behavior.configs().isEmpty()) {
 					BehaviorConfigUI menu = new BehaviorConfigUI(this, ltree.child(0, 3), behavior);
-					this.configMenus.put(behavior.id(), menu);
+					configMenus.put(behavior.id(), menu);
 					children.add(menu);
 				}
 			}
 		}
-		this.content = ltree.pop();
+		content = ltree.pop();
 	}
 
 	@Override
@@ -122,18 +122,18 @@ public final class GameConfig extends ScrollPanel {
 
 	@Override
 	protected int getContentHeight() {
-		return this.content.margin().height();
+		return content.margin().height();
 	}
 
 	@Override
 	protected void drawPanel(GuiGraphics graphics, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
-		this.mainLayout.debugRender(graphics);
+		mainLayout.debugRender(graphics);
 		graphics.pose().pushPose();
-		graphics.pose().translate(0, relativeY - this.top - this.border, 0);
-		this.content.debugRender(graphics);
-		configMenus.values().forEach(ui -> ui.render(graphics, mouseX, mouseY + (int) this.scrollDistance, 0));
+		graphics.pose().translate(0, relativeY - top - border, 0);
+		content.debugRender(graphics);
+		configMenus.values().forEach(ui -> ui.render(graphics, mouseX, mouseY + (int) scrollDistance, 0));
 		graphics.pose().popPose();
-		this.saveButton.render(graphics, mouseX, mouseY, mouseY);
+		saveButton.render(graphics, mouseX, mouseY, mouseY);
 	}
 
 	@Override
@@ -144,20 +144,20 @@ public final class GameConfig extends ScrollPanel {
 		Optional<GuiEventListener> ret = super.getChildAt(mouseX, mouseY);
 		if (ret.isEmpty() || ret.get() != saveButton) {
 			// Can't allow the save button to activate here, the mouse position is wrong for it
-			ret = super.getChildAt(mouseX, mouseY + this.scrollDistance).filter(g -> g != saveButton);
+			ret = super.getChildAt(mouseX, mouseY + scrollDistance).filter(g -> g != saveButton);
 		}
 		return ret;
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (this.saveButton.isMouseOver(mouseX, mouseY)) {
+		if (saveButton.isMouseOver(mouseX, mouseY)) {
 			return saveButton.mouseClicked(mouseX, mouseY, button);
 		}
 		// Can't allow the save button to activate here, the mouse position is wrong for it
-		this.saveButton.visible = false;
+		saveButton.visible = false;
 		boolean ret = super.mouseClicked(mouseX, mouseY, button);
-		this.saveButton.visible = true;
+		saveButton.visible = true;
 		return ret;
 	}
 }

@@ -14,61 +14,61 @@ final class LobbyTrackingPlayers implements PlayerSet {
 
 	LobbyTrackingPlayers(GameLobby lobby) {
 		this.lobby = lobby;
-		this.tracking = new MutablePlayerSet(lobby.getServer());
+		tracking = new MutablePlayerSet(lobby.getServer());
 
-		this.rebuildTracking();
+		rebuildTracking();
 	}
 
 	void rebuildTracking() {
-		for (ServerPlayer player : PlayerSet.ofServer(this.lobby.getServer())) {
-			if (this.lobby.isVisibleTo(player)) {
-				this.startTracking(player);
+		for (ServerPlayer player : PlayerSet.ofServer(lobby.getServer())) {
+			if (lobby.isVisibleTo(player)) {
+				startTracking(player);
 			} else {
-				this.stopTracking(player);
+				stopTracking(player);
 			}
 		}
 	}
 
 	void onPlayerLoggedIn(ServerPlayer player) {
-		if (this.lobby.isVisibleTo(player)) {
-			this.startTracking(player);
+		if (lobby.isVisibleTo(player)) {
+			startTracking(player);
 		}
 	}
 
 	void onPlayerLoggedOut(ServerPlayer player) {
-		this.stopTracking(player);
+		stopTracking(player);
 	}
 
 	private void startTracking(ServerPlayer player) {
-		if (this.tracking.add(player)) {
-			this.lobby.onPlayerStartTracking(player);
+		if (tracking.add(player)) {
+			lobby.onPlayerStartTracking(player);
 		}
 	}
 
 	private void stopTracking(ServerPlayer player) {
-		if (this.tracking.remove(player)) {
-			this.lobby.onPlayerStopTracking(player);
+		if (tracking.remove(player)) {
+			lobby.onPlayerStopTracking(player);
 		}
 	}
 
 	@Override
 	public boolean contains(UUID id) {
-		return this.tracking.contains(id);
+		return tracking.contains(id);
 	}
 
 	@Nullable
 	@Override
 	public ServerPlayer getPlayerBy(UUID id) {
-		return this.tracking.getPlayerBy(id);
+		return tracking.getPlayerBy(id);
 	}
 
 	@Override
 	public int size() {
-		return this.tracking.size();
+		return tracking.size();
 	}
 
 	@Override
 	public Iterator<ServerPlayer> iterator() {
-		return this.tracking.iterator();
+		return tracking.iterator();
 	}
 }

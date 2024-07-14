@@ -5,9 +5,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public record MapMetadata(ResourceLocation id, MapWorldSettings settings, MapRegions regions) {
 	public CompoundTag write(CompoundTag root) {
-		root.putString("id", this.id.toString());
-		root.put("settings", this.settings.write(new CompoundTag()));
-		root.put("regions", this.regions.write(new CompoundTag()));
+		root.putString("id", id.toString());
+		root.put("settings", settings.write(new CompoundTag()));
+		root.put("regions", regions.write(new CompoundTag()));
 		return root;
 	}
 

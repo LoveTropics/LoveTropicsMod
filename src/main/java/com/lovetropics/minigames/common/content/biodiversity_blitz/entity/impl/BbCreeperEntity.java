@@ -35,7 +35,7 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
     
     public BbCreeperEntity(EntityType<? extends Creeper> type, Level world, Plot plot) {
         super(type, world);
-        this.mobBrain = new BbMobBrain(plot.walls);
+        mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
         setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
@@ -43,20 +43,20 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new KaboomCropGoal(this));
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8D));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        goalSelector.addGoal(1, new FloatGoal(this));
+        goalSelector.addGoal(2, new KaboomCropGoal(this));
+        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        goalSelector.addGoal(6, new RandomLookAroundGoal(this));
     }
 
     public void setCreeperExplodeSizeOffset(float off) {
-        this.explosionSizeOffset = off;
+        explosionSizeOffset = off;
     }
 
     @Override
     public void aiStep() {
-        if (this.getHealth() < 8) {
-            this.setSwellDir(1);
+        if (getHealth() < 8) {
+            setSwellDir(1);
         }
 
         super.aiStep();
@@ -64,30 +64,30 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
 
     @Override
     public void explodeCreeper() {
-        if (!this.level().isClientSide) {
-            double x = this.getX();
-            double y = this.getY();
-            double z = this.getZ();
+        if (!level().isClientSide) {
+            double x = getX();
+            double y = getY();
+            double z = getZ();
 
             float size = 2.5f + explosionSizeOffset;
-            Explosion explosion = new PlantAffectingExplosion(this.level(), null, null, null, x, y, z, size, false, Explosion.BlockInteraction.DESTROY, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE, e -> true, this.plot);
+            Explosion explosion = new PlantAffectingExplosion(level(), null, null, null, x, y, z, size, false, Explosion.BlockInteraction.DESTROY, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE, e -> true, plot);
             explosion.explode();
             explosion.finalizeExplosion(false);
 
-            float factor = this.isPowered() ? 2.0F : 1.0F;
-            for (ServerPlayer player : ((ServerLevel) this.level()).players()) {
+            float factor = isPowered() ? 2.0F : 1.0F;
+            for (ServerPlayer player : ((ServerLevel) level()).players()) {
                 if (player.distanceToSqr(x, y, z) < 4096.0) {
                     player.connection.send(new ClientboundExplodePacket(x, y, z, size * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player), explosion.getBlockInteraction(), explosion.getSmallExplosionParticles(), explosion.getLargeExplosionParticles(), explosion.getExplosionSound()));
                 }
             }
 
-            this.remove(RemovalReason.KILLED);
+            remove(RemovalReason.KILLED);
         }
     }
 
     @Override
     protected Vec3 maybeBackOffFromEdge(Vec3 offset, MoverType mover) {
-        return mobBrain.getPlotWalls().collide(this.getBoundingBox(), offset);
+        return mobBrain.getPlotWalls().collide(getBoundingBox(), offset);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
 
     @Override
     public BbMobBrain getMobBrain() {
-        return this.mobBrain;
+        return mobBrain;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
 
     @Override
     public Plot getPlot() {
-        return this.plot;
+        return plot;
     }
 
     @Override

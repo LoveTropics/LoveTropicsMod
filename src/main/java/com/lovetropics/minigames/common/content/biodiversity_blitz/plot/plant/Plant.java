@@ -31,7 +31,7 @@ public final class Plant {
 		this.decorationCoverage = decorationCoverage;
 		this.state = state;
 
-		this.coverage = decorationCoverage != null ? PlantCoverage.or(functionalCoverage, decorationCoverage) : functionalCoverage;
+		coverage = decorationCoverage != null ? PlantCoverage.or(functionalCoverage, decorationCoverage) : functionalCoverage;
 		this.family = family;
 		this.value = value;
 	}
@@ -58,11 +58,11 @@ public final class Plant {
 	}
 
 	public PlantFamily family() {
-		return this.family;
+		return family;
 	}
 
 	public double value() {
-		return this.value;
+		return value;
 	}
 
 	@Nullable
@@ -77,7 +77,7 @@ public final class Plant {
 	public void spawnPoof(ServerLevel world, int count, double speed) {
 		RandomSource random = world.random;
 
-		for (BlockPos pos : this.coverage) {
+		for (BlockPos pos : coverage) {
 			for (int i = 0; i < count; i++) {
 				double vx = random.nextGaussian() * 0.02;
 				double vy = random.nextGaussian() * 0.02;

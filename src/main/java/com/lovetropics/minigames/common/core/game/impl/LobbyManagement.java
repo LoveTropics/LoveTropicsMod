@@ -26,7 +26,7 @@ final class LobbyManagement implements ILobbyManagement {
 
 	LobbyManagement(GameLobby lobby) {
 		this.lobby = lobby;
-		this.managingPlayers = new MutablePlayerSet(lobby.getServer());
+		managingPlayers = new MutablePlayerSet(lobby.getServer());
 	}
 
 	void disable() {
@@ -113,7 +113,7 @@ final class LobbyManagement implements ILobbyManagement {
 		LobbyControls.Action action = lobby.getControls().get(type);
 		if(type == LobbyControls.Type.RESTART) {
 			var queuedGame = lobby.gameQueue.enqueue(lobby.state.getGame().getDefinition());
-			this.reorderQueuedGame(queuedGame.networkId(), 0);
+			reorderQueuedGame(queuedGame.networkId(), 0);
 		}
 		if (action != null) {
 			Scheduler.nextTick().run(server -> {

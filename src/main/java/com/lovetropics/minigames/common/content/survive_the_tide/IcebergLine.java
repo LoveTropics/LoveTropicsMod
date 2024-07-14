@@ -28,7 +28,7 @@ public class IcebergLine {
 	private final Random rand;
 
 	public IcebergLine(BlockPos start, BlockPos end, int distBetweenEach) {
-		this.rand = new Random();
+		rand = new Random();
 		this.distBetweenEach = distBetweenEach;
 
 		this.start = start;
@@ -37,32 +37,32 @@ public class IcebergLine {
 		int diffX = this.start.getX() - this.end.getX();
 		int diffZ = this.start.getZ() - this.end.getZ();
 
-		this.count = Math.max(1, Math.max(Math.abs(diffX), Math.abs(diffZ)) / distBetweenEach);
+		count = Math.max(1, Math.max(Math.abs(diffX), Math.abs(diffZ)) / distBetweenEach);
 
-		this.intervalX = Math.round((float) diffX / (float) count);
-		this.intervalZ = Math.round((float) diffZ / (float) count);
+		intervalX = Math.round((float) diffX / (float) count);
+		intervalZ = Math.round((float) diffZ / (float) count);
 	}
 
 	public void generate(Level world, int waterLevel) {
 		for (int i = 1; i <= count; i++) {
-			int offsetX = getRandOffset(this.distBetweenEach);
-			int offsetZ = getRandOffset(this.distBetweenEach);
+			int offsetX = getRandOffset(distBetweenEach);
+			int offsetZ = getRandOffset(distBetweenEach);
 
-			BlockPos pos = new BlockPos(this.start.getX() - (i * intervalX) + offsetX, waterLevel, this.start.getZ() - (i * intervalZ) + offsetZ);
+			BlockPos pos = new BlockPos(start.getX() - (i * intervalX) + offsetX, waterLevel, start.getZ() - (i * intervalZ) + offsetZ);
 
 			setIceWithCheck(world, pos);
 		}
 
 		BlockPos start = new BlockPos(
-				this.start.getX() + getRandOffset(this.distBetweenEach),
+				this.start.getX() + getRandOffset(distBetweenEach),
 				waterLevel,
-				this.start.getZ() + getRandOffset(this.distBetweenEach));
+				this.start.getZ() + getRandOffset(distBetweenEach));
 
 
 		BlockPos end = new BlockPos(
-				this.start.getX() + getRandOffset(this.distBetweenEach),
+				this.start.getX() + getRandOffset(distBetweenEach),
 				waterLevel,
-				this.start.getZ() + getRandOffset(this.distBetweenEach));
+				this.start.getZ() + getRandOffset(distBetweenEach));
 
 		setIceWithCheck(world, start);
 		setIceWithCheck(world, end);

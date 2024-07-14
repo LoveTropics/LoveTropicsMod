@@ -49,7 +49,7 @@ public class TestPermissionAPI implements RoleLookup {
         }
 
         public void addRole(String id, Map<RoleOverrideType<?>, Object> overrides) {
-            this.roles.add(new SimpleRole(id, new RoleOverrideMap(overrides), this.roles.isEmpty() ? 0 : this.roles.getLast().index() + 1));
+            roles.add(new SimpleRole(id, new RoleOverrideMap(overrides), roles.isEmpty() ? 0 : roles.getLast().index() + 1));
             rebuild();
         }
 
@@ -81,17 +81,17 @@ public class TestPermissionAPI implements RoleLookup {
         @Override
         public boolean equals(Object obj) {
             if (obj == this) return true;
-            return obj instanceof SimpleRole role && this.index == role.index && role.id.equalsIgnoreCase(this.id);
+            return obj instanceof SimpleRole role && index == role.index && role.id.equalsIgnoreCase(id);
         }
 
         @Override
         public int hashCode() {
-            return this.id.hashCode();
+            return id.hashCode();
         }
 
         @Override
         public String toString() {
-            return "\"" + this.id + "\" (" + this.index + ")";
+            return "\"" + id + "\" (" + index + ")";
         }
     }
 

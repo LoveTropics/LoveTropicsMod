@@ -39,10 +39,10 @@ public final class LobbyPlayerList implements GuiEventListener, NarratableEntry 
 		this.lobby = lobby;
 
 		Box content = layout.content();
-		this.rows = (content.width() + SPACING) / BLOCK_SIZE;
-		this.columns = (content.height() + SPACING) / BLOCK_SIZE;
+		rows = (content.width() + SPACING) / BLOCK_SIZE;
+		columns = (content.height() + SPACING) / BLOCK_SIZE;
 
-		int innerWidth = this.rows * BLOCK_SIZE - SPACING;
+		int innerWidth = rows * BLOCK_SIZE - SPACING;
 		int offsetX = (content.width() - innerWidth) / 2;
 
 		this.layout = new Box(
@@ -55,9 +55,9 @@ public final class LobbyPlayerList implements GuiEventListener, NarratableEntry 
 		// TODO: handling overflow with scrollbar
 		int i = 0;
 		for (ClientLobbyPlayer player : lobby.getPlayers()) {
-			int x = this.faceX(i % rows);
-			int y = this.faceY(i / rows);
-			this.renderFace(graphics, mouseX, mouseY, player, x, y);
+			int x = faceX(i % rows);
+			int y = faceY(i / rows);
+			renderFace(graphics, mouseX, mouseY, player, x, y);
 			i++;
 		}
 	}
@@ -74,7 +74,7 @@ public final class LobbyPlayerList implements GuiEventListener, NarratableEntry 
 	}
 
 	public void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
-		int index = this.hoveredFaceAt(mouseX, mouseY);
+		int index = hoveredFaceAt(mouseX, mouseY);
 		if (index != -1) {
 			ClientLobbyPlayer player = lobby.getPlayers().get(index);
 
@@ -120,11 +120,11 @@ public final class LobbyPlayerList implements GuiEventListener, NarratableEntry 
 	}
 
 	private int faceIndex(int row, int column) {
-		if (row < 0 || column < 0 || row > this.rows || column > this.columns) {
+		if (row < 0 || column < 0 || row > rows || column > columns) {
 			return -1;
 		}
 
-		int index = row + column * this.rows;
+		int index = row + column * rows;
 		if (index >= 0 && index < lobby.getPlayers().size()) {
 			return index;
 		} else {

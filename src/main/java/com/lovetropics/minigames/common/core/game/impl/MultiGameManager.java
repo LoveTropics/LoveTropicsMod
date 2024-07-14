@@ -206,7 +206,7 @@ public class MultiGameManager implements IGameManager {
 
 	GameLobbyMetadata setVisibility(GameLobby lobby, LobbyVisibility visibility) {
 		if (visibility.isFocusedLive()) {
-			if (!this.setFocusedLive(lobby)) {
+			if (!setFocusedLive(lobby)) {
 				return lobby.metadata;
 			}
 		}

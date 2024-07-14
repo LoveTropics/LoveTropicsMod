@@ -92,6 +92,6 @@ public final class MapExportReader implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		this.input.close();
+		input.close();
 	}
 }

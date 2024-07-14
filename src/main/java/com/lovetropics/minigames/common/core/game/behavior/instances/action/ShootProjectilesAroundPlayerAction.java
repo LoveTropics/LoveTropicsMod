@@ -49,12 +49,12 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 
 	public ShootProjectilesAroundPlayerAction(/*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
 		//this.entityId = entityId;
-		this.entityCountPerPlayer = entityCount;
+		entityCountPerPlayer = entityCount;
 		this.spawnDistanceMax = spawnDistanceMax;
 		this.targetRandomness = targetRandomness;
 		this.spawnRangeY = spawnRangeY;
-		this.spawnRateBase = spawnsPerTickBase;
-		this.spawnRateRandom = spawnsPerTickRandom;
+		spawnRateBase = spawnsPerTickBase;
+		spawnRateRandom = spawnsPerTickRandom;
 		this.explosionStrength = explosionStrength;
 	}
 

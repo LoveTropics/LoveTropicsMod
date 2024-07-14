@@ -49,7 +49,7 @@ public final class StatisticsMap {
 	}
 
 	public void incrementInt(StatisticKey<Integer> key, int increment) {
-		this.withDefault(key, () -> 0).apply(value -> value + increment);
+		withDefault(key, () -> 0).apply(value -> value + increment);
 	}
 
 	public JsonElement serialize() {

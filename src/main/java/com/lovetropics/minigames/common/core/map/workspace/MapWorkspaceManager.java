@@ -50,10 +50,10 @@ public final class MapWorkspaceManager extends SavedData {
 		return CompletableFuture.supplyAsync(() -> getOrCreateDimension(id, dimensionConfig, settings), server)
 				.thenApplyAsync(dimensionHandle -> {
 					MapWorkspace workspace = new MapWorkspace(id, dimensionConfig, settings, dimensionHandle);
-					this.workspaces.putIfAbsent(id, workspace);
+					workspaces.putIfAbsent(id, workspace);
 
 					return workspace;
-				}, this.server);
+				}, server);
 	}
 
 	private RuntimeDimensionHandle getOrCreateDimension(String id, WorkspaceDimensionConfig dimensionConfig, MapWorldSettings mapSettings) {
@@ -64,7 +64,7 @@ public final class MapWorkspaceManager extends SavedData {
 	}
 
 	public boolean deleteWorkspace(String id) {
-		MapWorkspace workspace = this.workspaces.remove(id);
+		MapWorkspace workspace = workspaces.remove(id);
 		if (workspace != null) {
 			workspace.dimensionHandle().delete();
 			return true;
@@ -74,7 +74,7 @@ public final class MapWorkspaceManager extends SavedData {
 
 	@Nullable
 	public MapWorkspace getWorkspace(String id) {
-		return this.workspaces.get(id);
+		return workspaces.get(id);
 	}
 
 	@Nullable
@@ -83,7 +83,7 @@ public final class MapWorkspaceManager extends SavedData {
 		if (!name.getNamespace().equals(LoveTropics.ID)) {
 			return null;
 		}
-		return this.workspaces.get(name.getPath());
+		return workspaces.get(name.getPath());
 	}
 
 	public Set<String> getWorkspaceIds() {
@@ -91,7 +91,7 @@ public final class MapWorkspaceManager extends SavedData {
 	}
 
 	public boolean hasWorkspace(String id) {
-		return this.workspaces.containsKey(id);
+		return workspaces.containsKey(id);
 	}
 
 	public boolean isWorkspace(ResourceKey<Level> dimension) {
@@ -104,7 +104,7 @@ public final class MapWorkspaceManager extends SavedData {
 
 		RegistryOps<Tag> ops = registries.createSerializationContext(NbtOps.INSTANCE);
 
-		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
+		for (Map.Entry<String, MapWorkspace> entry : workspaces.entrySet()) {
 			MapWorkspaceData data = entry.getValue().intoData();
 			MapWorkspaceData.CODEC.encodeStart(ops, data)
 					.result().ifPresent(workspaceList::add);

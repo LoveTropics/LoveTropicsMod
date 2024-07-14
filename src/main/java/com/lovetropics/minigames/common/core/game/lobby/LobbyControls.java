@@ -18,17 +18,17 @@ public final class LobbyControls {
 	}
 
 	public LobbyControls add(Type type, Action action) {
-		this.actions.put(type, action);
+		actions.put(type, action);
 		return this;
 	}
 
 	@Nullable
 	public Action get(Type type) {
-		return this.actions.get(type);
+		return actions.get(type);
 	}
 
 	public boolean isEnabled(Type type) {
-		return this.actions.containsKey(type);
+		return actions.containsKey(type);
 	}
 
 	public State asState() {
@@ -49,7 +49,7 @@ public final class LobbyControls {
 		RESTART;
 
 		public int mask() {
-			return 1 << this.ordinal();
+			return 1 << ordinal();
 		}
 	}
 
@@ -65,11 +65,11 @@ public final class LobbyControls {
 		}
 
 		public void enable(Type type) {
-			this.bits |= type.mask();
+			bits |= type.mask();
 		}
 
 		public void disable(Type type) {
-			this.bits &= ~type.mask();
+			bits &= ~type.mask();
 		}
 
 		public boolean enabled(Type type) {
@@ -77,7 +77,7 @@ public final class LobbyControls {
 		}
 
 		public void encode(FriendlyByteBuf buffer) {
-			buffer.writeByte(this.bits);
+			buffer.writeByte(bits);
 		}
 
 		public static State decode(FriendlyByteBuf buffer) {

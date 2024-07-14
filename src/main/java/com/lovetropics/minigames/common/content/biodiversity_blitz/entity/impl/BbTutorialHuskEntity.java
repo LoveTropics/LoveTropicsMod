@@ -14,6 +14,6 @@ public class BbTutorialHuskEntity extends BbHuskEntity {
 
     @Override
     protected void addBehaviourGoals() {
-        this.goalSelector.addGoal(3, new DestroyCropGoal(this));
+        goalSelector.addGoal(3, new DestroyCropGoal(this));
     }
 }

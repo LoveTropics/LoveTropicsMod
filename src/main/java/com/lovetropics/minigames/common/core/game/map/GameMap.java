@@ -26,8 +26,8 @@ public record GameMap(@Nullable String name, ResourceKey<Level> dimension, MapRe
 	}
 
 	public void close(IGamePhase game) {
-		if (this.close != null) {
-			this.close.accept(game);
+		if (close != null) {
+			close.accept(game);
 		}
 	}
 }

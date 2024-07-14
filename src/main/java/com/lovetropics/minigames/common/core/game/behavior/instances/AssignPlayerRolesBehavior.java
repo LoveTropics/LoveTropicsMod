@@ -37,7 +37,7 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 	@Override
 	public ConfigList getConfigurables() {
 		return ConfigList.builder(CONFIG_ID)
-				.with(CFG_FORCED_PARTICIPANTS, this.forcedParticipants)
+				.with(CFG_FORCED_PARTICIPANTS, forcedParticipants)
 				.build();
 	}
 
@@ -54,7 +54,7 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 		TeamAllocator<PlayerRole, ServerPlayer> allocator = game.getLobby().getPlayers().createRoleAllocator();
 		allocator.setSizeForTeam(PlayerRole.PARTICIPANT, game.getDefinition().getMaximumParticipantCount());
         LOGGER.info("TEAM SIZE: {}", game.getDefinition().getMaximumParticipantCount());
-		this.applyForcedParticipants(game, allocator);
+		applyForcedParticipants(game, allocator);
 
 		game.invoker(GamePlayerEvents.ALLOCATE_ROLES).onAllocateRoles(allocator);
         LOGGER.info("SELECTED ROLES: {}", game.getLobby().getPlayers().getRoleSelections());
@@ -63,8 +63,8 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 	}
 
 	private void applyForcedParticipants(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {
-        LOGGER.info("FORCING PARTICIPANTS: {}", this.forcedParticipants);
-		for (UUID uuid : this.forcedParticipants) {
+        LOGGER.info("FORCING PARTICIPANTS: {}", forcedParticipants);
+		for (UUID uuid : forcedParticipants) {
 			ServerPlayer player = game.getAllPlayers().getPlayerBy(uuid);
 			if (player != null) {
 				allocator.addPlayer(player, PlayerRole.PARTICIPANT);

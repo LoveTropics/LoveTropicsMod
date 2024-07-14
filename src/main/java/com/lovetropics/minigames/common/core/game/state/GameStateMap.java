@@ -23,21 +23,21 @@ public final class GameStateMap {
 	@SuppressWarnings("unchecked")
 	@Nonnull
 	public <T extends IGameState> T get(GameStateKey.Defaulted<T> key) {
-		return (T) this.state.computeIfAbsent(key, k -> key.createDefault());
+		return (T) state.computeIfAbsent(key, k -> key.createDefault());
 	}
 
 	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T extends IGameState> T getOrNull(GameStateKey<T> key) {
-		return (T) this.state.get(key);
+		return (T) state.get(key);
 	}
 
 	public <T extends IGameState> Optional<T> getOptional(GameStateKey<T> key) {
-		return Optional.ofNullable(this.getOrNull(key));
+		return Optional.ofNullable(getOrNull(key));
 	}
 
 	public <T extends IGameState> T getOrThrow(GameStateKey<T> key) {
-		T state = this.getOrNull(key);
+		T state = getOrNull(key);
 		if (state == null) {
 			throw new GameException(Component.literal("Missing expected game state of key: " + key.getName()));
 		}

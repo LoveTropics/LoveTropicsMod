@@ -72,9 +72,9 @@ public final class BbBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		this.teams = game.getInstanceState().getOrThrow(TeamState.KEY);
-		this.plots = game.getState().getOrThrow(PlotsState.KEY);
-		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		plots = game.getState().getOrThrow(PlotsState.KEY);
+		tutorial = game.getState().getOrThrow(TutorialState.KEY);
 
 		events.listen(GamePlayerEvents.SPAWN, this::setupPlayerAsRole);
 		events.listen(BbEvents.ASSIGN_PLOT, this::onAssignPlot);
@@ -101,7 +101,7 @@ public final class BbBehavior implements IGameBehavior {
 			}
 		});
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> {
-			Plot plot = this.plots.getPlotFor(player);
+			Plot plot = plots.getPlotFor(player);
 			if (plot == null) {
 				return InteractionResult.PASS;
 			}
@@ -130,11 +130,11 @@ public final class BbBehavior implements IGameBehavior {
 			return InteractionResult.FAIL;
 		}
 
-		Plot plot = this.plots.getPlotFor(player);
+		Plot plot = plots.getPlotFor(player);
 		BlockPos pos = blockRayTraceResult.getBlockPos();
 
 		if (plot != null && plot.bounds.contains(pos)) {
-			return this.onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
+			return onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
 		} else {
 			return InteractionResult.CONSUME;
 		}
@@ -164,7 +164,7 @@ public final class BbBehavior implements IGameBehavior {
 			return InteractionResult.FAIL;
 		}
 
-		Plot plot = this.plots.getPlotFor(entity);
+		Plot plot = plots.getPlotFor(entity);
 		if (plot != null && plot.isFloorAt(pos)) {
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				return InteractionResult.PASS;
@@ -176,7 +176,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private void setupPlayerAsRole(UUID playerId, SpawnBuilder spawn, @Nullable PlayerRole role) {
 		if (role == PlayerRole.SPECTATOR) {
-			this.spawnSpectator(spawn);
+			spawnSpectator(spawn);
 		}
 	}
 
@@ -235,13 +235,13 @@ public final class BbBehavior implements IGameBehavior {
 		if (plot != null && plot.bounds.contains(pos)) {
 			// Don't let players place plants inside mob spawns
 			if (plot.mobSpawns.contains(pos)) {
-				this.sendActionRejection(player, BiodiversityBlitzTexts.PLANT_CANNOT_FIT);
+				sendActionRejection(player, BiodiversityBlitzTexts.PLANT_CANNOT_FIT);
 				return InteractionResult.FAIL;
 			}
 
-			return this.onPlaceBlockInOwnPlot(player, pos, placed, plot);
+			return onPlaceBlockInOwnPlot(player, pos, placed, plot);
 		} else {
-			this.sendActionRejection(player, BiodiversityBlitzTexts.NOT_YOUR_PLOT);
+			sendActionRejection(player, BiodiversityBlitzTexts.NOT_YOUR_PLOT);
 			return InteractionResult.FAIL;
 		}
 	}
@@ -257,7 +257,7 @@ public final class BbBehavior implements IGameBehavior {
 		}
 
 		if (plot.canPlantAt(pos)) {
-			this.sendActionRejection(player, BiodiversityBlitzTexts.CAN_ONLY_PLACE_PLANTS);
+			sendActionRejection(player, BiodiversityBlitzTexts.CAN_ONLY_PLACE_PLANTS);
 		}
 
 		return InteractionResult.FAIL;

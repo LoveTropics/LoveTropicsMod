@@ -26,8 +26,8 @@ class SpectatingSession {
 
 	SpectatingSession(List<UUID> players) {
 		this.players = players;
-		this.ui = new SpectatingUi(this);
-		this.applyState(SpectatingState.FREE_CAMERA);
+		ui = new SpectatingUi(this);
+		applyState(SpectatingState.FREE_CAMERA);
 	}
 
 	void tick() {
@@ -64,7 +64,7 @@ class SpectatingSession {
 	void applyState(SpectatingState state) {
 		this.state = state;
 		SpectatingState.StateApplicator applicator = state.apply(CLIENT, this);
-		this.stateApplicator = applicator.isApplied() ? null : applicator;
+		stateApplicator = applicator.isApplied() ? null : applicator;
 	}
 
 	void updatePlayers(List<UUID> players) {

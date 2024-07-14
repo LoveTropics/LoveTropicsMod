@@ -27,11 +27,11 @@ import java.util.stream.StreamSupport;
 
 public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayer> {
 	default PlayerIterable filter(Predicate<? super ServerPlayer> predicate) {
-		return () -> Iterators.filter(this.iterator(), predicate);
+		return () -> Iterators.filter(iterator(), predicate);
 	}
 
 	default PlayerIterable excluding(ServerPlayer player) {
-		return this.filter(target -> target != player);
+		return filter(target -> target != player);
 	}
 
 	@Override

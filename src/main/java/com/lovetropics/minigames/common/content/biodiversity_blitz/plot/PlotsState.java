@@ -60,7 +60,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 
 	@Override
 	public Iterator<Plot> iterator() {
-		return this.plots.iterator();
+		return plots.iterator();
 	}
 
 	public Stream<Plot> stream() {

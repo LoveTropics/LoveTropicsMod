@@ -27,7 +27,7 @@ public class BehaviorProvider implements DataProvider {
     @Override
     public CompletableFuture<?> run(CachedOutput pOutput) {
         return registries.thenCompose(regs -> {
-            final var behProv = this.output.createPathProvider(PackOutput.Target.DATA_PACK, "behaviors");
+            final var behProv = output.createPathProvider(PackOutput.Target.DATA_PACK, "behaviors");
             return CompletableFuture.allOf(behaviors.stream()
                     .map(entry -> {
                         final var built = entry.getValue();

@@ -15,7 +15,7 @@ public enum LobbyVisibility {
 	}
 
 	public boolean isPublic() {
-		return !this.isPrivate();
+		return !isPrivate();
 	}
 
 	public boolean isPrivate() {

@@ -12,7 +12,7 @@ public enum ConfigType {
 		
 		@Override
 		public Object defaultInstance() {
-			return this.requiredType.getEnumConstants()[0];
+			return requiredType.getEnumConstants()[0];
 		}
 	},
 	LIST(Collection.class, true) {
@@ -49,9 +49,9 @@ public enum ConfigType {
 
 	public Object defaultInstance() {
 		try {
-			return this.requiredType.newInstance();
+			return requiredType.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			throw new IllegalArgumentException("Cannot create a default instance for ConfigType " + this.name(), e);
+			throw new IllegalArgumentException("Cannot create a default instance for ConfigType " + name(), e);
 		}
 	}
 }

@@ -55,7 +55,7 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 
 		@Override
 		public boolean test(BlockState state) {
-			return state.is(this.blocks);
+			return state.is(blocks);
 		}
 
 		@Override
@@ -76,7 +76,7 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 
 		@Override
 		public boolean test(BlockState state) {
-			for (BlockStatePredicate predicate : this.predicates) {
+			for (BlockStatePredicate predicate : predicates) {
 				if (predicate.test(state)) {
 					return true;
 				}

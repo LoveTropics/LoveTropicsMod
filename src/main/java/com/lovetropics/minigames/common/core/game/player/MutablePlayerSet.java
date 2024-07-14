@@ -19,39 +19,39 @@ public final class MutablePlayerSet implements PlayerSet {
 	}
 
 	public void clear() {
-		this.players.clear();
+		players.clear();
 	}
 
 	public boolean add(ServerPlayer player) {
-		return this.players.add(player.getUUID());
+		return players.add(player.getUUID());
 	}
 
 	public boolean remove(UUID id) {
-		return this.players.remove(id);
+		return players.remove(id);
 	}
 
 	public boolean remove(Entity entity) {
-		return this.remove(entity.getUUID());
+		return remove(entity.getUUID());
 	}
 
 	@Override
 	public boolean contains(UUID id) {
-		return this.players.contains(id);
+		return players.contains(id);
 	}
 
 	@Nullable
 	@Override
 	public ServerPlayer getPlayerBy(UUID id) {
-		return this.players.contains(id) ? this.server.getPlayerList().getPlayer(id) : null;
+		return players.contains(id) ? server.getPlayerList().getPlayer(id) : null;
 	}
 
 	@Override
 	public int size() {
-		return this.players.size();
+		return players.size();
 	}
 
 	@Override
 	public Iterator<ServerPlayer> iterator() {
-		return PlayerIterable.resolvingIterator(this.server, this.players.iterator());
+		return PlayerIterable.resolvingIterator(server, players.iterator());
 	}
 }

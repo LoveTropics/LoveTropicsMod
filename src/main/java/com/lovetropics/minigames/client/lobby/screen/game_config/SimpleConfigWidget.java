@@ -35,8 +35,8 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 	protected SimpleConfigWidget(LayoutTree ltree, SimpleConfigData config) {
 		super();
 		this.config = config;
-		this.control = createControl(ltree.definiteChild(-1, getHeight()).pop());
-		this.mainLayout = ltree.pop();
+		control = createControl(ltree.definiteChild(-1, getHeight()).pop());
+		mainLayout = ltree.pop();
 	}
 	
 	@Override
@@ -66,7 +66,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return new BooleanButton(mainLayout, (Boolean) this.config.value());
+			return new BooleanButton(mainLayout, (Boolean) config.value());
 		}
 	}
 	
@@ -111,7 +111,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return createButton(mainLayout, (Enum) this.config.value());
+			return createButton(mainLayout, (Enum) config.value());
 		}
 
 		private <E extends Enum<E>> EnumButton<E> createButton(Layout layout, E def) {

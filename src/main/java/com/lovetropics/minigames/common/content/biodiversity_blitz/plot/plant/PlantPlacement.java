@@ -14,16 +14,16 @@ public final class PlantPlacement {
 	private Place place;
 
 	public PlantPlacement covers(BlockPos pos) {
-		return this.covers(PlantCoverage.of(pos));
+		return covers(PlantCoverage.of(pos));
 	}
 
 	public PlantPlacement covers(PlantCoverage coverage) {
-		this.functionalCoverage = coverage;
+		functionalCoverage = coverage;
 		return this;
 	}
 
 	public PlantPlacement decorationCovers(PlantCoverage coverage) {
-		this.decorationCoverage = coverage;
+		decorationCoverage = coverage;
 		return this;
 	}
 
@@ -34,19 +34,19 @@ public final class PlantPlacement {
 
 	@Nullable
 	public PlantCoverage getFunctionalCoverage() {
-		return this.functionalCoverage;
+		return functionalCoverage;
 	}
 
 	@Nullable
 	public PlantCoverage getDecorationCoverage() {
-		return this.decorationCoverage;
+		return decorationCoverage;
 	}
 
 	public boolean place(ServerLevel world, PlantCoverage coverage) {
-		if (this.place == null) {
+		if (place == null) {
 			return false;
 		}
-		return this.place.place(world, coverage);
+		return place.place(world, coverage);
 	}
 
 	public interface Place {

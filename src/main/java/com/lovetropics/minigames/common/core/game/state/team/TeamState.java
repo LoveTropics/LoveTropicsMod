@@ -41,12 +41,12 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	public TeamState(List<GameTeam> teams) {
 		this.teams = teams;
 
-		this.pollingTeams = new ObjectOpenHashSet<>();
+		pollingTeams = new ObjectOpenHashSet<>();
 
 		for (GameTeam team : teams) {
-			this.teamsByKey.put(team.key(), team);
+			teamsByKey.put(team.key(), team);
 			if (team.config().assignedRoles().isEmpty()) {
-				this.pollingTeams.add(team);
+				pollingTeams.add(team);
 			}
 		}
 	}
@@ -201,7 +201,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		}
 
 		public void setPlayerPreference(UUID player, GameTeamKey team) {
-			this.preferences.put(player, team);
+			preferences.put(player, team);
 		}
 	}
 

@@ -49,19 +49,19 @@ public final class PianguasPlantBehavior implements IGameBehavior {
     }
 
     private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
-        long ticks = this.game.ticks();
-        RandomSource random = this.game.getWorld().getRandom();
+        long ticks = game.ticks();
+        RandomSource random = game.getWorld().getRandom();
 
         // TODO: rebalance
         if (ticks % INTERVAL_TICKS != 0 || random.nextInt(4) != 0) {
             return;
         }
 
-        ServerLevel world = this.game.getWorld();
+        ServerLevel world = game.getWorld();
 
         for (Plant plant : plants) {
-            int dx = random.nextInt(this.radius) - random.nextInt(this.radius);
-            int dz = random.nextInt(this.radius) - random.nextInt(this.radius);
+            int dx = random.nextInt(radius) - random.nextInt(radius);
+            int dz = random.nextInt(radius) - random.nextInt(radius);
 
             BlockPos check = plant.coverage().getOrigin().offset(dx, -1, dz);
 

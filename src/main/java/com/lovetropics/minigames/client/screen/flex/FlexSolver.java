@@ -18,12 +18,12 @@ public final class FlexSolver {
 		Results results = new Results();
 
 		FlexSolve rootSolve = results.flexSolve(root);
-		rootSolve.outerSize = rootSolve.innerSize = this.screen.size();
-		rootSolve.layout = layout(root, this.screen);
+		rootSolve.outerSize = rootSolve.innerSize = screen.size();
+		rootSolve.layout = layout(root, screen);
 
-		this.updateInnerSizes(results, root, rootSolve);
-		this.solveSizes(results, root, rootSolve);
-		this.solveLayouts(results, root, rootSolve);
+		updateInnerSizes(results, root, rootSolve);
+		solveSizes(results, root, rootSolve);
+		solveLayouts(results, root, rootSolve);
 
 		return results;
 	}
@@ -34,7 +34,7 @@ public final class FlexSolver {
 
 		for (Flex child : flex.children) {
 			FlexSolve childSolve = results.flexSolve(child);
-			this.updateInnerSizes(results, child, childSolve);
+			updateInnerSizes(results, child, childSolve);
 
 			Flex.Length childOuterWidth = child.width.min.add(totalBorderX(child));
 			Flex.Length childOuterHeight = child.height.min.add(totalBorderY(child));
@@ -56,22 +56,22 @@ public final class FlexSolver {
 		float totalGrow = 0.0F;
 		for (Flex child : flex.children) {
 			FlexSolve childSolve = results.flexSolve(child);
-			childSolve.innerSize = this.solveInnerSize(solve.innerSize, child, childSolve);
+			childSolve.innerSize = solveInnerSize(solve.innerSize, child, childSolve);
 			childSolve.outerSize = outerSize(child, childSolve.innerSize);
 			totalGrow += child.grow;
 		}
 
 		if (totalGrow > 0.0F) {
-			this.solveGrow(results, flex, solve, totalGrow);
+			solveGrow(results, flex, solve, totalGrow);
 		}
 
 		for (Flex child : flex.children) {
-			this.solveSizes(results, child, results.flexSolve(child));
+			solveSizes(results, child, results.flexSolve(child));
 		}
 	}
 
 	private void solveGrow(Results results, Flex flex, FlexSolve solve, float totalGrow) {
-		int remainingSize = this.remainingSizeForGrow(results, flex, solve);
+		int remainingSize = remainingSizeForGrow(results, flex, solve);
 		if (remainingSize <= 0) return;
 
 		for (Flex child : flex.children) {
@@ -112,7 +112,7 @@ public final class FlexSolver {
 
 			innerMain = innerMain.subtract(child.alignMain, childMain.size());
 
-			this.solveLayouts(results, child, childSolve);
+			solveLayouts(results, child, childSolve);
 		}
 	}
 
@@ -153,17 +153,17 @@ public final class FlexSolver {
 		private final Map<Flex, FlexSolve> flexSolves = new Reference2ObjectOpenHashMap<>();
 
 		public Layout layout(Flex flex) {
-			return Objects.requireNonNull(this.layoutOrNull(flex), "given flex has not been solved");
+			return Objects.requireNonNull(layoutOrNull(flex), "given flex has not been solved");
 		}
 
 		@Nullable
 		private Layout layoutOrNull(Flex flex) {
-			FlexSolve solve = this.flexSolves.get(flex);
+			FlexSolve solve = flexSolves.get(flex);
 			return solve != null ? solve.layout : null;
 		}
 
 		private FlexSolve flexSolve(Flex flex) {
-			return this.flexSolves.computeIfAbsent(flex, f -> new FlexSolve());
+			return flexSolves.computeIfAbsent(flex, f -> new FlexSolve());
 		}
 	}
 

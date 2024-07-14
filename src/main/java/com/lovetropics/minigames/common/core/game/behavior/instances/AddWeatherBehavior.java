@@ -61,14 +61,14 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	private void onTickPlayer(ServerPlayer player) {
 		WeatherEventType event = weather.getEventType();
 		if (event != null) {
-			this.tickPlayerInEvent(player, event);
+			tickPlayerInEvent(player, event);
 		}
 	}
 
 	private void tickPlayerInEvent(ServerPlayer player, WeatherEventType event) {
 		EventEffects config = eventEffects.get(event);
 		if (config != null) {
-			this.tickEventEffects(player, config);
+			tickEventEffects(player, config);
 		}
 	}
 

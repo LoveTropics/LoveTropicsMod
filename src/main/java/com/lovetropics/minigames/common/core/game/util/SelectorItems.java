@@ -21,9 +21,9 @@ public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
 	}
 
 	public void giveSelectorsTo(ServerPlayer player) {
-		for (V value : this.values) {
+		for (V value : values) {
 			ItemLike item = handlers.getItemFor(value);
-			player.addItem(this.createSelectorItem(item, value));
+			player.addItem(createSelectorItem(item, value));
 		}
 	}
 
@@ -35,7 +35,7 @@ public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
 
 		V value = getValueForSelector(heldStack);
 		if (value != null) {
-			this.handlers.onPlayerSelected(player, value);
+			handlers.onPlayerSelected(player, value);
 			return InteractionResult.SUCCESS;
 		}
 
@@ -57,8 +57,8 @@ public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
 		if (id == null) {
 			return null;
 		}
-		for (V value : this.values) {
-			if (this.handlers.getIdFor(value).equals(id)) {
+		for (V value : values) {
+			if (handlers.getIdFor(value).equals(id)) {
 				return value;
 			}
 		}
@@ -67,8 +67,8 @@ public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
 
 	private ItemStack createSelectorItem(ItemLike item, V value) {
 		ItemStack stack = new ItemStack(item);
-		stack.set(DataComponents.CUSTOM_NAME, this.handlers.getNameFor(value));
-		stack.set(MinigameDataComponents.SELECTOR, this.handlers.getIdFor(value));
+		stack.set(DataComponents.CUSTOM_NAME, handlers.getNameFor(value));
+		stack.set(MinigameDataComponents.SELECTOR, handlers.getIdFor(value));
 
 		return stack;
 	}

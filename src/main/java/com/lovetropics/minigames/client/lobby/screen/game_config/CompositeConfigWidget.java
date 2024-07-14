@@ -37,7 +37,7 @@ public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 
 	@Override
 	public int getHeight() {
-		return this.mainLayout.margin().height();
+		return mainLayout.margin().height();
 	}
 	
 	@Override

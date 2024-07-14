@@ -61,7 +61,7 @@ public final class ClientLobbyManageState {
 	}
 
 	public void setCurrentGame(@Nullable ClientCurrentGame game) {
-		this.currentGame = game;
+		currentGame = game;
 	}
 
 	public void setQueue(ClientLobbyQueue queue) {
@@ -81,7 +81,7 @@ public final class ClientLobbyManageState {
 	}
 
 	public void setControlsState(LobbyControls.State state) {
-		this.controlsState = state;
+		controlsState = state;
 	}
 
 	public void setVisibility(LobbyVisibility visibility, boolean canFocusLive) {

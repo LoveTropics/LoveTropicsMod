@@ -19,10 +19,10 @@ public record GameLobbyMetadata(GameLobbyId id, PlayerKey initiator, String name
 	}
 
 	public GameLobbyMetadata withName(String name) {
-		return new GameLobbyMetadata(this.id, this.initiator, name, this.visibility);
+		return new GameLobbyMetadata(id, initiator, name, visibility);
 	}
 
 	public GameLobbyMetadata withVisibility(LobbyVisibility visibility) {
-		return new GameLobbyMetadata(this.id, this.initiator, this.name, visibility);
+		return new GameLobbyMetadata(id, initiator, name, visibility);
 	}
 }

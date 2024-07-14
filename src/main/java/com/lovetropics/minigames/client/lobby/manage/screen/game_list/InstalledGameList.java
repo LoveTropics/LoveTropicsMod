@@ -37,42 +37,42 @@ public final class InstalledGameList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("✔"), this::enqueue);
-		this.cancelButton = FlexUi.createButton(solve.layout(cancel), Component.literal("❌"), this::cancel);
+		enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("✔"), this::enqueue);
+		cancelButton = FlexUi.createButton(solve.layout(cancel), Component.literal("❌"), this::cancel);
 	}
 
 	@Override
 	public void updateEntries() {
-		this.setSelected(null);
+		setSelected(null);
 
-		List<ClientGameDefinition> games = this.lobby.getInstalledGames();
+		List<ClientGameDefinition> games = lobby.getInstalledGames();
 
-		this.clearEntries();
+		clearEntries();
 		for (int id = 0; id < games.size(); id++) {
 			ClientGameDefinition game = games.get(id);
-			this.addEntry(Entry.game(this, id, game));
+			addEntry(Entry.game(this, id, game));
 		}
 	}
 
 	private void enqueue(Button button) {
-		Entry selected = this.getSelected();
-		this.select.accept(selected != null ? selected.getId() : -1);
+		Entry selected = getSelected();
+		select.accept(selected != null ? selected.getId() : -1);
 	}
 
 	private void cancel(Button button) {
-		this.select.accept(-1);
+		select.accept(-1);
 	}
 
 	@Override
 	public void renderOverlays(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		super.renderOverlays(graphics, mouseX, mouseY, partialTicks);
-		this.enqueueButton.render(graphics, mouseX, mouseY, partialTicks);
-		this.cancelButton.render(graphics, mouseX, mouseY, partialTicks);
+		enqueueButton.render(graphics, mouseX, mouseY, partialTicks);
+		cancelButton.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (this.enqueueButton.mouseClicked(mouseX, mouseY, button) || this.cancelButton.mouseClicked(mouseX, mouseY, button)) {
+		if (enqueueButton.mouseClicked(mouseX, mouseY, button) || cancelButton.mouseClicked(mouseX, mouseY, button)) {
 			return true;
 		}
 		return super.mouseClicked(mouseX, mouseY, button);
@@ -81,6 +81,6 @@ public final class InstalledGameList extends AbstractGameList {
 	@Override
 	public void setSelected(@Nullable Entry entry) {
 		super.setSelected(entry);
-		this.enqueueButton.active = entry != null;
+		enqueueButton.active = entry != null;
 	}
 }

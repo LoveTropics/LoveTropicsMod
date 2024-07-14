@@ -42,7 +42,7 @@ public record ProximityBombPlantBehavior(double radius) implements IGameBehavior
 			List<Plant> removedPlants = new ArrayList<>();
 
 			for (Plant plant : plants) {
-				AABB detonateBounds = plant.coverage().asBounds().inflate(this.radius);
+				AABB detonateBounds = plant.coverage().asBounds().inflate(radius);
 				List<Mob> entities = world.getEntitiesOfClass(Mob.class, detonateBounds, BbMobEntity.PREDICATE);
 
 				if (!entities.isEmpty()) {

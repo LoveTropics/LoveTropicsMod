@@ -101,7 +101,7 @@ public final class GameEventDispatcher {
 		Player player = event.getEntity();
 		IGamePhase game = gameLookup.getGamePhaseFor(player);
 		if (game != null) {
-			if (this.dispatchAttackEvent(game, (ServerPlayer) player, target)) {
+			if (dispatchAttackEvent(game, (ServerPlayer) player, target)) {
 				event.setCanceled(true);
 			}
 		}
@@ -114,7 +114,7 @@ public final class GameEventDispatcher {
 
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
 		if (game != null && !source.isDirect() && source.getEntity() instanceof ServerPlayer indirectSource) {
-			if (this.dispatchAttackEvent(game, indirectSource, target)) {
+			if (dispatchAttackEvent(game, indirectSource, target)) {
 				event.setCanceled(true);
 			}
 		}
@@ -324,7 +324,7 @@ public final class GameEventDispatcher {
 				if (result != InteractionResult.PASS) {
 					event.setCancellationResult(result);
 					event.setCanceled(true);
-					this.resendPlayerHeldItem(player);
+					resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player item use event", e);
@@ -358,7 +358,7 @@ public final class GameEventDispatcher {
 				InteractionResult result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
-					this.resendPlayerHeldItem(player);
+					resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player place block event", e);

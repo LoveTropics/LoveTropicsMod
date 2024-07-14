@@ -26,9 +26,9 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 
 	@Override
 	protected PathFinder createPathFinder(int maxDepth) {
-		this.nodeEvaluator = new NodeProcessor();
-		this.nodeEvaluator.setCanPassDoors(true);
-		return new PathFinder(this.nodeEvaluator, MAX_DEPTH);
+		nodeEvaluator = new NodeProcessor();
+		nodeEvaluator.setCanPassDoors(true);
+		return new PathFinder(nodeEvaluator, MAX_DEPTH);
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 
 	@Override
 	protected void followThePath() {
-		if (!this.mob.navigateBlockGrid()) {
+		if (!mob.navigateBlockGrid()) {
 			super.followThePath();
 
 			return;

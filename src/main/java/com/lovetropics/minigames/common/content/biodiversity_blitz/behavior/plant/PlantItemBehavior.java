@@ -50,8 +50,8 @@ public final class PlantItemBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		this.plots = game.getState().getOrThrow(PlotsState.KEY);
-		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		plots = game.getState().getOrThrow(PlotsState.KEY);
+		tutorial = game.getState().getOrThrow(TutorialState.KEY);
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(BbEvents.CREATE_PLANT_ITEM, this::createPlantDrop);
@@ -63,7 +63,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 		}
 
 		ItemStack heldItem = player.getMainHandItem();
-		if (!this.itemType.matches(heldItem)) {
+		if (!itemType.matches(heldItem)) {
 			return InteractionResult.PASS;
 		}
 
@@ -78,7 +78,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 				return InteractionResult.FAIL;
 			}
 
-			InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
+			InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, places);
 			if (result.getObject() == null) {
 				if (result.getResult() == InteractionResult.FAIL) {
 					player.displayClientMessage(BiodiversityBlitzTexts.PLANT_CANNOT_FIT.copy().withStyle(ChatFormatting.RED), true);
@@ -98,7 +98,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 
 	private ItemStack createPlantDrop(PlantItemType itemType) {
 		if (this.itemType.equals(itemType)) {
-			ItemStack dropItem = this.item.copy();
+			ItemStack dropItem = item.copy();
 			dropItem.set(BiodiversityBlitz.PLANT_COMPONENT, this.itemType);
 
 			return dropItem;

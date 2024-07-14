@@ -62,7 +62,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		this.plots = game.getState().getOrThrow(PlotsState.KEY);
+		plots = game.getState().getOrThrow(PlotsState.KEY);
 
 		events.listen(BbPlantEvents.ADD, (player, plot, plant) -> {
 			plant.state().put(Trap.KEY, new Trap());
@@ -75,16 +75,16 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 	private PlantPlacement place(ServerPlayer player, Plot plot, BlockPos pos) {
 		return new PlantPlacement()
-				.covers(this.buildPlantCoverage(plot, pos))
+				.covers(buildPlantCoverage(plot, pos))
 				.places((world, coverage) -> {
-					this.placeReadyTrap(plot, pos);
+					placeReadyTrap(plot, pos);
 					return true;
 				});
 	}
 
 	private InteractionResult useBlock(ServerPlayer player, ServerLevel world, BlockPos pos, InteractionHand hand, BlockHitResult traceResult) {
 		if (world.getBlockState(pos).is(Blocks.LEVER)) {
-			return this.useLever(player, pos);
+			return useLever(player, pos);
 		}
 
 		return InteractionResult.PASS;
@@ -94,7 +94,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			Plant plant = plot.plants.getPlantAt(pos);
-			if (plant != null && this.resetTrap(plot, plant)) {
+			if (plant != null && resetTrap(plot, plant)) {
 				return InteractionResult.SUCCESS;
 			}
 		}
@@ -112,7 +112,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 				continue;
 			}
 
-			if (this.tickTrap(plot, plant)) {
+			if (tickTrap(plot, plant)) {
 				trap.ready = false;
 			}
 		}
@@ -122,7 +122,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		// TODO: mobs should run around in panic after being scared
 
 		AABB bounds = plant.coverage().asBounds();
-		AABB triggerBounds = bounds.inflate(this.triggerRadius);
+		AABB triggerBounds = bounds.inflate(triggerRadius);
 
 		ServerLevel world = game.getWorld();
 
@@ -131,9 +131,9 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 			return false;
 		}
 
-		AABB scareBounds = bounds.inflate(this.scareRadius);
+		AABB scareBounds = bounds.inflate(scareRadius);
 		List<Mob> entities = world.getEntitiesOfClass(Mob.class, scareBounds, SCARE_PREDICATE);
-		this.triggerTrap(plot, plant, entities);
+		triggerTrap(plot, plant, entities);
 
 		return true;
 	}
@@ -143,10 +143,10 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		Vec3 pushFrom = Vec3.atCenterOf(origin);
 
 		for (Mob entity : entities) {
-			this.scareEntity(origin, pushFrom, entity);
+			scareEntity(origin, pushFrom, entity);
 		}
 
-		this.extendTrap(plot, plant);
+		extendTrap(plot, plant);
 	}
 
 	private void scareEntity(BlockPos pos, Vec3 pushFrom, Mob entity) {
@@ -183,8 +183,8 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		game.getWorld().playSound(null, origin, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 1.0F, 1.0F);
 
-		this.clearTrap(plant);
-		this.placeExtendedTrap(plot, origin);
+		clearTrap(plant);
+		placeExtendedTrap(plot, origin);
 	}
 
 	private boolean resetTrap(Plot plot, Plant plant) {
@@ -197,8 +197,8 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		game.getWorld().playSound(null, origin, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 1.0F, 1.0F);
 
-		this.clearTrap(plant);
-		this.placeReadyTrap(plot, origin);
+		clearTrap(plant);
+		placeReadyTrap(plot, origin);
 
 		return true;
 	}

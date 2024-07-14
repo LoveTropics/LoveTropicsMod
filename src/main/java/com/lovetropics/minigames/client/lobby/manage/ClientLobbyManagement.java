@@ -66,11 +66,11 @@ public final class ClientLobbyManagement {
 		}
 
 		public int id() {
-			return this.id;
+			return id;
 		}
 
 		public ClientLobbyManageState lobby() {
-			return this.lobby;
+			return lobby;
 		}
 
 		public void setName(String name) {

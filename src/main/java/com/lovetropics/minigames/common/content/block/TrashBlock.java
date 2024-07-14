@@ -53,7 +53,7 @@ public class TrashBlock extends Block implements SimpleWaterloggedBlock {
     public TrashBlock(TrashType type, Properties properties) {
         super(properties);
         this.type = type;
-        registerDefaultState(this.stateDefinition.any().setValue(ATTACHMENT, Attachment.FLOOR).setValue(WATERLOGGED, false));
+        registerDefaultState(stateDefinition.any().setValue(ATTACHMENT, Attachment.FLOOR).setValue(WATERLOGGED, false));
     }
 
     @Override

@@ -18,17 +18,17 @@ public final class RuntimeDimensionHandle {
 	}
 
 	public ResourceKey<Level> asKey() {
-		return this.world.dimension();
+		return world.dimension();
 	}
 
 	public ServerLevel asWorld() {
-		Preconditions.checkState(!this.deleted.get(), "dimension is queued for deletion!");
-		return this.world;
+		Preconditions.checkState(!deleted.get(), "dimension is queued for deletion!");
+		return world;
 	}
 
 	public void delete() {
-		if (this.deleted.compareAndSet(false, true)) {
-			this.dimensions.enqueueDeletion(this.world);
+		if (deleted.compareAndSet(false, true)) {
+			dimensions.enqueueDeletion(world);
 		}
 	}
 }

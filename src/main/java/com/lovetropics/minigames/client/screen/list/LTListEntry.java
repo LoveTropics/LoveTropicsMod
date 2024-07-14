@@ -26,16 +26,16 @@ public abstract class LTListEntry<T extends LTListEntry<T>> extends Entry<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		this.list.setSelected((T) this);
-		this.dragStartIndex = this.list.children().indexOf(this);
+		list.setSelected((T) this);
+		dragStartIndex = list.children().indexOf(this);
 		return true;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-		if (this.reorder != null) {
-			this.list.drag((T) this, mouseY);
+		if (reorder != null) {
+			list.drag((T) this, mouseY);
 			return true;
 		}
 		return false;

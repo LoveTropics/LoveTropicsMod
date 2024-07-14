@@ -54,7 +54,7 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 	}
 
 	private BehaviorConfig<A> hint(String key, UnaryOperator<ConfigData> hint) {
-		this.hints.put(key, hint);
+		hints.put(key, hint);
 		return this;
 	}
 

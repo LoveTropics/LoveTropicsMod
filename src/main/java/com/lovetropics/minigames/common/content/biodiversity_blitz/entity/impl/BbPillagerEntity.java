@@ -39,7 +39,7 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
 
     public BbPillagerEntity(EntityType<? extends Pillager> type, Level world, Plot plot) {
         super(type, world);
-        this.mobBrain = new BbMobBrain(plot.walls);
+        mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
         setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
@@ -52,29 +52,29 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 6.0F));
-        this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 0.8, 6.0F));
-        this.goalSelector.addGoal(2, new DestroyCropGoal(this));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 15.0F, 0.02F));
+        goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 6.0F));
+        goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 0.8, 6.0F));
+        goalSelector.addGoal(2, new DestroyCropGoal(this));
+        goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 15.0F, 0.02F));
 
-        this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
+        targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
     }
 
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
         SpawnGroupData data = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
-        this.setPatrolLeader(false); // Make sure that the pillagers aren't raid leaders
-        this.setPatrolling(false);
-        this.setCanJoinRaid(false);
-        this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY.copy());
-        this.setDropChance(EquipmentSlot.HEAD, 0);
+        setPatrolLeader(false); // Make sure that the pillagers aren't raid leaders
+        setPatrolling(false);
+        setCanJoinRaid(false);
+        setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY.copy());
+        setDropChance(EquipmentSlot.HEAD, 0);
         return data;
     }
 
     @Override
     protected Vec3 maybeBackOffFromEdge(Vec3 offset, MoverType mover) {
-        return mobBrain.getPlotWalls().collide(this.getBoundingBox(), offset);
+        return mobBrain.getPlotWalls().collide(getBoundingBox(), offset);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
 
     @Override
     public Plot getPlot() {
-        return this.plot;
+        return plot;
     }
 
     @Override

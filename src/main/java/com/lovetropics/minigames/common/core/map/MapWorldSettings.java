@@ -48,29 +48,29 @@ public final class MapWorldSettings {
 	}
 
 	public CompoundTag write(CompoundTag root) {
-		root.putLong("time_of_day", this.timeOfDay);
-		root.put("game_rules", this.gameRules.createTag());
+		root.putLong("time_of_day", timeOfDay);
+		root.put("game_rules", gameRules.createTag());
 
-		root.putInt("sunny_time", this.sunnyTime);
-		root.putBoolean("raining", this.raining);
-		root.putInt("rain_time", this.rainTime);
-		root.putBoolean("thundering", this.thundering);
-		root.putInt("thunder_time", this.thunderTime);
+		root.putInt("sunny_time", sunnyTime);
+		root.putBoolean("raining", raining);
+		root.putInt("rain_time", rainTime);
+		root.putBoolean("thundering", thundering);
+		root.putInt("thunder_time", thunderTime);
 
-		root.putString("difficulty", this.difficulty.getKey());
+		root.putString("difficulty", difficulty.getKey());
 
 		return root;
 	}
 
 	public void read(CompoundTag root) {
-		this.timeOfDay = root.getLong("time_of_day");
-		this.gameRules.loadFromTag(new Dynamic<>(NbtOps.INSTANCE, root.getCompound("game_rules")));
+		timeOfDay = root.getLong("time_of_day");
+		gameRules.loadFromTag(new Dynamic<>(NbtOps.INSTANCE, root.getCompound("game_rules")));
 
-		this.sunnyTime = root.getInt("sunny_time");
-		this.raining = root.getBoolean("raining");
-		this.rainTime = root.getInt("rain_time");
-		this.thundering = root.getBoolean("thundering");
-		this.thunderTime = root.getInt("thunder_time");
+		sunnyTime = root.getInt("sunny_time");
+		raining = root.getBoolean("raining");
+		rainTime = root.getInt("rain_time");
+		thundering = root.getBoolean("thundering");
+		thunderTime = root.getInt("thunder_time");
 
 		Difficulty difficulty = Difficulty.byName(root.getString("difficulty"));
 		this.difficulty = difficulty != null ? difficulty : Difficulty.NORMAL;

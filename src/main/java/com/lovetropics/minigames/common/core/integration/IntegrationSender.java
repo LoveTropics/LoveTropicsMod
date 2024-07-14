@@ -52,7 +52,7 @@ public interface IntegrationSender {
 
 		@Override
 		public boolean post(String endpoint, String body) {
-			if (this.isDisabled()) {
+			if (isDisabled()) {
 				return true;
 			}
 
@@ -87,7 +87,7 @@ public interface IntegrationSender {
 		}
 
 		private boolean isDisabled() {
-			return Strings.isNullOrEmpty(this.url.get()) || Strings.isNullOrEmpty(this.authToken.get());
+			return Strings.isNullOrEmpty(url.get()) || Strings.isNullOrEmpty(authToken.get());
 		}
 	}
 

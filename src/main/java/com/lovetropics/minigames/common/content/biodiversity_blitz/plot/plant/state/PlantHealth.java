@@ -8,26 +8,26 @@ public final class PlantHealth {
 
 	public PlantHealth(int health) {
 		this.health = health;
-		this.maxHealth = health;
+		maxHealth = health;
 	}
 
 	public void decrement(int amount) {
-		this.health = Math.max(0, this.health - amount);
+		health = Math.max(0, health - amount);
 	}
 
 	public void increment(int amount) {
-		this.health = Math.min(this.maxHealth, this.health + amount);
+		health = Math.min(maxHealth, health + amount);
 	}
 
 	public boolean isDead() {
-		return this.health <= 0;
+		return health <= 0;
 	}
 
 	public int health() {
-		return this.health;
+		return health;
 	}
 
 	public double healthPercent() {
-		return this.health / (double) this.maxHealth;
+		return health / (double) maxHealth;
 	}
 }

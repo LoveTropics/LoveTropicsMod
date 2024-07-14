@@ -26,23 +26,23 @@ public final class TrimmedText {
 	}
 
 	public Component text() {
-		return this.text;
+		return text;
 	}
 
 	public FormattedCharSequence forWidth(Font font, int width) {
-		FormattedCharSequence trimmed = this.trimmedText;
-		if (trimmed == null || width != this.trimmedWidth) {
-			this.trimmedText = trimmed = this.computeForWidth(font, width);
-			this.trimmedWidth = width;
+		FormattedCharSequence trimmed = trimmedText;
+		if (trimmed == null || width != trimmedWidth) {
+			trimmedText = trimmed = computeForWidth(font, width);
+			trimmedWidth = width;
 		}
 		return trimmed;
 	}
 
 	public boolean isTrimmedForWidth(Font font, int width) {
-		return font.width(this.text) > width;
+		return font.width(text) > width;
 	}
 
 	private FormattedCharSequence computeForWidth(Font font, int width) {
-		return Language.getInstance().getVisualOrder(font.substrByWidth(this.text, width));
+		return Language.getInstance().getVisualOrder(font.substrByWidth(text, width));
 	}
 }

@@ -71,7 +71,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 
-		this.addTeamsToScoreboard(game);
+		addTeamsToScoreboard(game);
 
 		events.listen(GamePhaseEvents.CREATE, () ->
 				teams.getAllocations().allocate(game.getParticipants(), (player, teamKey) -> {

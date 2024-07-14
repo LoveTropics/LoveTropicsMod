@@ -136,7 +136,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Place diffusa
         for (int i = 0; i < 3; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 6).relative(cw, i * 2 - 2);
-            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.diffusa, SoundEvents.GRASS_BREAK));
+            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, diffusa, SoundEvents.GRASS_BREAK));
             ticks += 8;
         }
 
@@ -144,7 +144,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 8).relative(cw, i - 5);
             if (playerPlot.canPlantAt(pos)) {
-                actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                actions.put(ticks, new SetPlant(game, target, playerPlot, pos, grass, SoundEvents.GRASS_STEP));
                 ticks += 5;
             }
         }
@@ -153,7 +153,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 9).relative(cw, i - 5);
             if (playerPlot.canPlantAt(pos)) {
-                actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                actions.put(ticks, new SetPlant(game, target, playerPlot, pos, grass, SoundEvents.GRASS_STEP));
                 ticks += 5;
             }
         }
@@ -185,7 +185,7 @@ public class BbTutorialAction implements IGameBehavior {
                 continue;
             }
 
-            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.wheat, SoundEvents.GRASS_STEP));
+            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, wheat, SoundEvents.GRASS_STEP));
             ticks += 5;
         }
 
@@ -196,7 +196,7 @@ public class BbTutorialAction implements IGameBehavior {
                 continue;
             }
 
-            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.wheat, SoundEvents.GRASS_STEP));
+            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, wheat, SoundEvents.GRASS_STEP));
             ticks += 5;
         }
 
@@ -213,7 +213,7 @@ public class BbTutorialAction implements IGameBehavior {
                 continue;
             }
 
-            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.wheat, SoundEvents.GRASS_STEP));
+            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, wheat, SoundEvents.GRASS_STEP));
             ticks += 3;
         }
 
@@ -224,7 +224,7 @@ public class BbTutorialAction implements IGameBehavior {
                 continue;
             }
 
-            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.wheat, SoundEvents.GRASS_STEP));
+            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, wheat, SoundEvents.GRASS_STEP));
             ticks += 3;
         }
 
@@ -251,7 +251,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 9).relative(cw, i - 5);
             if (playerPlot.canPlantAt(pos)) {
-                actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, grass, SoundEvents.GRASS_STEP));
                 ticks += 3;
             }
         }
@@ -260,7 +260,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 8).relative(cw, i - 5);
             if (playerPlot.canPlantAt(pos)) {
-                actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, grass, SoundEvents.GRASS_STEP));
                 ticks += 3;
             }
         }
@@ -268,7 +268,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Place diffusa
         for (int i = 0; i < 3; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 6).relative(cw, i * 2 - 2);
-            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.diffusa, SoundEvents.GRASS_BREAK));
+            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, diffusa, SoundEvents.GRASS_BREAK));
             ticks += 3;
         }
 

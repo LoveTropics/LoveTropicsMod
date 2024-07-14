@@ -84,18 +84,18 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-		this.currency = phaseState.register(CurrencyManager.KEY, new CurrencyManager(game, this.item));
+		currency = phaseState.register(CurrencyManager.KEY, new CurrencyManager(game, item));
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
-		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		tutorial = game.getState().getOrThrow(TutorialState.KEY);
 
-		GameClientState.applyGlobally(new CurrencyItemState(this.item.getDefaultInstance()), events);
+		GameClientState.applyGlobally(new CurrencyItemState(item.getDefaultInstance()), events);
 
 		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
-			this.currency.set(player, this.initialCurrency);
+			currency.set(player, initialCurrency);
 		});
 
 		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
@@ -106,28 +106,28 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 			return InteractionResult.PASS;
 		});
 
-		events.listen(GamePhaseEvents.TICK, () -> this.currency.tickTracked());
+		events.listen(GamePhaseEvents.TICK, () -> currency.tickTracked());
 
 		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
 		events.listen(BbEvents.BB_DEATH, this::onPlayerDeath);
 	}
 
 	private void tickPlot(Plot plot, PlayerSet players) {
-		if (!this.tutorial.isTutorialFinished()) {
+		if (!tutorial.isTutorialFinished()) {
 			return;
 		}
 
-		long ticks = this.game.ticks();
+		long ticks = game.ticks();
 
 		if (ticks % SharedConstants.TICKS_PER_SECOND == 0) {
-			int nextCurrencyIncrement = this.computeNextCurrency(plot);
+			int nextCurrencyIncrement = computeNextCurrency(plot);
 			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
 				plot.nextCurrencyIncrement = nextCurrencyIncrement;
 				game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(plot.team, nextCurrencyIncrement, plot.nextCurrencyIncrement);
 			}
 		}
 
-		long intervalTicks = this.dropInterval * SharedConstants.TICKS_PER_SECOND;
+		long intervalTicks = dropInterval * SharedConstants.TICKS_PER_SECOND;
 		if (ticks % intervalTicks == 0) {
 			int amount = plot.nextCurrencyIncrement;
 			currency.accumulate(plot.team, amount);
@@ -146,7 +146,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	private int computeNextCurrency(Plot plot) {
-		double value = this.computePlotValue(plot);
+		double value = computePlotValue(plot);
 		return Math.max(Mth.floor(value), 1);
 	}
 

@@ -17,6 +17,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public final class EditRegionItem extends Item {
 	private static Mode mode = Mode.RESIZE;
@@ -36,7 +37,7 @@ public final class EditRegionItem extends Item {
 			useTick = player.tickCount;
 
 			if (traceResult != null && mode == Mode.REMOVE) {
-				PacketDistributor.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry().id, null));
+				PacketDistributor.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry().id, Optional.empty()));
 				return InteractionResultHolder.success(stack);
 			}
 

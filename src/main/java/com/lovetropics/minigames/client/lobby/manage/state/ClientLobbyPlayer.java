@@ -26,8 +26,8 @@ public final class ClientLobbyPlayer {
 	}
 
 	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeUUID(this.uuid);
-		encodeRole(buffer, this.playingRole);
+		buffer.writeUUID(uuid);
+		encodeRole(buffer, playingRole);
 	}
 
 	public static ClientLobbyPlayer decode(FriendlyByteBuf buffer) {
@@ -56,11 +56,11 @@ public final class ClientLobbyPlayer {
 	}
 
 	public UUID uuid() {
-		return this.uuid;
+		return uuid;
 	}
 
 	@Nullable
 	public PlayerRole playingRole() {
-		return this.playingRole;
+		return playingRole;
 	}
 }

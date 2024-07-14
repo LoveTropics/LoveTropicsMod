@@ -23,7 +23,7 @@ public class GTPlayerListMixin {
         if (pPlayer instanceof LTGameTestFakePlayer fp) {
             return new ServerGamePacketListenerImpl(pServer, pConnection, pPlayer, cookie) {
                 {
-                    ObfuscationReflectionHelper.setPrivateValue(Connection.class, this.connection, new EmbeddedChannel(), "channel");
+                    ObfuscationReflectionHelper.setPrivateValue(Connection.class, connection, new EmbeddedChannel(), "channel");
                 }
 
                 @Override

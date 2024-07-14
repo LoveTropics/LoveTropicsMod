@@ -44,9 +44,9 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		}
 
 		PlayerRole playerRole = game.getRoleFor(player);
-		if (this.role.isEmpty() || this.role.get() == playerRole) {
-			this.respawnPlayer(game, player, playerRole, source);
-			this.sendDeathMessage(game, player);
+		if (role.isEmpty() || role.get() == playerRole) {
+			respawnPlayer(game, player, playerRole, source);
+			sendDeathMessage(game, player);
 
 			return InteractionResult.FAIL;
 		}

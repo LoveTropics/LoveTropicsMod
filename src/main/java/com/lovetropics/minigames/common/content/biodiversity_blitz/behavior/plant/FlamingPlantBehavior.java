@@ -44,19 +44,19 @@ public final class FlamingPlantBehavior implements IGameBehavior {
     }
 
     private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
-        long ticks = this.game.ticks();
-        RandomSource random = this.game.getWorld().getRandom();
+        long ticks = game.ticks();
+        RandomSource random = game.getWorld().getRandom();
 
         if (ticks % 15 != 0) {
             return;
         }
 
-        ServerLevel world = this.game.getWorld();
+        ServerLevel world = game.getWorld();
 
         Set<Mob> seen = new HashSet<>();
 
         for (Plant plant : plants) {
-            AABB flameBounds = plant.coverage().asBounds().inflate(this.radius);
+            AABB flameBounds = plant.coverage().asBounds().inflate(radius);
             List<Mob> entities = world.getEntitiesOfClass(Mob.class, flameBounds, BbMobEntity.PREDICATE);
 
             int max = 1 + random.nextInt(3);

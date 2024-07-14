@@ -20,7 +20,7 @@ public class BehaviorConfigList extends LayoutGui {
 
 	public BehaviorConfigList(GameConfig parent, LayoutTree layout, ClientConfigList configs) {
 		super();
-		this.configList = configs;
+		configList = configs;
 
 		updateEntries(parent, layout);
 	}
@@ -32,7 +32,7 @@ public class BehaviorConfigList extends LayoutGui {
 			ConfigDataUI listEntry = new ConfigDataUI(parent, ltree.child(0, 3), e.getKey().getName(), e.getValue());
 			children.add(listEntry);
 		}
-		this.mainLayout = ltree.pop();
+		mainLayout = ltree.pop();
 	}
 	
 	@Override

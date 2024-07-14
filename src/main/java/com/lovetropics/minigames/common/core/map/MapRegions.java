@@ -61,7 +61,7 @@ public final class MapRegions {
 
 	@Nonnull
 	public BlockBox getOrThrow(String key) {
-		BlockBox box = this.getAny(key);
+		BlockBox box = getAny(key);
 		if (box == null) {
 			throw new GameException(Component.literal("Missing expected region with key '" + key + "'"));
 		}
@@ -82,13 +82,13 @@ public final class MapRegions {
 	}
 
 	public void read(CompoundTag root) {
-		this.regions.clear();
+		regions.clear();
 
 		for (String key : root.getAllKeys()) {
 			ListTag regionsList = root.getList(key, Tag.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));
-				this.regions.put(key, region);
+				regions.put(key, region);
 			}
 		}
 	}

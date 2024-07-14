@@ -26,10 +26,10 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 			if (game.getParticipants().size() <= 1) {
 				return false;
 			}
-			if (this.distanceThreshold == Double.MAX_VALUE) {
-				this.shufflePlayers(game);
+			if (distanceThreshold == Double.MAX_VALUE) {
+				shufflePlayers(game);
 			} else {
-				this.swapNearbyPlayers(game);
+				swapNearbyPlayers(game);
 			}
 			return true;
 		});

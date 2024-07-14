@@ -20,8 +20,8 @@ public class BehaviorConfigUI extends AbstractContainerEventHandler implements R
 	public BehaviorConfigUI(GameConfig parent, LayoutTree ltree, ClientConfigList configs) {
 		super();
 
-		this.title = new TextLabel(ltree.child(1, Axis.X), 10, Component.literal(configs.id().toString()), Align.Cross.CENTER, Align.Cross.START);
-		this.list = new BehaviorConfigList(parent, ltree.child(), configs);
+		title = new TextLabel(ltree.child(1, Axis.X), 10, Component.literal(configs.id().toString()), Align.Cross.CENTER, Align.Cross.START);
+		list = new BehaviorConfigList(parent, ltree.child(), configs);
 		ltree.pop(); // This UI doesn't have a layout, but we still need to pop our layout from the tree
 	}
 

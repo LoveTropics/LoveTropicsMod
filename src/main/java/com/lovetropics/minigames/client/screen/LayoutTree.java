@@ -58,7 +58,7 @@ public class LayoutTree {
 
 		LayoutNode(@Nullable LayoutNode parent, Layout self, Axis... definite) {
 			this.parent = parent;
-			this.bounds = self;
+			bounds = self;
 			for (Axis axis : definite) {
 				this.definite.set(axis.ordinal());
 			}
@@ -67,12 +67,12 @@ public class LayoutTree {
 		LayoutNode addChild(Layout layout, Axis... definite) {
 			if (contracted) throw new IllegalArgumentException("Cannot add child to contracted node");
 			LayoutNode child = new LayoutNode(this, layout, definite);
-			this.children.forEach(n -> {
+			children.forEach(n -> {
 				if (n.bounds.margin().intersects(child.bounds.margin())) {
 					child.bounds = child.bounds.moveY(n.bounds.margin().bottom());
 				}
 			});
-			this.children.add(child);
+			children.add(child);
 			return child;
 		}
 
@@ -87,7 +87,7 @@ public class LayoutTree {
 					Box childArea = node.bounds.margin();
 					minContent = minContent == null ? childArea : minContent.union(childArea);
 				}
-				this.bounds = this.bounds.shrinkTo(minContent);
+				bounds = bounds.shrinkTo(minContent);
 			}
 			if (definite.get(Axis.X.ordinal())) {
 				bounds = new Layout(new Box(orig.content().left(), bounds.content().top(), orig.content().right(), bounds.content().bottom()),
@@ -106,7 +106,7 @@ public class LayoutTree {
 	private LayoutNode head;
 	
 	public LayoutTree(Layout root) {
-		this.head = new LayoutNode(null, root);
+		head = new LayoutNode(null, root);
 	}
 
 	public Layout head() {

@@ -80,14 +80,14 @@ public final class WeatherEvent {
 	}
 
 	public void apply(WeatherController controller) {
-		if (this.apply != null) {
-			this.apply.accept(controller);
+		if (apply != null) {
+			apply.accept(controller);
 		}
 	}
 
 	public void remove(WeatherController controller) {
-		if (this.remove != null) {
-			this.remove.accept(controller);
+		if (remove != null) {
+			remove.accept(controller);
 		}
 	}
 

@@ -66,7 +66,7 @@ public final class DriftwoodEntity extends Entity {
 
 	@Override
 	public boolean isPickable() {
-		return !this.isRemoved();
+		return !isRemoved();
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public final class DriftwoodEntity extends Entity {
 
 	@Override
 	public boolean canCollideWith(Entity entity) {
-		return (entity.canBeCollidedWith() || entity.isPushable()) && !this.isPassengerOfSameVehicle(entity);
+		return (entity.canBeCollidedWith() || entity.isPushable()) && !isPassengerOfSameVehicle(entity);
 	}
 
 	public boolean paddle(float direction) {
@@ -208,7 +208,7 @@ public final class DriftwoodEntity extends Entity {
 		int maxY = Mth.ceil(getBoundingBox().maxY);
 
 		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-		mutablePos.set(this.blockPosition());
+		mutablePos.set(blockPosition());
 
 		float waterHeight = -1.0F;
 

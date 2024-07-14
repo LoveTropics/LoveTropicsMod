@@ -20,8 +20,8 @@ public final class GameResourcePackHandler implements ClientGameStateHandler<Res
 	@Override
 	public void accept(ResourcePackClientState state) {
 		String pack = state.packName();
-		if (this.packExists(pack)) {
-			this.updatePacks(enabledPacks -> {
+		if (packExists(pack)) {
+			updatePacks(enabledPacks -> {
 				if (!enabledPacks.contains(pack)) {
 					enabledPacks.add(pack);
 					return true;
@@ -35,8 +35,8 @@ public final class GameResourcePackHandler implements ClientGameStateHandler<Res
 	@Override
 	public void disable(ResourcePackClientState state) {
 		String pack = state.packName();
-		if (this.packExists(pack)) {
-			this.updatePacks(enabledPacks -> enabledPacks.remove(pack));
+		if (packExists(pack)) {
+			updatePacks(enabledPacks -> enabledPacks.remove(pack));
 		}
 	}
 

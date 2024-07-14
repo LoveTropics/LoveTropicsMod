@@ -33,45 +33,45 @@ public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eve
 			actions.register(game, events);
 		}
 
-		events.listen(GamePlayerEvents.JOIN, player -> this.invoke(game, "player_join", player));
-		events.listen(GamePlayerEvents.LEAVE, player -> this.invoke(game, "player_leave", player));
-		events.listen(GamePlayerEvents.ADD, player -> this.invoke(game, "player_add", player));
-		events.listen(GamePlayerEvents.REMOVE, player -> this.invoke(game, "player_remove", player));
+		events.listen(GamePlayerEvents.JOIN, player -> invoke(game, "player_join", player));
+		events.listen(GamePlayerEvents.LEAVE, player -> invoke(game, "player_leave", player));
+		events.listen(GamePlayerEvents.ADD, player -> invoke(game, "player_add", player));
+		events.listen(GamePlayerEvents.REMOVE, player -> invoke(game, "player_remove", player));
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> onPlayerSetRole(game, player, role, lastRole));
 
-		events.listen(GamePlayerEvents.TICK, player -> this.invoke(game, "player_update", player));
-		events.listen(GamePlayerEvents.RESPAWN, player -> this.invoke(game, "player_respawn", player));
+		events.listen(GamePlayerEvents.TICK, player -> invoke(game, "player_update", player));
+		events.listen(GamePlayerEvents.RESPAWN, player -> invoke(game, "player_respawn", player));
 
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> {
-			this.invoke(game, "player_hurt", player);
+			invoke(game, "player_hurt", player);
 			return InteractionResult.PASS;
 		});
 		events.listen(GamePlayerEvents.ATTACK, (player, target) -> {
-			this.invoke(game, "player_attack", player);
+			invoke(game, "player_attack", player);
 			return InteractionResult.PASS;
 		});
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			this.invoke(game, "player_death", player);
+			invoke(game, "player_death", player);
 			return InteractionResult.PASS;
 		});
 
-		events.listen(GameLogicEvents.GAME_OVER, () -> this.invoke(game, "game_over"));
+		events.listen(GameLogicEvents.GAME_OVER, () -> invoke(game, "game_over"));
 
-		events.listen(GamePhaseEvents.TICK, () -> this.invoke(game, "tick"));
+		events.listen(GamePhaseEvents.TICK, () -> invoke(game, "tick"));
 	}
 
 	private void onPlayerSetRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT) {
-			this.invoke(game, "player_stop_participate", player);
+			invoke(game, "player_stop_participate", player);
 		} else if (lastRole == PlayerRole.SPECTATOR) {
-			this.invoke(game, "player_stop_spectate", player);
+			invoke(game, "player_stop_spectate", player);
 		}
 
 		if (role == PlayerRole.PARTICIPANT) {
-			this.invoke(game, "player_participate", player);
+			invoke(game, "player_participate", player);
 		} else if (role == PlayerRole.SPECTATOR) {
-			this.invoke(game, "player_spectate", player);
+			invoke(game, "player_spectate", player);
 		}
 	}
 

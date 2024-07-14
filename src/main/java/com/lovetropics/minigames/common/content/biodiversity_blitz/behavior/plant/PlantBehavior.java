@@ -66,8 +66,8 @@ public final class PlantBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		this.plots = game.getState().getOrThrow(PlotsState.KEY);
-		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		plots = game.getState().getOrThrow(PlotsState.KEY);
+		tutorial = game.getState().getOrThrow(TutorialState.KEY);
 
 		events.listen(BbEvents.PLACE_PLANT, this::placePlant);
 		events.listen(BbEvents.BREAK_PLANT, this::breakPlant);
@@ -92,7 +92,7 @@ public final class PlantBehavior implements IGameBehavior {
 			return InteractionResultHolder.consume(null);
 		}
 
-		Plant plant = plot.plants.addPlant(plantType, this.family, this.value, placement);
+		Plant plant = plot.plants.addPlant(plantType, family, value, placement);
 		if (plant == null) {
 			return InteractionResultHolder.fail(null);
 		}
@@ -109,7 +109,7 @@ public final class PlantBehavior implements IGameBehavior {
 	}
 
 	private boolean breakPlant(ServerPlayer player, Plot plot, Plant plant) {
-		if (!this.plantType.equals(plant.type())) {
+		if (!plantType.equals(plant.type())) {
 			return false;
 		}
 
@@ -143,9 +143,9 @@ public final class PlantBehavior implements IGameBehavior {
 			return InteractionResult.FAIL;
 		}
 
-		Plant plant = plot.plants.getPlantAt(pos, this.plantType);
+		Plant plant = plot.plants.getPlantAt(pos, plantType);
 		if (plant != null) {
-			return this.onBreakPlantBlock(player, pos, plot, plant);
+			return onBreakPlantBlock(player, pos, plot, plant);
 		} else {
 			return InteractionResult.PASS;
 		}
@@ -159,9 +159,9 @@ public final class PlantBehavior implements IGameBehavior {
 	}
 
 	private void onTickPlot(Plot plot, PlayerSet players) {
-		List<Plant> plants = plot.plants.getPlantsByType(this.plantType);
+		List<Plant> plants = plot.plants.getPlantsByType(plantType);
 		if (!plants.isEmpty()) {
-			this.plantEvents.invoker(BbPlantEvents.TICK).onTickPlants(players, plot, plants);
+			plantEvents.invoker(BbPlantEvents.TICK).onTickPlants(players, plot, plants);
 		}
 	}
 }

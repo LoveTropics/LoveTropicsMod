@@ -46,11 +46,11 @@ public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) impleme
 		int y = pos.getY();
 		int z = pos.getZ();
 
-		if (!this.global.contains(x, y, z)) {
+		if (!global.contains(x, y, z)) {
 			return false;
 		}
 
-		for (BlockBox plot : this.plots) {
+		for (BlockBox plot : plots) {
 			if (plot.contains(x, y, z)) {
 				return true;
 			}

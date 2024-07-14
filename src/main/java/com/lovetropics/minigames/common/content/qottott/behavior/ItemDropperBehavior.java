@@ -70,7 +70,7 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>
 			dropper.resetDelay(game);
 		}
 
-		final BeaconState beacons = this.beacon ? game.getState().get(BeaconState.KEY) : null;
+		final BeaconState beacons = beacon ? game.getState().get(BeaconState.KEY) : null;
 		events.listen(GamePhaseEvents.TICK, () -> {
 			for (final Dropper dropper : droppers) {
 				dropper.tick(game, beacons);

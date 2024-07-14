@@ -14,6 +14,6 @@ public record SetDayTimeBehavior(long time) implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		game.getWorld().setDayTime(this.time);
+		game.getWorld().setDayTime(time);
 	}
 }

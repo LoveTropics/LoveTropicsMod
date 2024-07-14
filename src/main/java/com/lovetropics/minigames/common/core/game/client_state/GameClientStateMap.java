@@ -14,27 +14,27 @@ public final class GameClientStateMap implements Iterable<GameClientState> {
 	}
 
 	public <T extends GameClientState> void add(T tweak) {
-		this.map.put(tweak.getType(), tweak);
+		map.put(tweak.getType(), tweak);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
 	public <T extends GameClientState> T getOrNull(GameClientStateType<T> type) {
-		return (T) this.map.get(type);
+		return (T) map.get(type);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
 	public <T extends GameClientState> T remove(GameClientStateType<T> type) {
-		return (T) this.map.remove(type);
+		return (T) map.remove(type);
 	}
 
 	public boolean isEmpty() {
-		return this.map.isEmpty();
+		return map.isEmpty();
 	}
 
 	@Override
 	public Iterator<GameClientState> iterator() {
-		return this.map.values().iterator();
+		return map.values().iterator();
 	}
 }

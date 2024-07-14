@@ -21,14 +21,14 @@ public abstract class MoveToBlockGoal extends Goal {
         this.mob = mob.asMob();
         bbMob = mob;
 
-        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
+        setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
     }
 
     @Override
     public boolean canUse() {
         Plant target = locatePlant();
         if (target != null) {
-            this.targetPos = target.coverage().getOrigin();
+            targetPos = target.coverage().getOrigin();
             return true;
         } else {
             return false;
@@ -44,7 +44,7 @@ public abstract class MoveToBlockGoal extends Goal {
         if (targetPos == null) {
             return;
         }
-        this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), speed());
+        mob.getNavigation().moveTo(targetPos.getX(), targetPos.getY(), targetPos.getZ(), speed());
     }
 
     @Override
@@ -53,11 +53,11 @@ public abstract class MoveToBlockGoal extends Goal {
             return false;
         }
         Plant plant = bbMob.getPlot().plants.getPlantAt(targetPos);
-        if (plant == null || getBlockPriority(this.targetPos, plant) > 0) {
+        if (plant == null || getBlockPriority(targetPos, plant) > 0) {
             return false;
         }
 
-        return !this.mob.getNavigation().isDone();
+        return !mob.getNavigation().isDone();
     }
 
     @Nullable

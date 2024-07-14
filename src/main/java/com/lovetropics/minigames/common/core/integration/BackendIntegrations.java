@@ -63,7 +63,7 @@ public final class BackendIntegrations {
 			return null;
 		};
 
-		this.proxy = new BackendProxy(address, new BackendConnection.Handler() {
+		proxy = new BackendProxy(address, new BackendConnection.Handler() {
 			@Override
 			public void acceptOpened() {
 			}
@@ -100,7 +100,7 @@ public final class BackendIntegrations {
 	private void tick(MinecraftServer server) {
 		proxy.tick();
 
-		GameInstanceIntegrations instance = this.liveInstance;
+		GameInstanceIntegrations instance = liveInstance;
 		if (instance != null) {
 			instance.tick(server);
 		}
@@ -108,7 +108,7 @@ public final class BackendIntegrations {
 
 	public GameInstanceIntegrations openGame(IGamePhase game) {
 		GameInstanceIntegrations instance = new GameInstanceIntegrations(game, this);
-		this.liveInstance = instance;
+		liveInstance = instance;
 		return instance;
 	}
 

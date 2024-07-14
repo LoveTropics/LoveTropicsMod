@@ -46,7 +46,7 @@ public class BlockPlacer {
         public final SetBlockCommand.Filter filter;
 
         Mode(SetBlockCommand.Filter pFilter) {
-            this.filter = pFilter;
+            filter = pFilter;
         }
     }
 

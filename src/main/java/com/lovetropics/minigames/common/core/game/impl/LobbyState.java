@@ -37,7 +37,7 @@ abstract class LobbyState {
 
 		Paused() {
 			super(null);
-			this.controls.add(LobbyControls.Type.PLAY, () -> {
+			controls.add(LobbyControls.Type.PLAY, () -> {
 				resume = true;
 				return GameResult.ok();
 			});
@@ -109,8 +109,8 @@ abstract class LobbyState {
 
 			final IGamePhaseDefinition playing = definition.getPlayingPhase();
 			return definition.getWaitingPhase()
-					.map(ph -> this.createWaiting(game, ph, playing))
-					.orElseGet(() -> this.createPlaying(game, playing));
+					.map(ph -> createWaiting(game, ph, playing))
+					.orElseGet(() -> createPlaying(game, playing));
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createPlaying(GameInstance game, IGamePhaseDefinition definition) {
@@ -133,8 +133,8 @@ abstract class LobbyState {
 	static final class Playing extends LobbyState {
 		Playing(GamePhase phase) {
 			super(phase);
-			this.controls.add(LobbyControls.Type.SKIP, () -> phase.requestStop(GameStopReason.canceled()));
-			this.controls.add(LobbyControls.Type.RESTART, () -> phase.requestStop(GameStopReason.canceled()));
+			controls.add(LobbyControls.Type.SKIP, () -> phase.requestStop(GameStopReason.canceled()));
+			controls.add(LobbyControls.Type.RESTART, () -> phase.requestStop(GameStopReason.canceled()));
 		}
 
 		@Override
@@ -163,10 +163,10 @@ abstract class LobbyState {
 			super(phase);
 			this.start = start;
 
-			this.controls.add(LobbyControls.Type.PLAY, () -> phase.requestStop(GameStopReason.finished()));
-			this.controls.add(LobbyControls.Type.SKIP, () -> phase.requestStop(GameStopReason.canceled()));
+			controls.add(LobbyControls.Type.PLAY, () -> phase.requestStop(GameStopReason.finished()));
+			controls.add(LobbyControls.Type.SKIP, () -> phase.requestStop(GameStopReason.canceled()));
 			// TODO stuffs
-			this.controls.add(LobbyControls.Type.RESTART, () -> {
+			controls.add(LobbyControls.Type.RESTART, () -> {
 				// TODO queue another game up
 				return phase.requestStop(GameStopReason.canceled());
 			});

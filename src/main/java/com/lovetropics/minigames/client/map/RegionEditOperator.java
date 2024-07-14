@@ -31,7 +31,7 @@ public interface RegionEditOperator {
 
 		protected EditOne(RegionTraceTarget target) {
 			this.target = target;
-			this.selected = Collections.singleton(target.entry());
+			selected = Collections.singleton(target.entry());
 		}
 
 		@Override
@@ -84,7 +84,7 @@ public interface RegionEditOperator {
 
 		public Move(RegionTraceTarget target) {
 			super(target);
-			this.offset = target.intersectPoint().subtract(target.entry().region.center());
+			offset = target.intersectPoint().subtract(target.entry().region.center());
 		}
 
 		@Override

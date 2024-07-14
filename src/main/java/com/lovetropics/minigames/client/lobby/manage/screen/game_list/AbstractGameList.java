@@ -21,25 +21,25 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 	public AbstractGameList(Screen screen, Layout layout, Component title) {
 		super(screen, layout, Entry.HEIGHT);
-		this.setRenderHeader(true, this.minecraft.font.lineHeight + 4);
+		setRenderHeader(true, minecraft.font.lineHeight + 4);
 
 		this.title = title;
 	}
 
 	@Override
 	protected void renderHeader(GuiGraphics graphics, int x, int y) {
-		Font font = this.minecraft.font;
+		Font font = minecraft.font;
 		graphics.drawString(font,
-				this.title,
-				x + (this.width - font.width(this.title)) / 2,
-				Math.min(this.getY() + 3, y),
+				title,
+				x + (width - font.width(title)) / 2,
+				Math.min(getY() + 3, y),
 				CommonColors.WHITE
 		);
 	}
 	
 	@Override
 	public boolean isSelectedItem(int index) {
-		return index >= 0 && index < this.getItemCount() && super.isSelectedItem(index);
+		return index >= 0 && index < getItemCount() && super.isSelectedItem(index);
 	}
 
 	public static final class Entry extends LTListEntry<Entry> {
@@ -85,7 +85,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			boolean selected = ((AbstractGameList)list).isSelectedItem(index);
 			boolean outline = banner || selected;
 		
-			this.fillEntry(graphics, left, top, width, height, hovered, selected, outline);
+			fillEntry(graphics, left, top, width, height, hovered, selected, outline);
 		
 			int maxTextWidth = getMaxTextWidth(width);
 		
@@ -119,22 +119,22 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		}
 
 		public Entry setBackgroundColor(int color) {
-			this.backgroundColor = color;
+			backgroundColor = color;
 			return this;
 		}
 
 		public Entry setHoveredColor(int color) {
-			this.hoveredColor = color;
+			hoveredColor = color;
 			return this;
 		}
 
 		public Entry setSelectedColor(int color) {
-			this.selectedColor = color;
+			selectedColor = color;
 			return this;
 		}
 
 		public Entry setOutlineColor(int color) {
-			this.outlineColor = color;
+			outlineColor = color;
 			return this;
 		}
 

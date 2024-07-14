@@ -30,7 +30,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 				slotHeightIn
 		);
 		this.screen = screen;
-		this.setPosition(layout.background().left(), layout.background().top());
+		setPosition(layout.background().left(), layout.background().top());
 	}
 
 	public void renderOverlays(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
@@ -39,7 +39,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 	}
 
 	protected void renderDragging(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		T dragging = this.draggingEntry;
+		T dragging = draggingEntry;
 		if (dragging != null) {
 			int index = children().indexOf(dragging);
 			int y = getDraggingY(mouseY);
@@ -52,17 +52,17 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 			return;
 		}
 
-		int count = this.getItemCount();
-		int rowWidth = this.getRowWidth();
+		int count = getItemCount();
+		int rowWidth = getRowWidth();
 
 		for (int index = 0; index < count; index++) {
-			int rowTop = this.getRowTop(index);
-			int rowBottom = rowTop + this.itemHeight;
-			if (rowBottom < this.getY() || rowTop > this.getY() + this.getHeight()) {
+			int rowTop = getRowTop(index);
+			int rowBottom = rowTop + itemHeight;
+			if (rowBottom < getY() || rowTop > getY() + getHeight()) {
 				continue;
 			}
 
-			T entry = this.getEntry(index);
+			T entry = getEntry(index);
 			if (isMouseOverEntry(mouseX, mouseY, entry)) {
 				entry.renderTooltips(graphics, rowWidth, mouseX, mouseY);
 				break;
@@ -71,58 +71,58 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 	}
 
 	private boolean isMouseOverEntry(int mouseX, int mouseY, T entry) {
-		return this.getEntryAtPosition(mouseX, mouseY) == entry;
+		return getEntryAtPosition(mouseX, mouseY) == entry;
 	}
 
 	private int getEntryIndexAt(int y) {
-		int contentY = y - this.getY() - this.headerHeight + (int) this.getScrollAmount();
-		return contentY / this.itemHeight;
+		int contentY = y - getY() - headerHeight + (int) getScrollAmount();
+		return contentY / itemHeight;
 	}
 
 	public abstract void updateEntries();
 
 	@Override
 	public int getRowLeft() {
-		return this.getX();
+		return getX();
 	}
 
 	@Override
 	public int getRowWidth() {
-		return this.getMaxScroll() > 0 ? this.width - SCROLL_WIDTH : this.width;
+		return getMaxScroll() > 0 ? width - SCROLL_WIDTH : width;
 	}
 
 	@Override
 	protected int getScrollbarPosition() {
-		return this.getMaxScroll() > 0 ? this.getX() + this.getWidth() - SCROLL_WIDTH : this.getX() + this.getWidth();
+		return getMaxScroll() > 0 ? getX() + getWidth() - SCROLL_WIDTH : getX() + getWidth();
 	}
 
 	@Override
 	protected int getRowTop(int index) {
-		return this.getY() + this.headerHeight - (int) this.getScrollAmount()
-				+ index * this.itemHeight;
+		return getY() + headerHeight - (int) getScrollAmount()
+				+ index * itemHeight;
 	}
 
 	void drag(T entry, double mouseY) {
-		if (this.draggingEntry != entry) {
-			this.startDragging(entry, mouseY);
+		if (draggingEntry != entry) {
+			startDragging(entry, mouseY);
 		} else {
-			int insertIndex = this.getDragInsertIndex(Mth.floor(mouseY));
-			this.tryReorderTo(entry, insertIndex);
+			int insertIndex = getDragInsertIndex(Mth.floor(mouseY));
+			tryReorderTo(entry, insertIndex);
 		}
 	}
 
 	private void startDragging(T entry, double mouseY) {
-		this.draggingEntry = entry;
+		draggingEntry = entry;
 	
-		int index = this.children().indexOf(entry);
-		this.dragOffset = Mth.floor(this.getRowTop(index) - mouseY);
+		int index = children().indexOf(entry);
+		dragOffset = Mth.floor(getRowTop(index) - mouseY);
 	}
 
 	@Override
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		T dragging = this.draggingEntry;
+		T dragging = draggingEntry;
 		if (dragging != null) {
-			this.stopDragging(dragging);
+			stopDragging(dragging);
 		}
 		return super.mouseReleased(mouseX, mouseY, button);
 	}
@@ -149,8 +149,8 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 
 	protected int getDraggingY(int mouseY) {
 		int draggingY = mouseY + dragOffset;
-		int minY = this.getY() + this.headerHeight;
-		int maxY = this.getY() + this.getHeight() - this.itemHeight;
+		int minY = getY() + headerHeight;
+		int maxY = getY() + getHeight() - itemHeight;
 		return Mth.clamp(draggingY, minY, maxY);
 	}
 
@@ -176,39 +176,39 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 
 	private void stopDragging(T dragging) {
 		int startIndex = dragging.dragStartIndex;
-		int index = this.children().indexOf(dragging);
+		int index = children().indexOf(dragging);
 		if (startIndex != index && dragging.reorder != null) {
 			dragging.reorder.onReorder(index - startIndex);
 		}
-		this.draggingEntry = null;
+		draggingEntry = null;
 	}
 
 	@Override
 	public void setSelected(@Nullable T entry) {
-		T dragging = this.draggingEntry;
-		if (entry == null && dragging != null && dragging == this.getSelected()) {
-			this.stopDragging(dragging);
+		T dragging = draggingEntry;
+		if (entry == null && dragging != null && dragging == getSelected()) {
+			stopDragging(dragging);
 		}
 		super.setSelected(entry);
 	}
 
 	@Override
 	protected void renderListItems(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		boolean listHovered = this.isMouseOver(mouseX, mouseY);
+		boolean listHovered = isMouseOver(mouseX, mouseY);
 	
-		int count = this.getItemCount();
-		int left = this.getRowLeft();
-		int width = this.getRowWidth();
-		int height = this.itemHeight;
+		int count = getItemCount();
+		int left = getRowLeft();
+		int width = getRowWidth();
+		int height = itemHeight;
 	
 		boolean dragging = draggingEntry != null;
 	
 		for (int index = 0; index < count; index++) {
-			int top = this.getRowTop(index);
+			int top = getRowTop(index);
 			int bottom = top + height;
-			if (bottom < this.getY() || top > this.getY() + this.getHeight()) continue;
+			if (bottom < getY() || top > getY() + getHeight()) continue;
 	
-			T entry = this.getEntry(index);
+			T entry = getEntry(index);
 			if (draggingEntry == entry) continue;
 	
 			boolean entryHovered = !dragging && listHovered && mouseX >= left && mouseY >= top && mouseX < left + width && mouseY < bottom;

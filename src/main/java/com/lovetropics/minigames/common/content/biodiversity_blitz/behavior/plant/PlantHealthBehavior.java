@@ -34,8 +34,8 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(BbPlantEvents.ADD, (player, plot, plant) -> {
-			plant.state().put(PlantHealth.KEY, new PlantHealth(this.health));
-			if (this.notPathfindable) {
+			plant.state().put(PlantHealth.KEY, new PlantHealth(health));
+			if (notPathfindable) {
 				plant.state().put(PlantNotPathfindable.KEY, new PlantNotPathfindable());
 			}
 		});

@@ -36,7 +36,7 @@ public class RevealPlayersBehavior implements IGameBehavior {
 		this.playersLeftRequired = playersLeftRequired;
 		this.glowOnTime = glowOnTime;
 		this.glowOffTime = glowOffTime;
-		this.curGlowOffTime = this.glowOffTime;
+		curGlowOffTime = this.glowOffTime;
 	}
 
 	@Override

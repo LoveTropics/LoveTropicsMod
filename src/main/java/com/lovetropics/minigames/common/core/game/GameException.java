@@ -16,6 +16,6 @@ public class GameException extends RuntimeException {
 	}
 
 	public Component getTextMessage() {
-		return this.message;
+		return message;
 	}
 }

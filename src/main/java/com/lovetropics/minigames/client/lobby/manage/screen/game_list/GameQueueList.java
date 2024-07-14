@@ -38,27 +38,27 @@ public final class GameQueueList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("+"), this::enqueue);
-		this.removeButton = FlexUi.createButton(solve.layout(cancel), Component.literal("-"), this::remove);
+		enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("+"), this::enqueue);
+		removeButton = FlexUi.createButton(solve.layout(cancel), Component.literal("-"), this::remove);
 	}
 
 	@Override
 	public void updateEntries() {
 		int selectedId = getSelected() != null ? getSelected().getId() : -1;
 
-		this.clearEntries();
+		clearEntries();
 
-		this.addEntry(createCurrentGameEntry(lobby.getCurrentGame()));
+		addEntry(createCurrentGameEntry(lobby.getCurrentGame()));
 
-		for (ClientLobbyQueue.Entry entry : this.lobby.getQueue().entries()) {
+		for (ClientLobbyQueue.Entry entry : lobby.getQueue().entries()) {
 			int id = entry.id();
 			Entry listEntry = Entry.game(this, id, entry.game().definition())
 					.setDraggable(offset -> handlers.reorder(id, offset));
 
-			this.addEntry(listEntry);
+			addEntry(listEntry);
 
 			if (listEntry.getId() == selectedId) {
-				this.setSelected(listEntry);
+				setSelected(listEntry);
 			}
 		}
 	}
@@ -106,23 +106,23 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void enqueue(Button button) {
-		this.handlers.enqueue();
+		handlers.enqueue();
 	}
 
 	private void remove(Button button) {
-		Entry selected = this.getSelected();
-		this.setSelected(null);
+		Entry selected = getSelected();
+		setSelected(null);
 
-		if (selected != null && this.removeEntry(selected)) {
-			this.handlers.remove(selected.getId());
+		if (selected != null && removeEntry(selected)) {
+			handlers.remove(selected.getId());
 		}
 	}
 
 	@Override
 	public void setSelected(@Nullable Entry entry) {
 		int entryId = entry != null ? entry.getId() : -1;
-		this.handlers.select(entryId);
-		this.removeButton.active = entryId != -1;
+		handlers.select(entryId);
+		removeButton.active = entryId != -1;
 
 		super.setSelected(entry);
 	}
@@ -130,13 +130,13 @@ public final class GameQueueList extends AbstractGameList {
 	@Override
 	public void renderOverlays(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		super.renderOverlays(graphics, mouseX, mouseY, partialTicks);
-		this.enqueueButton.render(graphics, mouseX, mouseY, partialTicks);
-		this.removeButton.render(graphics, mouseX, mouseY, partialTicks);
+		enqueueButton.render(graphics, mouseX, mouseY, partialTicks);
+		removeButton.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (this.enqueueButton.mouseClicked(mouseX, mouseY, button) || this.removeButton.mouseClicked(mouseX, mouseY, button)) {
+		if (enqueueButton.mouseClicked(mouseX, mouseY, button) || removeButton.mouseClicked(mouseX, mouseY, button)) {
 			return true;
 		}
 		return super.mouseClicked(mouseX, mouseY, button);

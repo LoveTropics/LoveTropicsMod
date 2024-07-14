@@ -60,7 +60,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	@Override
 	public ConfigList getConfigurables() {
 		return ConfigList.builder(CONFIG_ID)
-				.with(CFG_TEAMS, this.teams)
+				.with(CFG_TEAMS, teams)
 				.build();
 	}
 
@@ -71,12 +71,12 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-		teamState = instanceState.register(TeamState.KEY, new TeamState(this.teams));
+		teamState = instanceState.register(TeamState.KEY, new TeamState(teams));
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.ADD, player -> this.onPlayerWaiting(game, player));
+		events.listen(GamePlayerEvents.ADD, player -> onPlayerWaiting(game, player));
 
 		SelectorItems.Handlers<GameTeam> handlers = new SelectorItems.Handlers<>() {
             @Override
@@ -100,7 +100,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
             }
         };
 
-		selectors = new SelectorItems<>(handlers, this.teams.toArray(new GameTeam[0]));
+		selectors = new SelectorItems<>(handlers, teams.toArray(new GameTeam[0]));
 		selectors.applyTo(events);
 	}
 

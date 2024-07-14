@@ -43,21 +43,21 @@ public final class IdleDropItemPlantBehavior implements IGameBehavior {
     }
 
     private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
-        long ticks = this.game.ticks();
-        RandomSource random = this.game.getWorld().getRandom();
+        long ticks = game.ticks();
+        RandomSource random = game.getWorld().getRandom();
 
-        if (ticks % this.interval != 0) {
+        if (ticks % interval != 0) {
             return;
         }
 
-        ServerLevel world = this.game.getWorld();
+        ServerLevel world = game.getWorld();
 
         for (Plant plant : plants) {
             BlockPos.MutableBlockPos pos = plant.coverage().random(random).mutable();
 
             for (int i = 0; i < 8; i++) {
                 if (world.getBlockState(pos).isAir()) {
-                    world.addFreshEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), this.item.copy()));
+                    world.addFreshEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), item.copy()));
                     break;
                 }
 

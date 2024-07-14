@@ -34,7 +34,7 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     public BbZoglinEntity(EntityType<? extends Zoglin> pEntityType, Level pLevel, Plot plot) {
         super(pEntityType, pLevel);
 
-        this.mobBrain = new BbMobBrain(plot.walls);
+        mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
         setPathfindingMalus(PathType.DANGER_OTHER, 0.0F);
@@ -53,9 +53,9 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     @Override
     protected void registerGoals() {
         // Remove Brain, replace with Goal
-        this.removeFreeWill();
+        removeFreeWill();
 
-        this.goalSelector.addGoal(3, new DestroyCropGoal(this) {
+        goalSelector.addGoal(3, new DestroyCropGoal(this) {
             @Override
             protected double getDistanceSq(BlockState state) {
                 return 2.5 * 2.5;
@@ -67,7 +67,7 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
             }
         });
 
-        this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
+        targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
     }
 
     @Override
@@ -83,15 +83,15 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     public void aiStep() {
         ticks++;
         if (ticks % 7 == 0) {
-            Plant plant = getPlot().plants.getPlantAt(this.blockPosition());
+            Plant plant = getPlot().plants.getPlantAt(blockPosition());
 
             if (plant != null) {
                 PlantHealth health = plant.state(PlantHealth.KEY);
 
                 if (health != null) {
-                    health.decrement(meleeDamage(this.random));
+                    health.decrement(meleeDamage(random));
 
-                    Util.spawnDamageParticles(this, this.blockPosition(), 4);
+                    Util.spawnDamageParticles(this, blockPosition(), 4);
                 }
             }
         }
@@ -101,12 +101,12 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
 
     @Override
     protected Vec3 maybeBackOffFromEdge(Vec3 offset, MoverType mover) {
-        return mobBrain.getPlotWalls().collide(this.getBoundingBox(), offset);
+        return mobBrain.getPlotWalls().collide(getBoundingBox(), offset);
     }
 
     @Override
     public BbMobBrain getMobBrain() {
-        return this.mobBrain;
+        return mobBrain;
     }
 
     @Override
@@ -116,7 +116,7 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
 
     @Override
     public Plot getPlot() {
-        return this.plot;
+        return plot;
     }
 
     @Override

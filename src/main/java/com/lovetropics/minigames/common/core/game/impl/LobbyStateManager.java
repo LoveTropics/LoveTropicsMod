@@ -40,13 +40,13 @@ final class LobbyStateManager {
 	Change tick() {
 		LobbyState newState = state.tick(lobby)
 				.orElseGet(error -> errored(state, error));
-		return this.trySetState(newState);
+		return trySetState(newState);
 	}
 
 	@Nullable
 	Change handleError(Component error) {
 		LobbyState state = errored(this.state, error);
-		return this.trySetState(state);
+		return trySetState(state);
 	}
 
 	@Nullable
@@ -56,10 +56,10 @@ final class LobbyStateManager {
 
 	@Nullable
 	private Change trySetState(LobbyState newState) {
-		LobbyState oldState = this.state;
+		LobbyState oldState = state;
 		if (oldState == newState) return null;
 
-		this.state = newState;
+		state = newState;
 		return new Change(oldState.phase, newState.phase);
 	}
 

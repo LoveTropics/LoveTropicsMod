@@ -33,7 +33,7 @@ public class PlantAffectingExplosion extends FilteredExplosion {
     }
 
     public void affectPlants(List<BlockPos> affectedBlocks) {
-        Vec3 center = new Vec3(this.x, this.y, this.z);
+        Vec3 center = new Vec3(x, y, z);
 
         Random random = new Random();
         for (BlockPos pos : affectedBlocks) {
@@ -44,7 +44,7 @@ public class PlantAffectingExplosion extends FilteredExplosion {
             // Randomize damage a bit to leave certain plants standing
             damage *= (1 + ((random.nextDouble() - random.nextDouble()) * 0.3));
 
-            Plant plant = this.plot.plants.getPlantAt(pos);
+            Plant plant = plot.plants.getPlantAt(pos);
             if (plant != null) {
                 PlantHealth health = plant.state(PlantHealth.KEY);
 

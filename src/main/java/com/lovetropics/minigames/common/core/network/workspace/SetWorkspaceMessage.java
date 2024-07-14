@@ -37,8 +37,8 @@ public class SetWorkspaceMessage implements CustomPacketPayload {
 
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeBoolean(server != null);
-		if (this.server != null) {
-			this.server.write(buffer);
+		if (server != null) {
+			server.write(buffer);
 		}
 	}
 

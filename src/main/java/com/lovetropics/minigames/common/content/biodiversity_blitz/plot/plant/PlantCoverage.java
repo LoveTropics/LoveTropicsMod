@@ -54,7 +54,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	}
 
 	default boolean intersects(PlantCoverage other) {
-		if (!this.asBounds().intersects(other.asBounds())) {
+		if (!asBounds().intersects(other.asBounds())) {
 			return false;
 		}
 
@@ -76,7 +76,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 			}
 		}
 
-		return !blocks.isEmpty() ? new Set(blocks, this.getOrigin()) : null;
+		return !blocks.isEmpty() ? new Set(blocks, getOrigin()) : null;
 	}
 
 	final class Single implements PlantCoverage {
@@ -85,32 +85,32 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 		private Single(BlockPos block) {
 			this.block = block;
-			this.bounds = new AABB(block);
+			bounds = new AABB(block);
 		}
 
 		@Override
 		public boolean covers(BlockPos pos) {
-			return this.block.equals(pos);
+			return block.equals(pos);
 		}
 
 		@Override
 		public AABB asBounds() {
-			return this.bounds;
+			return bounds;
 		}
 
 		@Override
 		public BlockPos getOrigin() {
-			return this.block;
+			return block;
 		}
 
 		@Override
 		public BlockPos random(RandomSource random) {
-			return this.block;
+			return block;
 		}
 
 		@Override
 		public Iterator<BlockPos> iterator() {
-			return Iterators.singletonIterator(this.block);
+			return Iterators.singletonIterator(block);
 		}
 	}
 
@@ -138,29 +138,29 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 		@Override
 		public boolean covers(BlockPos pos) {
-			return this.blocks.contains(pos.asLong());
+			return blocks.contains(pos.asLong());
 		}
 
 		@Override
 		public AABB asBounds() {
-			return this.bounds;
+			return bounds;
 		}
 
 		@Override
 		public BlockPos getOrigin() {
-			return this.origin;
+			return origin;
 		}
 
 		@Override
 		public BlockPos random(RandomSource random) {
-			long pos = this.blocks.getLong(random.nextInt(blocks.size()));
+			long pos = blocks.getLong(random.nextInt(blocks.size()));
 			return new BlockPos(BlockPos.getX(pos), BlockPos.getY(pos), BlockPos.getZ(pos));
 		}
 
 		@Override
 		public void add(BlockPos pos) {
-			if (this.bounds.contains(Vec3.atCenterOf(pos))) {
-				this.blocks.add(pos.asLong());
+			if (bounds.contains(Vec3.atCenterOf(pos))) {
+				blocks.add(pos.asLong());
 			} else {
 				throw new IllegalArgumentException("Position not within bounds");
 			}
@@ -168,7 +168,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 		@Override
 		public Iterator<BlockPos> iterator() {
-			LongIterator blockIterator = this.blocks.iterator();
+			LongIterator blockIterator = blocks.iterator();
 
 			return new Iterator<>() {
                 private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
@@ -176,7 +176,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
                 @Override
                 public BlockPos next() {
                     long pos = blockIterator.nextLong();
-                    return this.mutablePos.set(pos);
+                    return mutablePos.set(pos);
                 }
 
                 @Override
@@ -195,32 +195,32 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		Or(PlantCoverage left, PlantCoverage right) {
 			this.left = left;
 			this.right = right;
-			this.bounds = left.asBounds().minmax(right.asBounds());
+			bounds = left.asBounds().minmax(right.asBounds());
 		}
 
 		@Override
 		public boolean covers(BlockPos pos) {
-			return this.left.covers(pos) || this.right.covers(pos);
+			return left.covers(pos) || right.covers(pos);
 		}
 
 		@Override
 		public BlockPos random(RandomSource random) {
-			return random.nextBoolean() ? this.left.random(random) : this.right.random(random);
+			return random.nextBoolean() ? left.random(random) : right.random(random);
 		}
 
 		@Override
 		public AABB asBounds() {
-			return this.bounds;
+			return bounds;
 		}
 
 		@Override
 		public BlockPos getOrigin() {
-			return this.left.getOrigin();
+			return left.getOrigin();
 		}
 
 		@Override
 		public Iterator<BlockPos> iterator() {
-			return Iterators.concat(this.left.iterator(), this.right.iterator());
+			return Iterators.concat(left.iterator(), right.iterator());
 		}
 	}
 
@@ -230,27 +230,27 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		private BlockPos origin;
 
 		public Builder add(BlockPos pos) {
-			this.blocks.add(pos.asLong());
-			if (this.origin == null) {
-				this.origin = pos;
+			blocks.add(pos.asLong());
+			if (origin == null) {
+				origin = pos;
 			}
 			return this;
 		}
 
 		public Builder setOrigin(BlockPos pos) {
-			this.origin = pos;
+			origin = pos;
 			return this;
 		}
 
 		public PlantCoverage build() {
-			if (this.blocks.isEmpty() || this.origin == null) {
+			if (blocks.isEmpty() || origin == null) {
 				throw new IllegalStateException("cannot build empty plant");
 			}
 
-			if (this.blocks.size() == 1) {
+			if (blocks.size() == 1) {
 				return PlantCoverage.of(BlockPos.of(blocks.iterator().nextLong()));
 			} else {
-				return PlantCoverage.of(this.blocks, this.origin);
+				return PlantCoverage.of(blocks, origin);
 			}
 		}
 	}

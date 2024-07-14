@@ -12,7 +12,7 @@ public final class MapWorldInfo extends DerivedLevelData {
 
 	public MapWorldInfo(WorldData serverConfiguration, ServerLevelData overworld) {
 		super(serverConfiguration, overworld);
-		this.settings = MapWorldSettings.createFrom(overworld);
+		settings = MapWorldSettings.createFrom(overworld);
 	}
 
 	public MapWorldInfo(WorldData serverConfiguration, ServerLevelData overworld, MapWorldSettings settings) {
@@ -26,75 +26,75 @@ public final class MapWorldInfo extends DerivedLevelData {
 
 	@Override
 	public void setDayTime(long time) {
-		this.settings.timeOfDay = time;
+		settings.timeOfDay = time;
 	}
 
 	@Override
 	public long getDayTime() {
-		return this.settings.timeOfDay;
+		return settings.timeOfDay;
 	}
 
 	@Override
 	public void setClearWeatherTime(int time) {
-		this.settings.sunnyTime = time;
+		settings.sunnyTime = time;
 	}
 
 	@Override
 	public void setRaining(boolean raining) {
-		this.settings.raining = raining;
+		settings.raining = raining;
 	}
 
 	@Override
 	public void setRainTime(int time) {
-		this.settings.rainTime = time;
+		settings.rainTime = time;
 	}
 
 	@Override
 	public void setThundering(boolean thundering) {
-		this.settings.thundering = thundering;
+		settings.thundering = thundering;
 	}
 
 	@Override
 	public void setThunderTime(int time) {
-		this.settings.thunderTime = time;
+		settings.thunderTime = time;
 	}
 
 	public void setDifficulty(Difficulty difficulty) {
-		this.settings.difficulty = difficulty;
+		settings.difficulty = difficulty;
 	}
 
 	@Override
 	public boolean isRaining() {
-		return this.settings.raining;
+		return settings.raining;
 	}
 
 	@Override
 	public int getRainTime() {
-		return this.settings.rainTime;
+		return settings.rainTime;
 	}
 
 	@Override
 	public boolean isThundering() {
-		return this.settings.thundering;
+		return settings.thundering;
 	}
 
 	@Override
 	public int getThunderTime() {
-		return this.settings.thunderTime;
+		return settings.thunderTime;
 	}
 
 	@Override
 	public int getClearWeatherTime() {
-		return this.settings.sunnyTime;
+		return settings.sunnyTime;
 	}
 
 	@Override
 	public GameRules getGameRules() {
-		return this.settings.gameRules;
+		return settings.gameRules;
 	}
 
 	@Override
 	public Difficulty getDifficulty() {
-		return this.settings.difficulty;
+		return settings.difficulty;
 	}
 }

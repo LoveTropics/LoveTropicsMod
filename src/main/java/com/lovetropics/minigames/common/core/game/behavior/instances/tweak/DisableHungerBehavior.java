@@ -26,7 +26,7 @@ public final class DisableHungerBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, (player) -> {
 			if (player.tickCount % 20 == 0) {
-				player.getFoodData().readAdditionalSaveData(this.foodStats);
+				player.getFoodData().readAdditionalSaveData(foodStats);
 			}
 		});
 	}

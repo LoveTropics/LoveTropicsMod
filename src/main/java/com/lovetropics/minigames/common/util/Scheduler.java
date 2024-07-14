@@ -59,7 +59,7 @@ public final class Scheduler {
 
 		public <T> CompletableFuture<T> supply(Function<MinecraftServer, T> task) {
 			CompletableFuture<T> future = new CompletableFuture<>();
-			this.run(server -> {
+			run(server -> {
 				T result = task.apply(server);
 				future.complete(result);
 			});
@@ -67,18 +67,18 @@ public final class Scheduler {
 		}
 
 		public void run(Consumer<MinecraftServer> task) {
-			this.tasks.add(task);
+			tasks.add(task);
 		}
 
 		void run(MinecraftServer server) {
-			for (Consumer<MinecraftServer> task : this.tasks) {
+			for (Consumer<MinecraftServer> task : tasks) {
 				task.accept(server);
 			}
 		}
 
 		@Override
 		public void execute(Runnable command) {
-			this.run(server -> command.run());
+			run(server -> command.run());
 		}
 	}
 }

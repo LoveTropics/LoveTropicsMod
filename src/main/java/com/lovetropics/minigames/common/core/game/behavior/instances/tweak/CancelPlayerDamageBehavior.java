@@ -26,7 +26,7 @@ public record CancelPlayerDamageBehavior(boolean knockback, Optional<Progression
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		BooleanSupplier predicate = period.map(p -> p.createPredicate(game)).orElse(() -> true);
-		if (this.knockback) {
+		if (knockback) {
 			events.listen(GamePlayerEvents.DAMAGE_AMOUNT, (player, damageSource, amount, originalAmount) -> predicate.getAsBoolean() ? 0.0F : amount);
 		} else {
 			events.listen(GamePlayerEvents.ATTACK, (player, target) -> target instanceof Player && predicate.getAsBoolean() ? InteractionResult.FAIL : InteractionResult.PASS);

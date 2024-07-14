@@ -67,7 +67,7 @@ public final class CountdownAction<T> implements IGameBehavior {
 			return actions.apply(game, entry.context);
 		} else {
 			for (ServerPlayer player : game.getAllPlayers()) {
-				this.tickCountdown(player, remainingTicks);
+				tickCountdown(player, remainingTicks);
 			}
 			return false;
 		}

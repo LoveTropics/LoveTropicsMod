@@ -20,7 +20,7 @@ final class GameInstance implements IGame {
 
 	GameInstance(GameLobby lobby, IGameDefinition definition) {
 		this.lobby = lobby;
-		this.server = lobby.getServer();
+		server = lobby.getServer();
 		this.definition = definition;
 	}
 

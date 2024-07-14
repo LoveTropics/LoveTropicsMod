@@ -29,7 +29,7 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
     public BbZombiePiglinEntity(EntityType<? extends ZombifiedPiglin> pEntityType, Level pLevel, Plot plot) {
         super(pEntityType, pLevel);
 
-        this.mobBrain = new BbMobBrain(plot.walls);
+        mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
         // Ignore sweet berry bushes and water
@@ -43,20 +43,20 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
 
     @Override
     protected void addBehaviourGoals() {
-        this.goalSelector.addGoal(2, new DestroyCropGoal(this));
-        this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
+        goalSelector.addGoal(2, new DestroyCropGoal(this));
+        goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
 
-        this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
+        targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
     }
 
     @Override
     protected Vec3 maybeBackOffFromEdge(Vec3 offset, MoverType mover) {
-        return mobBrain.getPlotWalls().collide(this.getBoundingBox(), offset);
+        return mobBrain.getPlotWalls().collide(getBoundingBox(), offset);
     }
 
     @Override
     public BbMobBrain getMobBrain() {
-        return this.mobBrain;
+        return mobBrain;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
 
     @Override
     public Plot getPlot() {
-        return this.plot;
+        return plot;
     }
 
     @Override

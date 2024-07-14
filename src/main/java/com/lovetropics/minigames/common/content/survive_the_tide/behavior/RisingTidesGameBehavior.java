@@ -133,7 +133,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
-			if (entity.getY() <= this.waterLevel + 1 && entity.isInWater() && entity.tickCount % 40 == 0) {
+			if (entity.getY() <= waterLevel + 1 && entity.isInWater() && entity.tickCount % 40 == 0) {
 				entity.hurt(entity.damageSources().drown(), 2.0F);
 			}
 		}
@@ -195,9 +195,9 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			return;
 		}
 
-		int count = this.processUpdates(game, highPriorityUpdates.iterator(), HIGH_PRIORITY_BUDGET_PER_TICK);
+		int count = processUpdates(game, highPriorityUpdates.iterator(), HIGH_PRIORITY_BUDGET_PER_TICK);
 		if (count <= 0) {
-			this.processUpdates(game, lowPriorityUpdates.iterator(), LOW_PRIORITY_BUDGET_PER_TICK);
+			processUpdates(game, lowPriorityUpdates.iterator(), LOW_PRIORITY_BUDGET_PER_TICK);
 		}
 	}
 
@@ -298,8 +298,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private long increaseTideForChunk(ServerLevel level, LevelChunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 
-		int targetLevel = this.waterLevel;
-		int lastLevel = this.chunkWaterLevels.put(chunkPos.toLong(), targetLevel);
+		int targetLevel = waterLevel;
+		int lastLevel = chunkWaterLevels.put(chunkPos.toLong(), targetLevel);
 
 		if (targetLevel > lastLevel) {
 			BlockPos tideMin = tideArea.min();

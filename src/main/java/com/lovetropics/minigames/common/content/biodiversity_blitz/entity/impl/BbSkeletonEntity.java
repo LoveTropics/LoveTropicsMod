@@ -25,7 +25,7 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
     public BbSkeletonEntity(EntityType<? extends Skeleton> p_33570_, Level level, Plot plot) {
         super(p_33570_, level);
 
-        this.mobBrain = new BbMobBrain(plot.walls);
+        mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
         setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
@@ -33,10 +33,10 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(3, new DestroyCropGoal(this));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 15.0F, 0.02F));
+        goalSelector.addGoal(3, new DestroyCropGoal(this));
+        goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 15.0F, 0.02F));
 
-        this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
+        targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
 
         // Setup bow goal
 
@@ -57,7 +57,7 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
 
     @Override
     public Plot getPlot() {
-        return this.plot;
+        return plot;
     }
 
     @Override

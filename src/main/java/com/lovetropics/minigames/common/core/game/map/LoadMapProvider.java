@@ -66,9 +66,9 @@ public record LoadMapProvider(
 		MapWorldInfo worldInfo = MapWorldInfo.create(server, worldSettings);
 		RuntimeDimensionConfig config = new RuntimeDimensionConfig(dimension, 0, worldInfo);
 
-		return CompletableFuture.supplyAsync(() -> this.openDimension(server, config), server)
+		return CompletableFuture.supplyAsync(() -> openDimension(server, config), server)
 				.thenApplyAsync(result -> result.andThen(handle -> {
-					return this.loadMapInto(server, worldSettings, handle);
+					return loadMapInto(server, worldSettings, handle);
 				}), Util.backgroundExecutor())
 				.thenApplyAsync(result -> result.map(pair -> {
 					RuntimeDimensionHandle dimensionHandle = pair.getFirst();
@@ -80,15 +80,15 @@ public record LoadMapProvider(
 
 	private GameResult<RuntimeDimensionHandle> openDimension(MinecraftServer server, RuntimeDimensionConfig config) {
 		RuntimeDimensions dimensions = RuntimeDimensions.get(server);
-		if (this.dimension.isEmpty()) {
+		if (dimension.isEmpty()) {
 			return GameResult.ok(dimensions.openTemporary(config));
 		}
 
-		RuntimeDimensionHandle handle = dimensions.openTemporaryWithKey(this.dimension.get(), config);
+		RuntimeDimensionHandle handle = dimensions.openTemporaryWithKey(dimension.get(), config);
 		if (handle != null) {
 			return GameResult.ok(handle);
 		} else {
-			return GameResult.error(Component.literal("Dimension already loaded in '" + this.dimension.get() + "'"));
+			return GameResult.error(Component.literal("Dimension already loaded in '" + dimension.get() + "'"));
 		}
 	}
 

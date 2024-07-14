@@ -38,9 +38,9 @@ public class GameBuilder {
 
     public GameBuilder(ResourceLocation id) {
         this.id = id;
-        this.backendId = id;
-        this.statisticsKey = id.getPath();
-        this.name = Component.literal(id.toString());
+        backendId = id;
+        statisticsKey = id.getPath();
+        name = Component.literal(id.toString());
     }
 
     public GameBuilder setBackendId(ResourceLocation backendId) {
@@ -79,12 +79,12 @@ public class GameBuilder {
     }
 
     public GameBuilder withWaitingPhase(IGameMapProvider map, UnaryOperator<PhaseBuilder> builderConsumer) {
-        this.waiting = builderConsumer.apply(new PhaseBuilder(map)).create();
+        waiting = builderConsumer.apply(new PhaseBuilder(map)).create();
         return this;
     }
 
     public GameBuilder withPlayingPhase(IGameMapProvider map, UnaryOperator<PhaseBuilder> builderConsumer) {
-        this.playing = builderConsumer.apply(new PhaseBuilder(map)).create();
+        playing = builderConsumer.apply(new PhaseBuilder(map)).create();
         return this;
     }
 
@@ -110,7 +110,7 @@ public class GameBuilder {
 
         public PhaseBuilder withBehavior(IGameBehavior... behavior) {
             for (IGameBehavior b : behavior) {
-                this.behaviors.add(new BehaviorTemplate.Direct(Suppliers.ofInstance(b)));
+                behaviors.add(new BehaviorTemplate.Direct(Suppliers.ofInstance(b)));
             }
             return this;
         }

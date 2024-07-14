@@ -28,10 +28,10 @@ public abstract class ConfigData {
 	public abstract Object value();
 	
 	public final void setValue(Object value) {
-		if (this.type().isValidValue(value)) {
-			this.setValueInternal(value);
+		if (type().isValidValue(value)) {
+			setValueInternal(value);
 		} else {
-			throw new IllegalArgumentException("Value is not valid for config type " + this.type().name() + ": " + value);
+			throw new IllegalArgumentException("Value is not valid for config type " + type().name() + ": " + value);
 		}
 	}
 	
@@ -99,8 +99,8 @@ public abstract class ConfigData {
 		}
 
 		public void addDefault() {
-			if (this.defaultValue != null) {
-				add(this.defaultValue);
+			if (defaultValue != null) {
+				add(defaultValue);
 			} else {
 				add(type.defaultInstance());
 			}
@@ -125,7 +125,7 @@ public abstract class ConfigData {
 				}
 			}
 			if (componentType().isValidValue(value)) {
-				this.values.add(value);
+				values.add(value);
 			} else {
 				throw new IllegalArgumentException("Invalid list value for type " + componentType() + ": " + value.getClass().getSimpleName() + " " + value);
 			}
@@ -144,28 +144,28 @@ public abstract class ConfigData {
 		protected void setValueInternal(Object value) {
 			if (value instanceof Collection<?> coll) {
                 if (!coll.isEmpty()) {
-					if (coll.stream().allMatch(this.componentType()::isValidValue)) {
-						this.values.clear();
-						this.values.addAll(coll);
+					if (coll.stream().allMatch(componentType()::isValidValue)) {
+						values.clear();
+						values.addAll(coll);
 					} else {
-						throw new IllegalArgumentException("List contains invalid values for component type " + this.componentType() + ": " + value);
+						throw new IllegalArgumentException("List contains invalid values for component type " + componentType() + ": " + value);
 					}
 				} else {
-					this.values.clear();
+					values.clear();
 				}
 			} else if (value instanceof Object[] arr) {
                 if (arr.length > 0) {
-					if (Arrays.stream(arr).allMatch(this.componentType()::isValidValue)) {
-						this.values.clear();
-						this.values.addAll(Arrays.asList(arr));
+					if (Arrays.stream(arr).allMatch(componentType()::isValidValue)) {
+						values.clear();
+						values.addAll(Arrays.asList(arr));
 					} else {
-						throw new IllegalArgumentException("Array contains invalid values for component type " + this.componentType() + ": " + Arrays.toString(arr));
+						throw new IllegalArgumentException("Array contains invalid values for component type " + componentType() + ": " + Arrays.toString(arr));
 					}
 				} else {
-					this.values.clear();
+					values.clear();
 				}
 			} else {
-				throw new IllegalArgumentException("Value is not valid for list type " + this.componentType() + ": " + value);
+				throw new IllegalArgumentException("Value is not valid for list type " + componentType() + ": " + value);
 			}
 		}
 
@@ -196,7 +196,7 @@ public abstract class ConfigData {
 		private final Map<String, ConfigData> values = new HashMap<>();
 
 		public final void addChild(String name, ConfigData config) {
-			this.values.put(name, config);
+			values.put(name, config);
 		}
 
 		@Override

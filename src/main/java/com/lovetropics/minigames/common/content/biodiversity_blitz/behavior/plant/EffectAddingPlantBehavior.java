@@ -25,7 +25,7 @@ public record EffectAddingPlantBehavior(MobEffectInstance effect, double radius)
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		int effectDuration = this.effect.getDuration();
+		int effectDuration = effect.getDuration();
 		int applyTime = Math.max(effectDuration - 5, 1);
 
 		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
@@ -37,11 +37,11 @@ public record EffectAddingPlantBehavior(MobEffectInstance effect, double radius)
 			ServerLevel world = game.getWorld();
 
 			for (Plant plant : plants) {
-				AABB applyBounds = plant.coverage().asBounds().inflate(this.radius);
+				AABB applyBounds = plant.coverage().asBounds().inflate(radius);
 
 				List<Mob> entities = world.getEntitiesOfClass(Mob.class, applyBounds, BbMobEntity.PREDICATE);
 				for (Mob entity : entities) {
-					entity.addEffect(new MobEffectInstance(this.effect));
+					entity.addEffect(new MobEffectInstance(effect));
 				}
 			}
 		});

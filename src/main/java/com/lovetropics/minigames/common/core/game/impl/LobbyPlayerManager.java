@@ -24,8 +24,8 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 
 	LobbyPlayerManager(GameLobby lobby) {
 		this.lobby = lobby;
-		this.registrations = new LobbyRegistrations(lobby.getServer());
-		this.roleSelections = new PlayerRoleSelections(lobby.getMetadata().id());
+		registrations = new LobbyRegistrations(lobby.getServer());
+		roleSelections = new PlayerRoleSelections(lobby.getMetadata().id());
 	}
 
 	@Override

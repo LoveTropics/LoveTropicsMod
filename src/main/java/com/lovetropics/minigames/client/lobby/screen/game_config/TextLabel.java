@@ -39,14 +39,14 @@ public class TextLabel implements Renderable {
 			margin = margin.shift(0, height - fnt.lineHeight);
 		}
 		ltree.definiteChild(-1, height, new Box(), margin);
-		this.renderArea = ltree.pop();
+		renderArea = ltree.pop();
 		this.text = text;
 		ltree.pop();
 	}
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		this.renderArea.debugRender(graphics);
+		renderArea.debugRender(graphics);
 		graphics.drawString(fnt, text, renderArea.content().left(), renderArea.content().top(), CommonColors.WHITE);
 	}
 }

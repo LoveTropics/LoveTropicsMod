@@ -19,33 +19,33 @@ public final class PlantMap implements Iterable<Plant> {
 	@Nullable
 	public Plant addPlant(PlantType type, PlantFamily family, double value, PlantPlacement placement) {
 		PlantCoverage functionalCoverage = placement.getFunctionalCoverage();
-		if (functionalCoverage == null || !this.canAddPlantAt(functionalCoverage)) {
+		if (functionalCoverage == null || !canAddPlantAt(functionalCoverage)) {
 			return null;
 		}
 
 		PlantCoverage decoration = placement.getDecorationCoverage();
 		if (decoration != null) {
-			decoration = this.removeDecorationIntersection(decoration);
+			decoration = removeDecorationIntersection(decoration);
 		}
 
 		Plant plant = new Plant(type, functionalCoverage, decoration, family, value);
-		this.addPlant(plant);
+		addPlant(plant);
 		return plant;
 	}
 
 	public void addPlant(Plant plant) {
-		this.plants.add(plant);
-		this.plantsByType.computeIfAbsent(plant.type(), t -> new ArrayList<>())
+		plants.add(plant);
+		plantsByType.computeIfAbsent(plant.type(), t -> new ArrayList<>())
 				.add(plant);
 
 		for (BlockPos pos : plant.functionalCoverage()) {
-			this.plantByPos.put(pos.asLong(), plant);
+			plantByPos.put(pos.asLong(), plant);
 		}
 
 		PlantCoverage decoration = plant.decorationCoverage();
 		if (decoration != null) {
 			for (BlockPos pos : decoration) {
-				this.plantByPos.put(pos.asLong(), plant);
+				plantByPos.put(pos.asLong(), plant);
 			}
 		}
 	}
@@ -54,7 +54,7 @@ public final class PlantMap implements Iterable<Plant> {
 		LongSet intersection = new LongOpenHashSet();
 		for (BlockPos pos : decoration) {
 			long posKey = pos.asLong();
-			if (this.plantByPos.containsKey(posKey)) {
+			if (plantByPos.containsKey(posKey)) {
 				intersection.add(posKey);
 			}
 		}
@@ -67,20 +67,20 @@ public final class PlantMap implements Iterable<Plant> {
 	}
 
 	public boolean removePlant(Plant plant) {
-		if (this.plants.remove(plant)) {
+		if (plants.remove(plant)) {
 			List<Plant> plantsByType = this.plantsByType.get(plant.type());
 			if (plantsByType != null) {
 				plantsByType.remove(plant);
 			}
 
 			for (BlockPos pos : plant.functionalCoverage()) {
-				this.plantByPos.remove(pos.asLong(), plant);
+				plantByPos.remove(pos.asLong(), plant);
 			}
 
 			PlantCoverage decoration = plant.decorationCoverage();
 			if (decoration != null) {
 				for (BlockPos pos : decoration) {
-					this.plantByPos.remove(pos.asLong(), plant);
+					plantByPos.remove(pos.asLong(), plant);
 				}
 			}
 
@@ -92,31 +92,31 @@ public final class PlantMap implements Iterable<Plant> {
 
 	@Nullable
 	public Plant getPlantAt(long pos) {
-		return this.plantByPos.get(pos);
+		return plantByPos.get(pos);
 	}
 
 	@Nullable
 	public Plant getPlantAt(BlockPos pos) {
-		return this.getPlantAt(pos.asLong());
+		return getPlantAt(pos.asLong());
 	}
 
 	@Nullable
 	public Plant getPlantAt(BlockPos pos, PlantType type) {
-		Plant plant = this.getPlantAt(pos);
+		Plant plant = getPlantAt(pos);
 		return plant != null && plant.type().equals(type) ? plant : null;
 	}
 
 	public boolean hasPlantAt(BlockPos pos) {
-		return this.getPlantAt(pos) != null;
+		return getPlantAt(pos) != null;
 	}
 
 	public boolean canAddPlantAt(BlockPos pos) {
-		return this.plantByPos.get(pos.asLong()) == null;
+		return plantByPos.get(pos.asLong()) == null;
 	}
 
 	public boolean canAddPlantAt(PlantCoverage coverage) {
 		for (BlockPos pos : coverage) {
-			Plant plant = this.plantByPos.get(pos.asLong());
+			Plant plant = plantByPos.get(pos.asLong());
 			if (plant != null) {
 				return false;
 			}
@@ -125,11 +125,11 @@ public final class PlantMap implements Iterable<Plant> {
 	}
 
 	public List<Plant> getPlantsByType(PlantType type) {
-		return this.plantsByType.getOrDefault(type, Collections.emptyList());
+		return plantsByType.getOrDefault(type, Collections.emptyList());
 	}
 
 	@Override
 	public Iterator<Plant> iterator() {
-		return this.plants.iterator();
+		return plants.iterator();
 	}
 }

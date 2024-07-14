@@ -24,6 +24,6 @@ public abstract class LayoutGui extends AbstractContainerEventHandler implements
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		this.mainLayout.debugRender(graphics);
+		mainLayout.debugRender(graphics);
 	}
 }

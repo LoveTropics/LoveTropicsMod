@@ -40,8 +40,8 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 		}
 		int width = ltree.head().content().width();
 		btnLayout = ltree.definiteChild(10, 10, new Box(width - 10, 0, 0, 0), new Box()).pop();
-		this.children.add(new ExtendedButton(btnLayout.content().left(), btnLayout.content().top(), 10, 10, Component.literal("+"), b -> addDefault()));
-		this.mainLayout = ltree.pop();
+		children.add(new ExtendedButton(btnLayout.content().left(), btnLayout.content().top(), 10, 10, Component.literal("+"), b -> addDefault()));
+		mainLayout = ltree.pop();
 	}
 
 	private final List<GuiEventListener> children = new ArrayList<>();
@@ -51,8 +51,8 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 	}
 
 	private void addDefault() {
-		this.config.addDefault();
-		this.parent.reflow();
+		config.addDefault();
+		parent.reflow();
 	}
 
 	@Override
@@ -73,6 +73,6 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 
 	@Override
 	public int getHeight() {
-		return this.mainLayout.margin().height();
+		return mainLayout.margin().height();
 	}
 }

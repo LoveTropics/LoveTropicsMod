@@ -63,7 +63,7 @@ public record DonationPackageNotification(
 	}
 
 	public Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {
-		return this.message.apply(Map.of("sender", this.getSenderName(sender), "receiver", this.getReceiverName(receiver)));
+		return message.apply(Map.of("sender", getSenderName(sender), "receiver", getReceiverName(receiver)));
 	}
 
 	public Component createGlobalMessage(@Nullable ServerPlayer receiver) {

@@ -47,7 +47,7 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 		events.listen(GamePhaseEvents.TICK, () -> {
 			int targetTick = countdownTo.getPlain();
 			if (targetTick == WAITING_FOR_COUNTDOWN) {
-				targetTick = this.target.resolve(progression);
+				targetTick = target.resolve(progression);
 				if (shouldStart(progression, targetTick)) {
 					countdownTo.setPlain(targetTick);
 				} else {

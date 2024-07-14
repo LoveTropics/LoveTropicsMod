@@ -49,206 +49,206 @@ public class DelegatingWorldGenLevel implements WorldGenLevel {
 
 	@Override
 	public long getSeed() {
-		return this.parent.getSeed();
+		return parent.getSeed();
 	}
 
 	@Override
 	public ServerLevel getLevel() {
-		return this.parent.getLevel();
+		return parent.getLevel();
 	}
 
 	@Override
 	public long nextSubTickCount() {
-		return this.parent.nextSubTickCount();
+		return parent.nextSubTickCount();
 	}
 
 	@Override
 	public LevelTickAccess<Block> getBlockTicks() {
-		return this.parent.getBlockTicks();
+		return parent.getBlockTicks();
 	}
 
 	@Override
 	public LevelTickAccess<Fluid> getFluidTicks() {
-		return this.parent.getFluidTicks();
+		return parent.getFluidTicks();
 	}
 
 	@Override
 	public LevelData getLevelData() {
-		return this.parent.getLevelData();
+		return parent.getLevelData();
 	}
 
 	@Override
 	public DifficultyInstance getCurrentDifficultyAt(BlockPos pos) {
-		return this.parent.getCurrentDifficultyAt(pos);
+		return parent.getCurrentDifficultyAt(pos);
 	}
 
 	@Nullable
 	@Override
 	public MinecraftServer getServer() {
-		return this.parent.getServer();
+		return parent.getServer();
 	}
 
 	@Override
 	public ChunkSource getChunkSource() {
-		return this.parent.getChunkSource();
+		return parent.getChunkSource();
 	}
 
 	@Override
 	public RandomSource getRandom() {
-		return this.parent.getRandom();
+		return parent.getRandom();
 	}
 
 	@Override
 	public void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
-		this.parent.playSound(player, pos, sound, category, volume, pitch);
+		parent.playSound(player, pos, sound, category, volume, pitch);
 	}
 
 	@Override
 	public void addParticle(ParticleOptions particle, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-		this.parent.addParticle(particle, x, y, z, xSpeed, ySpeed, zSpeed);
+		parent.addParticle(particle, x, y, z, xSpeed, ySpeed, zSpeed);
 	}
 
 	@Override
 	public void levelEvent(@Nullable Player player, int type, BlockPos pos, int data) {
-		this.parent.levelEvent(player, type, pos, data);
+		parent.levelEvent(player, type, pos, data);
 	}
 
 	@Override
 	public void gameEvent(Holder<GameEvent> event, Vec3 position, GameEvent.Context context) {
-		this.parent.gameEvent(event, position, context);
+		parent.gameEvent(event, position, context);
 	}
 
 	@Override
 	public void gameEvent(@Nullable final Entity entity, final Holder<GameEvent> event, final BlockPos pos) {
-		this.parent.gameEvent(entity, event, pos);
+		parent.gameEvent(entity, event, pos);
 	}
 
 	@Override
 	public RegistryAccess registryAccess() {
-		return this.parent.registryAccess();
+		return parent.registryAccess();
 	}
 
 	@Override
 	public FeatureFlagSet enabledFeatures() {
-		return this.parent.enabledFeatures();
+		return parent.enabledFeatures();
 	}
 
 	@Override
 	public float getShade(Direction direction, boolean b) {
-		return this.parent.getShade(direction, b);
+		return parent.getShade(direction, b);
 	}
 
 	@Override
 	public LevelLightEngine getLightEngine() {
-		return this.parent.getLightEngine();
+		return parent.getLightEngine();
 	}
 
 	@Override
 	public WorldBorder getWorldBorder() {
-		return this.parent.getWorldBorder();
+		return parent.getWorldBorder();
 	}
 
 	@Nullable
 	@Override
 	public BlockEntity getBlockEntity(BlockPos pos) {
-		return this.parent.getBlockEntity(pos);
+		return parent.getBlockEntity(pos);
 	}
 
 	@Override
 	public BlockState getBlockState(BlockPos pos) {
-		return this.parent.getBlockState(pos);
+		return parent.getBlockState(pos);
 	}
 
 	@Override
 	public FluidState getFluidState(BlockPos pos) {
-		return this.parent.getFluidState(pos);
+		return parent.getFluidState(pos);
 	}
 
 	@Override
 	public List<Entity> getEntities(@Nullable Entity entity, AABB box, Predicate<? super Entity> predicate) {
-		return this.parent.getEntities(entity, box, predicate);
+		return parent.getEntities(entity, box, predicate);
 	}
 
 	@Override
 	public <T extends Entity> List<T> getEntities(final EntityTypeTest<Entity, T> type, final AABB aabb, final Predicate<? super T> predicate) {
-		return this.parent.getEntities(type, aabb, predicate);
+		return parent.getEntities(type, aabb, predicate);
 	}
 
 	@Override
 	public List<? extends Player> players() {
-		return this.parent.players();
+		return parent.players();
 	}
 
 	@Nullable
 	@Override
 	public ChunkAccess getChunk(int x, int z, ChunkStatus requiredStatus, boolean create) {
-		return this.parent.getChunk(x, z, requiredStatus, create);
+		return parent.getChunk(x, z, requiredStatus, create);
 	}
 
 	@Override
 	public int getHeight(Heightmap.Types type, int x, int z) {
-		return this.parent.getHeight(type, x, z);
+		return parent.getHeight(type, x, z);
 	}
 
 	@Override
 	public int getSkyDarken() {
-		return this.parent.getSkyDarken();
+		return parent.getSkyDarken();
 	}
 
 	@Override
 	public BiomeManager getBiomeManager() {
-		return this.parent.getBiomeManager();
+		return parent.getBiomeManager();
 	}
 
 	@Override
 	public Holder<Biome> getUncachedNoiseBiome(final int x, final int y, final int z) {
-		return this.parent.getUncachedNoiseBiome(x, y, z);
+		return parent.getUncachedNoiseBiome(x, y, z);
 	}
 
 	@Override
 	public boolean isClientSide() {
-		return this.parent.isClientSide();
+		return parent.isClientSide();
 	}
 
 	@Override
 	public int getSeaLevel() {
-		return this.parent.getSeaLevel();
+		return parent.getSeaLevel();
 	}
 
 	@Override
 	public DimensionType dimensionType() {
-		return this.parent.dimensionType();
+		return parent.dimensionType();
 	}
 
 	@Override
 	public boolean setBlock(BlockPos pos, BlockState state, int flags, int recursionLeft) {
-		return this.parent.setBlock(pos, state, flags, recursionLeft);
+		return parent.setBlock(pos, state, flags, recursionLeft);
 	}
 
 	@Override
 	public boolean removeBlock(BlockPos pos, boolean isMoving) {
-		FluidState fluid = this.getFluidState(pos);
+		FluidState fluid = getFluidState(pos);
 		int flags = Block.UPDATE_ALL | (isMoving ? Block.UPDATE_MOVE_BY_PISTON : 0);
-		return this.setBlock(pos, fluid.createLegacyBlock(), flags);
+		return setBlock(pos, fluid.createLegacyBlock(), flags);
 	}
 
 	@Override
 	public boolean destroyBlock(BlockPos pos, boolean dropBlock, @Nullable Entity entity, int recursionLeft) {
-		BlockState block = this.getBlockState(pos);
+		BlockState block = getBlockState(pos);
 		if (!block.isAir()) {
-			FluidState fluid = this.getFluidState(pos);
-			return this.setBlock(pos, fluid.createLegacyBlock(), Block.UPDATE_ALL, recursionLeft);
+			FluidState fluid = getFluidState(pos);
+			return setBlock(pos, fluid.createLegacyBlock(), Block.UPDATE_ALL, recursionLeft);
 		}
 		return false;
 	}
 
 	@Override
 	public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> predicate) {
-		return predicate.test(this.getBlockState(pos));
+		return predicate.test(getBlockState(pos));
 	}
 
 	@Override
 	public boolean isFluidAtPosition(final BlockPos pos, final Predicate<FluidState> predicate) {
-		return this.parent.isFluidAtPosition(pos, predicate);
+		return parent.isFluidAtPosition(pos, predicate);
 	}
 }

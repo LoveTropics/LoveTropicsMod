@@ -31,7 +31,7 @@ public interface PlayerOps {
 	};
 
 	default void sendMessage(Component message) {
-		this.sendMessage(message, false);
+		sendMessage(message, false);
 	}
 
 	void sendMessage(Component message, boolean actionBar);

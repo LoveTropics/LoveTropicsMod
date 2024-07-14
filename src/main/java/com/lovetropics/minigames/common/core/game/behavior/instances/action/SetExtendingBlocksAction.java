@@ -91,7 +91,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 				float progress = Mth.clamp((float) time / timeLength, 0.0F, 1.0F);
 
 				for (BlockBox region : regions) {
-					this.tickExtendingInBox(game, region, progress);
+					tickExtendingInBox(game, region, progress);
 				}
 			}
 		});
@@ -99,7 +99,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 
 	private void tickExtendingInBox(IGamePhase game, BlockBox box, float progress) {
 		// TODO: we should be not rewriting blocks that we already placed
-		BlockBox extendingBox = this.getExtendingBox(box, progress);
+		BlockBox extendingBox = getExtendingBox(box, progress);
 
 		ServerLevel world = game.getWorld();
 		BlockPredicate replace = this.replace;

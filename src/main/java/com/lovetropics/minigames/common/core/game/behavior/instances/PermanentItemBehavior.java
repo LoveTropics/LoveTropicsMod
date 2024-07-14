@@ -23,8 +23,8 @@ public record PermanentItemBehavior(Item item, int count, int interval) implemen
 		events.listen(GamePlayerEvents.TICK, player -> {
 			if (game.getParticipants().contains(player) && game.ticks() % interval == 0) {
 				int currentCount = player.getInventory().countItem(item);
-				if (currentCount < this.count) {
-					player.getInventory().add(new ItemStack(item, this.count - currentCount));
+				if (currentCount < count) {
+					player.getInventory().add(new ItemStack(item, count - currentCount));
 				}
 			}
 		});

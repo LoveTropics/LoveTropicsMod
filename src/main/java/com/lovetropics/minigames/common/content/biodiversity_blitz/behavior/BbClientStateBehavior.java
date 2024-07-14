@@ -29,11 +29,11 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
 
 		events.listen(BbEvents.CURRENCY_ACCUMULATE, (team, value, lastValue) -> {
-			this.updateState(teams, team, currency -> currency.value = value);
+			updateState(teams, team, currency -> currency.value = value);
 		});
 
 		events.listen(BbEvents.CURRENCY_INCREMENT_CHANGED, (team, value, lastValue) -> {
-			this.updateState(teams, team, currency -> currency.nextIncrement = value);
+			updateState(teams, team, currency -> currency.nextIncrement = value);
 		});
 	}
 
@@ -43,7 +43,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 	}
 
 	private void updateState(TeamState teams, GameTeamKey team, Consumer<Currency> update) {
-		Currency currency = this.trackedCurrency.computeIfAbsent(team, k -> new Currency());
+		Currency currency = trackedCurrency.computeIfAbsent(team, k -> new Currency());
 		update.accept(currency);
 
 		ClientBbSelfState state = new ClientBbSelfState(currency.value, currency.nextIncrement);

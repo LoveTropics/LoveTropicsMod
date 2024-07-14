@@ -24,10 +24,10 @@ public record SetTimeSpeedBehavior(int factor) implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.TICK, () -> {
 			ServerLevel world = game.getWorld();
-			world.setDayTime(world.getDayTime() + this.factor - 1);
+			world.setDayTime(world.getDayTime() + factor - 1);
 		});
 
-		TimeInterpolationClientState state = new TimeInterpolationClientState(this.factor);
+		TimeInterpolationClientState state = new TimeInterpolationClientState(factor);
 		GameClientState.applyGlobally(state, events);
 	}
 

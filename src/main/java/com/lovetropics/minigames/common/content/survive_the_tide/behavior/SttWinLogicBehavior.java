@@ -35,14 +35,14 @@ public class SttWinLogicBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GameLogicEvents.GAME_OVER, () -> {
-			this.minigameEnded = true;
+			minigameEnded = true;
 		});
 
-		events.listen(GamePhaseEvents.TICK, () -> this.checkForGameEndCondition(game, game.getWorld()));
+		events.listen(GamePhaseEvents.TICK, () -> checkForGameEndCondition(game, game.getWorld()));
 	}
 
 	private void checkForGameEndCondition(final IGamePhase game, final Level world) {
-		if (this.minigameEnded) {
+		if (minigameEnded) {
 			if (spawnLightningBoltsOnFinish) {
 				spawnLightningBoltsEverywhere(game, world);
 			}

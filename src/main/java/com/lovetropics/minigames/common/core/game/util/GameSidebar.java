@@ -17,7 +17,7 @@ public final class GameSidebar implements GameWidget {
 	private Component[] display = new Component[0];
 
 	public GameSidebar(MinecraftServer server, Component title) {
-		this.players = new MutablePlayerSet(server);
+		players = new MutablePlayerSet(server);
 		this.title = title;
 	}
 
@@ -30,13 +30,13 @@ public final class GameSidebar implements GameWidget {
 
 	@Override
 	public void addPlayer(ServerPlayer player) {
-		this.players.add(player);
+		players.add(player);
 		GameClientState.sendToPlayer(buildState(), player);
 	}
 
 	@Override
 	public void removePlayer(ServerPlayer player) {
-		this.players.remove(player);
+		players.remove(player);
 		GameClientState.removeFromPlayer(GameClientStateTypes.SIDEBAR.get(), player);
 	}
 
@@ -47,6 +47,6 @@ public final class GameSidebar implements GameWidget {
 	@Override
 	public void close() {
 		GameClientState.removeFromPlayers(GameClientStateTypes.SIDEBAR.get(), players);
-		this.players.clear();
+		players.clear();
 	}
 }

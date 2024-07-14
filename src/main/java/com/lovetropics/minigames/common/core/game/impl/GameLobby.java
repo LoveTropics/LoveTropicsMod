@@ -56,11 +56,11 @@ final class GameLobby implements IGameLobby {
 		this.server = server;
 		this.metadata = metadata;
 
-		this.gameQueue = new LobbyGameQueue(server);
-		this.state = new LobbyStateManager(this);
-		this.players = new LobbyPlayerManager(this);
-		this.management = new LobbyManagement(this);
-		this.trackingPlayers = new LobbyTrackingPlayers(this);
+		gameQueue = new LobbyGameQueue(server);
+		state = new LobbyStateManager(this);
+		players = new LobbyPlayerManager(this);
+		management = new LobbyManagement(this);
+		trackingPlayers = new LobbyTrackingPlayers(this);
 	}
 
 	@Override
@@ -126,7 +126,7 @@ final class GameLobby implements IGameLobby {
 
 	void setVisibility(LobbyVisibility visibility) {
 		metadata = manager.setVisibility(this, visibility);
-		this.trackingPlayers.rebuildTracking();
+		trackingPlayers.rebuildTracking();
 	}
 
 	void tick() {

@@ -19,7 +19,7 @@ public abstract class DynamicLayoutGui extends AbstractContainerEventHandler imp
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		this.mainLayout.debugRender(graphics);
+		mainLayout.debugRender(graphics);
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public abstract class DynamicLayoutGui extends AbstractContainerEventHandler imp
 	}
 	
 	public void bake(FlexSolver.Results solve) {
-		this.mainLayout = solve.layout(basis);
+		mainLayout = solve.layout(basis);
 		for (GuiEventListener child : children()) {
 			if (child instanceof DynamicLayoutGui) {
 				((DynamicLayoutGui) child).bake(solve);

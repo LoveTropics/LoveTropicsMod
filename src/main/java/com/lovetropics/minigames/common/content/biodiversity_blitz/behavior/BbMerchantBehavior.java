@@ -76,14 +76,14 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	}
 
 	private void onCreatePlot(Plot plot) {
-		ServerLevel world = this.game.getWorld();
+		ServerLevel world = game.getWorld();
 
-		BlockBox region = plot.regionByName(this.plotRegion);
+		BlockBox region = plot.regionByName(plotRegion);
 		if (region == null) return;
 
 		Vec3 center = region.center();
 
-		Entity merchant = this.createMerchant(world);
+		Entity merchant = createMerchant(world);
 		if (merchant == null) return;
 
 		Direction direction = Util.getDirectionBetween(region, plot.spawn);
@@ -107,10 +107,10 @@ public final class BbMerchantBehavior implements IGameBehavior {
 
 	@Nullable
 	private Entity createMerchant(ServerLevel world) {
-		Entity merchant = this.entity.create(world);
+		Entity merchant = entity.create(world);
 		if (merchant != null) {
-			if (this.name != CommonComponents.EMPTY) {
-				merchant.setCustomName(this.name);
+			if (name != CommonComponents.EMPTY) {
+				merchant.setCustomName(name);
 				merchant.setCustomNameVisible(true);
 			}
 
@@ -123,10 +123,10 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult interactWithEntity(ServerPlayer player, Entity target, InteractionHand hand) {
-		if (this.merchants.contains(target.getUUID())) {
+		if (merchants.contains(target.getUUID())) {
 			MerchantOffers builtOffers = new MerchantOffers();
-			for (Offer offer : this.offers) {
-				builtOffers.add(offer.build(this.game));
+			for (Offer offer : offers) {
+				builtOffers.add(offer.build(game));
 			}
 
 			BbMerchant merchant = new BbMerchant(player, builtOffers);
@@ -154,7 +154,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 
 		public MerchantOffer build(IGamePhase game) {
 			return new MerchantOffer(
-					this.input, this.output.build(game),
+					input, output.build(game),
 					Integer.MAX_VALUE,
 					0,
 					0
@@ -193,10 +193,10 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		}
 
 		private ItemStack build(IGamePhase game) {
-			if (this.item != null) {
-				return this.item;
-			} else if (this.plant != null) {
-				return game.invoker(BbEvents.CREATE_PLANT_ITEM).createPlantItem(this.plant);
+			if (item != null) {
+				return item;
+			} else if (plant != null) {
+				return game.invoker(BbEvents.CREATE_PLANT_ITEM).createPlantItem(plant);
 			}
 			throw new IllegalStateException();
 		}

@@ -38,7 +38,7 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.ADD, (player, plot, plant) ->
-				plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + this.time.sample(game.getRandom())))
+				plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + time.sample(game.getRandom())))
 		);
 
 		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
@@ -47,9 +47,9 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 				return;
 			}
 
-			List<Plant> growPlants = this.collectPlantsToGrow(plants, ticks);
+			List<Plant> growPlants = collectPlantsToGrow(plants, ticks);
 			for (Plant plant : growPlants) {
-				this.tryGrowPlant(game, players.iterator().next(), plot, plant);
+				tryGrowPlant(game, players.iterator().next(), plot, plant);
 			}
 		});
 	}
@@ -59,7 +59,7 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 		PlantSnapshot snapshot = removeAndSnapshot(world, plot, plant);
 
 		BlockPos origin = plant.coverage().getOrigin();
-		InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
+		InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, growInto);
 		if (result.getResult() != InteractionResult.SUCCESS) {
 			restoreSnapshot(world, plot, snapshot);
 		}

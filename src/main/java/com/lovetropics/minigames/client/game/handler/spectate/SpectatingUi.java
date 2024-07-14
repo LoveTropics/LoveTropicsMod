@@ -61,8 +61,8 @@ public final class SpectatingUi {
 
 	SpectatingUi(SpectatingSession session) {
 		this.session = session;
-		this.entries = createEntriesFor(session.players);
-		this.events = new Object2ObjectOpenHashMap<>();
+		entries = createEntriesFor(session.players);
+		events = new Object2ObjectOpenHashMap<>();
 	}
 
 	@SubscribeEvent

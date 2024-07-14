@@ -38,7 +38,7 @@ public abstract class GameProvider implements DataProvider {
                 return builder;
             }, regs);
 
-            final var gamesProv = this.output.createPathProvider(PackOutput.Target.DATA_PACK, "games");
+            final var gamesProv = output.createPathProvider(PackOutput.Target.DATA_PACK, "games");
             return CompletableFuture.allOf(builders.stream()
                     .map(builder -> {
                         final var built = builder.build();

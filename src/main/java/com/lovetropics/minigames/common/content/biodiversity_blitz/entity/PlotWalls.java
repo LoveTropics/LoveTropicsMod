@@ -20,15 +20,15 @@ public final class PlotWalls {
 		this.bounds = bounds;
 
 		Direction[] directions = Direction.values();
-		this.faces = new AABB[directions.length];
-		this.faceShapes = new VoxelShape[directions.length];
+		faces = new AABB[directions.length];
+		faceShapes = new VoxelShape[directions.length];
 
 		for (Direction direction : directions) {
 			AABB plotFace = createWallBounds(bounds, direction);
 
 			int index = direction.get3DDataValue();
-			this.faces[index] = plotFace;
-			this.faceShapes[index] = Shapes.create(plotFace);
+			faces[index] = plotFace;
+			faceShapes[index] = Shapes.create(plotFace);
 		}
 	}
 
@@ -59,11 +59,11 @@ public final class PlotWalls {
 		AABB collidingBox = box.expandTowards(offset);
 
 		// we're definitely not going to collide
-		if (!collidingBox.intersects(this.bounds)) {
+		if (!collidingBox.intersects(bounds)) {
 			return offset;
 		}
 
-		List<VoxelShape> collisions = this.collectCollisions(collidingBox);
+		List<VoxelShape> collisions = collectCollisions(collidingBox);
 		return Entity.collideWithShapes(offset, box, collisions);
 	}
 
@@ -78,14 +78,14 @@ public final class PlotWalls {
 	}
 
 	public AABB getBounds() {
-		return this.bounds;
+		return bounds;
 	}
 
 	public boolean containsEntity(Entity entity) {
-		return this.bounds.contains(entity.position());
+		return bounds.contains(entity.position());
 	}
 
 	public boolean containsBlock(BlockPos pos) {
-		return this.bounds.contains(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+		return bounds.contains(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
 	}
 }

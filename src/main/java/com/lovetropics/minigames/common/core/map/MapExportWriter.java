@@ -62,6 +62,6 @@ public final class MapExportWriter implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		this.fs.close();
+		fs.close();
 	}
 }

@@ -50,13 +50,13 @@ public final class TimedGameBehavior implements IGameBehavior {
 	public TimedGameBehavior(long length, long closeTime, Optional<TemplatedText> timerBar, long countdownSeconds) {
 		this.length = length;
 		this.closeTime = closeTime;
-		this.timerBarText = timerBar.orElse(null);
+		timerBarText = timerBar.orElse(null);
 		this.countdownSeconds = countdownSeconds;
 	}
 
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-		this.state = phaseState.register(TimedGameState.KEY, new TimedGameState(length, closeTime));
+		state = phaseState.register(TimedGameState.KEY, new TimedGameState(length, closeTime));
 	}
 
 	@Override
@@ -68,8 +68,8 @@ public final class TimedGameBehavior implements IGameBehavior {
 			timerBar = widgets.openBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 
-		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> this.state.setPaused(true)));
-		game.getControlCommands().add("unpause", ControlCommand.forInitiator(source -> this.state.setPaused(false)));
+		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> state.setPaused(true)));
+		game.getControlCommands().add("unpause", ControlCommand.forInitiator(source -> state.setPaused(false)));
 	}
 
 	private void tick(IGamePhase game) {
@@ -90,7 +90,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 			}
 
 			if (timerBar != null) {
-				timerBar.setTitle(this.getTimeRemainingText(game, ticksRemaining));
+				timerBar.setTitle(getTimeRemainingText(game, ticksRemaining));
 				timerBar.setProgress((float) ticksRemaining / length);
 			}
 		}

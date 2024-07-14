@@ -102,25 +102,25 @@ public final class RuntimeDimensions {
 
 	public RuntimeDimensionHandle getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
 		ResourceKey<Level> worldKey = ResourceKey.create(Registries.DIMENSION, key);
-		ServerLevel world = this.server.getLevel(worldKey);
+		ServerLevel world = server.getLevel(worldKey);
 		if (world != null) {
-			this.deletionQueue.remove(world);
+			deletionQueue.remove(world);
 			return new RuntimeDimensionHandle(this, world);
 		}
 
-		return this.openLevel(key, config.get(), false);
+		return openLevel(key, config.get(), false);
 	}
 
 	public RuntimeDimensionHandle openTemporary(RuntimeDimensionConfig config) {
 		ResourceLocation key = generateTemporaryDimensionKey();
-		return this.openLevel(key, config, true);
+		return openLevel(key, config, true);
 	}
 
 	@Nullable
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
 		ResourceKey<Level> worldKey = ResourceKey.create(Registries.DIMENSION, key);
-		if (this.server.getLevel(worldKey) == null) {
-			return this.openLevel(key, config, true);
+		if (server.getLevel(worldKey) == null) {
+			return openLevel(key, config, true);
 		} else {
 			return null;
 		}
@@ -129,13 +129,13 @@ public final class RuntimeDimensions {
 	private RuntimeDimensionHandle openLevel(ResourceLocation key, RuntimeDimensionConfig config, boolean temporary) {
 		ResourceKey<Level> levelKey = ResourceKey.create(Registries.DIMENSION, key);
 
-		MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(this.server);
+		MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(server);
 		dimensionsRegistry.unfreeze();
 		dimensionsRegistry.register(ResourceKey.create(Registries.LEVEL_STEM, key), config.dimension(), RegistrationInfo.BUILT_IN);
 		dimensionsRegistry.freeze();
 
 		ServerLevel level = new ServerLevel(
-				this.server, Util.backgroundExecutor(), this.server.storageSource,
+				server, Util.backgroundExecutor(), server.storageSource,
 				config.worldInfo(),
 				levelKey,
 				config.dimension(),
@@ -162,11 +162,11 @@ public final class RuntimeDimensions {
 			}
 		};
 
-		this.server.levels.put(levelKey, level);
-		this.server.markWorldsDirty();
+		server.levels.put(levelKey, level);
+		server.markWorldsDirty();
 
 		if (temporary) {
-			this.temporaryDimensions.add(levelKey);
+			temporaryDimensions.add(levelKey);
 		}
 
 		NeoForge.EVENT_BUS.post(new LevelEvent.Load(level));
@@ -177,8 +177,8 @@ public final class RuntimeDimensions {
 	}
 
 	void tick() {
-		if (!this.deletionQueue.isEmpty()) {
-			this.deletionQueue.removeIf(this::tickDimensionDeletion);
+		if (!deletionQueue.isEmpty()) {
+			deletionQueue.removeIf(this::tickDimensionDeletion);
 		}
 	}
 
@@ -195,18 +195,18 @@ public final class RuntimeDimensions {
 	private void stop() {
 		ArrayList<ResourceKey<Level>> temporaryDimensions = new ArrayList<>(this.temporaryDimensions);
 		for (ResourceKey<Level> dimension : temporaryDimensions) {
-			ServerLevel world = this.server.getLevel(dimension);
+			ServerLevel world = server.getLevel(dimension);
 			if (world != null) {
-				this.kickPlayersFrom(world);
-				this.deleteDimension(world);
+				kickPlayersFrom(world);
+				deleteDimension(world);
 			}
 		}
 	}
 
 	void enqueueDeletion(ServerLevel world) {
 		CompletableFuture.runAsync(() -> {
-			this.deletionQueue.add(world);
-		}, this.server);
+			deletionQueue.add(world);
+		}, server);
 	}
 
 	private void kickPlayersFrom(ServerLevel world) {
@@ -214,7 +214,7 @@ public final class RuntimeDimensions {
 			return;
 		}
 
-		ServerLevel overworld = this.server.overworld();
+		ServerLevel overworld = server.overworld();
 		BlockPos spawnPos = overworld.getSharedSpawnPos();
 		float spawnAngle = overworld.getSharedSpawnAngle();
 
@@ -231,20 +231,20 @@ public final class RuntimeDimensions {
 	private void deleteDimension(ServerLevel level) {
 		ResourceKey<Level> dimensionKey = level.dimension();
 
-		if (this.server.levels.remove(dimensionKey, level)) {
-			this.server.markWorldsDirty();
+		if (server.levels.remove(dimensionKey, level)) {
+			server.markWorldsDirty();
 
-			this.temporaryDimensions.remove(dimensionKey);
+			temporaryDimensions.remove(dimensionKey);
 
 			NeoForge.EVENT_BUS.post(new LevelEvent.Unload(level));
 
-			MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(this.server);
+			MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(server);
 
 			dimensionsRegistry.unfreeze();
 			RegistryEntryRemover.remove(dimensionsRegistry, dimensionKey.location());
 			dimensionsRegistry.freeze();
 
-			LevelStorageSource.LevelStorageAccess save = this.server.storageSource;
+			LevelStorageSource.LevelStorageAccess save = server.storageSource;
 			Path dimensionPath = save.getDimensionPath(dimensionKey);
 			Util.ioPool().submit(() -> {
 				try {
@@ -281,17 +281,17 @@ public final class RuntimeDimensions {
 	}
 
 	public boolean isTemporaryDimension(ResourceKey<Level> dimension) {
-		return this.temporaryDimensions.contains(dimension);
+		return temporaryDimensions.contains(dimension);
 	}
 
 	public RuntimeDimensionHandle handleForTemporaryDimension(ResourceKey<Level> dimension) {
-		if (!this.isTemporaryDimension(dimension)) {
+		if (!isTemporaryDimension(dimension)) {
 			throw new IllegalArgumentException("must be a temporary dimension");
 		}
-		return new RuntimeDimensionHandle(this, this.server.getLevel(dimension));
+		return new RuntimeDimensionHandle(this, server.getLevel(dimension));
 	}
 
 	public Collection<ResourceKey<Level>> getTemporaryDimensions() {
-		return this.temporaryDimensions;
+		return temporaryDimensions;
 	}
 }

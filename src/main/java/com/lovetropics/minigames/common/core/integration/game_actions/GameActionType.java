@@ -26,7 +26,7 @@ public enum GameActionType {
 		this.id = id;
 		this.timeFieldName = timeFieldName;
 		this.codec = GameActionRequest.codec(this, (MapCodec<GameAction>) codec);
-		this.pollingIntervalSeconds = pollingIntervalTicks;
+		pollingIntervalSeconds = pollingIntervalTicks;
 		this.sendsAcknowledgement = sendsAcknowledgement;
 	}
 

@@ -31,11 +31,11 @@ public final class Box {
 	}
 
 	public Box grow(int amount) {
-		return this.grow(amount, amount);
+		return grow(amount, amount);
 	}
 
 	public Box grow(int x, int y) {
-		return this.grow(x, y, x, y);
+		return grow(x, y, x, y);
 	}
 
 	public Box grow(int left, int top, int right, int bottom) {
@@ -48,75 +48,75 @@ public final class Box {
 	}
 
 	public Box contract(Box border) {
-		return this.grow(-border.left(), -border.top(), -border.right(), -border.bottom());
+		return grow(-border.left(), -border.top(), -border.right(), -border.bottom());
 	}
 
 	public int left() {
-		return this.left;
+		return left;
 	}
 
 	public int top() {
-		return this.top;
+		return top;
 	}
 
 	public int right() {
-		return this.right;
+		return right;
 	}
 
 	public int bottom() {
-		return this.bottom;
+		return bottom;
 	}
 
 	public int width() {
-		return this.right - this.left;
+		return right - left;
 	}
 
 	public int height() {
-		return this.bottom - this.top;
+		return bottom - top;
 	}
 
 	public Size size() {
-		return new Size(this.width(), this.height());
+		return new Size(width(), height());
 	}
 
 	public int centerX() {
-		return (this.left + this.right) / 2;
+		return (left + right) / 2;
 	}
 
 	public int centerY() {
-		return (this.top + this.bottom) / 2;
+		return (top + bottom) / 2;
 	}
 
 	public int borderX() {
-		return this.left + this.right;
+		return left + right;
 	}
 
 	public int borderY() {
-		return this.top + this.bottom;
+		return top + bottom;
 	}
 
 	public Box left(int left) {
-		return new Box(left, this.top, this.right, this.bottom);
+		return new Box(left, top, right, bottom);
 	}
 
 	public Box top(int top) {
-		return new Box(this.left, top, this.right, this.bottom);
+		return new Box(left, top, right, bottom);
 	}
 
 	public Box right(int right) {
-		return new Box(this.left, this.top, right, this.bottom);
+		return new Box(left, top, right, bottom);
 	}
 
 	public Box bottom(int bottom) {
-		return new Box(this.left, this.top, this.right, bottom);
+		return new Box(left, top, right, bottom);
 	}
 
 	public Box union(Box other) {
-		return new Box(Math.min(this.left, other.left), Math.min(this.top, other.top), Math.max(this.right, other.right), Math.max(this.bottom, other.bottom));
+		return new Box(Math.min(left, other.left), Math.min(top, other.top), Math.max(right, other.right), Math.max(bottom, other.bottom));
 	}
 
 	public Box intersect(Box other) {
-		Box intersect = new Box(Math.max(this.left, other.left), Math.max(this.top, other.top), Math.min(this.right, other.right), Math.min(this.bottom, other.bottom));
+		Box intersect = new Box(Math.max(left, other.left), Math.max(top, other.top), Math.min(right, other.right), Math.min(bottom, other.bottom));
 		if (intersect.width() <= 0 || intersect.height() <= 0) {
 			return new Box();
 		}
@@ -140,19 +140,19 @@ public final class Box {
 	}
 
 	int borderAlong(Axis axis) {
-		return axis == Axis.X ? this.borderX() : this.borderY();
+		return axis == Axis.X ? borderX() : borderY();
 	}
 
 	Interval along(Axis axis) {
-		return axis == Axis.X ? new Interval(this.left, this.right) : new Interval(this.top, this.bottom);
+		return axis == Axis.X ? new Interval(left, right) : new Interval(top, bottom);
 	}
 
 	public boolean contains(double x, double y) {
-		return x >= this.left && y >= this.top && x < this.right && y < this.bottom;
+		return x >= left && y >= top && x < right && y < bottom;
 	}
 
 	public boolean intersects(Box other) {
-		return this.right() > other.left() && this.bottom() > other.top() && this.left() < other.right() && this.top() < other.bottom();
+		return right() > other.left() && bottom() > other.top() && left() < other.right() && top() < other.bottom();
 	}
 
 	@Override
@@ -187,33 +187,33 @@ public final class Box {
 		}
 
 		public Size grow(int amount) {
-			return this.grow(amount, amount);
+			return grow(amount, amount);
 		}
 
 		public Size grow(int x, int y) {
-			return new Size(this.width + x, this.height + y);
+			return new Size(width + x, height + y);
 		}
 
 		public Size grow(Axis axis, int amount) {
-			return axis == Axis.X ? this.grow(amount, 0) : this.grow(0, amount);
+			return axis == Axis.X ? grow(amount, 0) : grow(0, amount);
 		}
 
 		public Size grow(Box border) {
-			return this.grow(border.borderX(), border.borderY());
+			return grow(border.borderX(), border.borderY());
 		}
 
 		public int width() {
-			return this.width;
+			return width;
 		}
 
 		public int height() {
-			return this.height;
+			return height;
 		}
 
 		public int along(Axis axis) {
             return switch (axis) {
-                case X -> this.width;
-                case Y -> this.height;
+                case X -> width;
+                case Y -> height;
             };
 		}
 	}
@@ -229,30 +229,30 @@ public final class Box {
 
 		Interval subtract(Align.Main align, int size) {
             return switch (align) {
-                case START -> new Interval(this.start + size, this.end);
-                case END -> new Interval(this.start, this.end - size);
+                case START -> new Interval(start + size, end);
+                case END -> new Interval(start, end - size);
             };
 		}
 
 		int size() {
-			return this.end - this.start;
+			return end - start;
 		}
 
 		Interval applyMainAlign(Align.Main align, int size) {
             return switch (align) {
-                case START -> new Interval(this.start, this.start + size);
-                case END -> new Interval(this.end - size, this.end);
+                case START -> new Interval(start, start + size);
+                case END -> new Interval(end - size, end);
             };
 		}
 
 		Interval applyCrossAlign(Align.Cross align, int size) {
             return switch (align) {
-                case START -> new Interval(this.start, this.start + size);
+                case START -> new Interval(start, start + size);
                 case CENTER -> {
-                    int start = (this.start + this.end - size) / 2;
+                    int start = (this.start + end - size) / 2;
                     yield new Interval(start, start + size);
                 }
-                case END -> new Interval(this.end - size, this.end);
+                case END -> new Interval(end - size, end);
             };
 		}
 	}

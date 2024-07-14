@@ -57,8 +57,8 @@ public class LTGameTestHelper extends GameTestHelper {
 
     public LTGameTestHelper(GameTestHelper helper) {
         super(null);
-        this.delegate = helper;
-        this.info = ((GameTestHelperAccess) helper).getTestInfo();
+        delegate = helper;
+        info = ((GameTestHelperAccess) helper).getTestInfo();
     }
 
     @Override

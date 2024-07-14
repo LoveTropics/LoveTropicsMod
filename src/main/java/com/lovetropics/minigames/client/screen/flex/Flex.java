@@ -19,11 +19,11 @@ public final class Flex {
 	final List<Flex> children = new ArrayList<>();
 
 	public Flex row() {
-		return this.axis(Axis.X);
+		return axis(Axis.X);
 	}
 
 	public Flex column() {
-		return this.axis(Axis.Y);
+		return axis(Axis.Y);
 	}
 
 	public Flex axis(Axis axis) {
@@ -32,94 +32,94 @@ public final class Flex {
 	}
 
 	public Flex size(int w, int h) {
-		return this.size(w, h, Unit.PX);
+		return size(w, h, Unit.PX);
 	}
 
 	public Flex size(float w, float h, Unit unit) {
-		return this.width(w, unit).height(h, unit);
+		return width(w, unit).height(h, unit);
 	}
 
 	public Flex width(int w) {
-		return this.width(w, Unit.PX);
+		return width(w, Unit.PX);
 	}
 
 	public Flex width(float w, Unit unit) {
-		this.width = LengthRange.of(unit.width(this, w));
+		width = LengthRange.of(unit.width(this, w));
 		return this;
 	}
 
 	public Flex height(int h) {
-		return this.height(h, Unit.PX);
+		return height(h, Unit.PX);
 	}
 
 	public Flex height(float h, Unit unit) {
-		this.height = LengthRange.of(unit.height(this, h));
+		height = LengthRange.of(unit.height(this, h));
 		return this;
 	}
 
 	public Flex minSize(int w, int h) {
-		return this.minSize(w, h, Unit.PX);
+		return minSize(w, h, Unit.PX);
 	}
 
 	public Flex minSize(float w, float h, Unit unit) {
-		return this.minWidth(w, unit).minHeight(h, unit);
+		return minWidth(w, unit).minHeight(h, unit);
 	}
 
 	public Flex minWidth(int w) {
-		return this.minWidth(w, Unit.PX);
+		return minWidth(w, Unit.PX);
 	}
 
 	public Flex minWidth(float w, Unit unit) {
-		this.width = this.width.min(unit.width(this, w));
+		width = width.min(unit.width(this, w));
 		return this;
 	}
 
 	public Flex minHeight(int h) {
-		return this.minHeight(h, Unit.PX);
+		return minHeight(h, Unit.PX);
 	}
 
 	public Flex minHeight(float h, Unit unit) {
-		this.height = this.height.min(unit.height(this, h));
+		height = height.min(unit.height(this, h));
 		return this;
 	}
 
 	public Flex maxSize(int w, int h) {
-		return this.maxSize(w, h, Unit.PX);
+		return maxSize(w, h, Unit.PX);
 	}
 
 	public Flex maxSize(float w, float h, Unit unit) {
-		return this.maxWidth(w, unit).maxHeight(h, unit);
+		return maxWidth(w, unit).maxHeight(h, unit);
 	}
 
 	public Flex maxWidth(int w) {
-		return this.maxWidth(w, Unit.PX);
+		return maxWidth(w, Unit.PX);
 	}
 
 	public Flex maxWidth(float w, Unit unit) {
-		this.width = this.width.max(unit.width(this, w));
+		width = width.max(unit.width(this, w));
 		return this;
 	}
 
 	public Flex maxHeight(int h) {
-		return this.maxHeight(h, Unit.PX);
+		return maxHeight(h, Unit.PX);
 	}
 
 	public Flex maxHeight(float h, Unit unit) {
-		this.height = this.height.max(unit.height(this, h));
+		height = height.max(unit.height(this, h));
 		return this;
 	}
 
 	public Flex padding(int left, int top, int right, int bottom) {
-		this.padding = new Box(left, top, right, bottom);
+		padding = new Box(left, top, right, bottom);
 		return this;
 	}
 
 	public Flex padding(int x, int y) {
-		return this.padding(x, y, x, y);
+		return padding(x, y, x, y);
 	}
 
 	public Flex padding(int padding) {
-		return this.padding(padding, padding);
+		return padding(padding, padding);
 	}
 
 	public Flex paddingLeft(int padding) {
@@ -143,16 +143,16 @@ public final class Flex {
 	}
 	
 	public Flex margin(int left, int top, int right, int bottom) {
-		this.margin = new Box(left, top, right, bottom);
+		margin = new Box(left, top, right, bottom);
 		return this;
 	}
 
 	public Flex margin(int x, int y) {
-		return this.margin(x, y, x, y);
+		return margin(x, y, x, y);
 	}
 
 	public Flex margin(int margin) {
-		return this.margin(margin, margin);
+		return margin(margin, margin);
 	}
 
 	public Flex marginLeft(int margin) {
@@ -176,12 +176,12 @@ public final class Flex {
 	}
 
 	public Flex alignMain(Align.Main align) {
-		this.alignMain = align;
+		alignMain = align;
 		return this;
 	}
 
 	public Flex alignCross(Align.Cross align) {
-		this.alignCross = align;
+		alignCross = align;
 		return this;
 	}
 
@@ -192,7 +192,7 @@ public final class Flex {
 
 	public Flex child() {
 		Flex child = new Flex();
-		this.children.add(child);
+		children.add(child);
 		return child;
 	}
 
@@ -217,7 +217,7 @@ public final class Flex {
 		default Length add(Length amount) {
 			return parent -> {
 				int resolvedAmount = amount.resolve(parent);
-				return Length.this.resolve(parent) + resolvedAmount;
+				return resolve(parent) + resolvedAmount;
 			};
 		}
 
@@ -242,19 +242,19 @@ public final class Flex {
 		}
 
 		LengthRange add(Length amount) {
-			return new LengthRange(this.min.add(amount), this.max.add(amount));
+			return new LengthRange(min.add(amount), max.add(amount));
 		}
 
 		LengthRange add(int amount) {
-			return this.add(Length.value(amount));
+			return add(Length.value(amount));
 		}
 
 		LengthRange min(Length min) {
-			return new LengthRange(min, this.max);
+			return new LengthRange(min, max);
 		}
 
 		LengthRange max(Length max) {
-			return new LengthRange(this.min, max);
+			return new LengthRange(min, max);
 		}
 	}
 
@@ -272,11 +272,11 @@ public final class Flex {
 		Length create(Flex flex, Axis axis, float value);
 
 		default Length width(Flex flex, float width) {
-			return this.create(flex, Axis.X, width);
+			return create(flex, Axis.X, width);
 		}
 
 		default Length height(Flex flex, float height) {
-			return this.create(flex, Axis.Y, height);
+			return create(flex, Axis.Y, height);
 		}
 	}
 }

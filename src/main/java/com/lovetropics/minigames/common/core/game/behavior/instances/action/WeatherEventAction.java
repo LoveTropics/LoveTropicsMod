@@ -26,7 +26,7 @@ public final class WeatherEventAction implements IGameBehavior {
 
 	public WeatherEventAction(WeatherEventType type, long seconds) {
 		this.type = type;
-		this.ticks = seconds * 20;
+		ticks = seconds * 20;
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public final class WeatherEventAction implements IGameBehavior {
 		weather = game.getState().getOrThrow(GameWeatherState.KEY);
 
 		events.listen(GameActionEvents.APPLY, (context) -> {
-			WeatherEvent event = this.tryCreateEvent(ticks);
+			WeatherEvent event = tryCreateEvent(ticks);
 			if (event != null) {
 				weather.setEvent(event);
 				return true;

@@ -71,8 +71,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 
 	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, boolean sizeCurveAlways, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage, List<IGameBehavior> children) {
-		this.intervalTicks = intervalSeconds * 20;
-		this.warnTicks = warnSeconds * 20;
+		intervalTicks = intervalSeconds * 20;
+		warnTicks = warnSeconds * 20;
 		this.sizeCurve = sizeCurve;
 		this.sizeCurveAlways = sizeCurveAlways;
 
@@ -87,8 +87,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 
-		this.teams = game.getInstanceState().getOrThrow(TeamState.KEY);
-		this.plots = game.getState().getOrThrow(PlotsState.KEY);
+		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		plots = game.getState().getOrThrow(PlotsState.KEY);
 
 		events.listen(BbEvents.ASSIGN_PLOT, this::addPlayer);
 		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
@@ -101,22 +101,22 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			cleanupBossBar(waveCharging);
 		});
 
-		this.listeners = new GameEventListeners();
+		listeners = new GameEventListeners();
 		final var cl = events.redirect(e -> e == BbEvents.MODIFY_WAVE_MODS, listeners);
 		children.forEach(child -> child.register(game, cl));
 
-		this.waveCharging = new ServerBossEvent(BiodiversityBlitzTexts.WAVE_WARNING, BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
-		this.waveCharging.setProgress(0.0F);
-		this.waveCharging.setVisible(false);
+		waveCharging = new ServerBossEvent(BiodiversityBlitzTexts.WAVE_WARNING, BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
+		waveCharging.setProgress(0.0F);
+		waveCharging.setVisible(false);
 	}
 
 	private void addPlayer(ServerPlayer player, Plot plot) {
-		this.waveCharging.addPlayer(player);
+		waveCharging.addPlayer(player);
 	}
 
 	private void removePlayer(ServerPlayer player) {
-		this.waveCharging.removePlayer(player);
-		List<WaveTracker> waves = this.waveTrackers.remove(player.getUUID());
+		waveCharging.removePlayer(player);
+		List<WaveTracker> waves = waveTrackers.remove(player.getUUID());
 		if (waves != null) {
 			for (WaveTracker wave : waves) {
 				wave.close();
@@ -136,26 +136,26 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		}
 
 		if (timeTilNextWave > intervalTicks - 40) {
-			this.waveCharging.setProgress(1.0F - (intervalTicks - timeTilNextWave) / 40.0F);
-			this.waveCharging.setVisible(true);
+			waveCharging.setProgress(1.0F - (intervalTicks - timeTilNextWave) / 40.0F);
+			waveCharging.setVisible(true);
 		}
 
 		if (timeTilNextWave == 0) {
-			this.waveCharging.setVisible(false);
+			waveCharging.setVisible(false);
 
 			for (Plot plot : plots) {
 				PlayerSet players = teams.getPlayersForTeam(plot.team);
-				this.spawnWave(world, random, players, plot, sentWaves);
+				spawnWave(world, random, players, plot, sentWaves);
 			}
 
-			this.sentWaves++;
+			sentWaves++;
 		}
 
-		this.waveTrackers.forEach((pid, waves) -> {
+		waveTrackers.forEach((pid, waves) -> {
 			Iterator<WaveTracker> iterator = waves.iterator();
 			while (iterator.hasNext()) {
 				WaveTracker wave = iterator.next();
-				if (this.tickWave(wave)) {
+				if (tickWave(wave)) {
 					wave.close();
 					iterator.remove();
 				}
@@ -202,7 +202,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 				plot, count, waveIndex, BbMobSpawner::selectEntityForWave, listeners.invoker(BbEvents.MODIFY_WAVE_MODS));
 
 		for (ServerPlayer player : players) {
-			ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
+			ServerBossEvent bossBar = createWaveBar(player, waveIndex, count, entities);
 
 			WaveTracker wave = new WaveTracker(bossBar, entities);
 			waveTrackers.computeIfAbsent(player.getUUID(), $ -> new ArrayList<>()).add(wave);
@@ -226,7 +226,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		WaveTracker(ServerBossEvent bar, Set<Entity> entities) {
 			this.bar = bar;
 			this.entities = entities;
-			this.waveSize = entities.size();
+			waveSize = entities.size();
 		}
 
 		void close() {
@@ -259,7 +259,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		// Desmos: https://www.desmos.com/calculator/ya880ablya
 		double apply(int index, float difficulty) {
 			double lower = this.lower * difficulty;
-			double range = this.upper - lower;
+			double range = upper - lower;
 			double base = this.base * difficulty;
 			double scale = this.scale;
 			return lower + range * (1.0 - Math.pow(base, (-index * scale) / range));

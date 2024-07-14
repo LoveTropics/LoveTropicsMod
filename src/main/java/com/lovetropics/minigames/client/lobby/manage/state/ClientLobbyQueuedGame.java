@@ -27,12 +27,12 @@ public final class ClientLobbyQueuedGame {
 	}
 
 	public void encode(RegistryFriendlyByteBuf buffer) {
-		this.definition.encode(buffer);
-		this.playingConfigs.encode(buffer);
+		definition.encode(buffer);
+		playingConfigs.encode(buffer);
 
-		buffer.writeBoolean(this.waitingConfigs != null);
-		if (this.waitingConfigs != null) {
-			this.waitingConfigs.encode(buffer);
+		buffer.writeBoolean(waitingConfigs != null);
+		if (waitingConfigs != null) {
+			waitingConfigs.encode(buffer);
 		}
 	}
 

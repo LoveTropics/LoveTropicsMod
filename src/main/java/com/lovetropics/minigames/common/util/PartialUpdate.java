@@ -29,7 +29,7 @@ public abstract class PartialUpdate<A> {
 		private Family(AbstractType<A>[] idToType) {
 			this.idToType = idToType;
 			for (int i = 0; i < idToType.length; i++) {
-				this.typeToId.put(idToType[i], i);
+				typeToId.put(idToType[i], i);
 			}
 		}
 
@@ -67,7 +67,7 @@ public abstract class PartialUpdate<A> {
 
 		protected AbstractSet(Family<A> family) {
 			this.family = family;
-			this.updates = new PartialUpdate[family.size()];
+			updates = new PartialUpdate[family.size()];
 		}
 
 		public static <B extends RegistryFriendlyByteBuf, S extends AbstractSet<?>> StreamCodec<B, S> createStreamCodec(Supplier<S> factory) {

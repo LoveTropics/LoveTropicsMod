@@ -53,7 +53,7 @@ public class ConfigList {
 
 		public <T> Builder with(BehaviorConfig<T> key, T defVal) {
 			ConfigData data = key.getCodec().encodeStart(ConfigDataOps.INSTANCE, defVal).getOrThrow();
-			this.configs.put(key, data);
+			configs.put(key, data);
 			return this;
 		}
 

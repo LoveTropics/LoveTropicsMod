@@ -28,21 +28,21 @@ public final class GameWeatherState implements IGameState {
 	}
 
 	public void clear() {
-		this.clearEvent();
-		this.setWind(0.0F);
+		clearEvent();
+		setWind(0.0F);
 	}
 
 	public void tick() {
 		if (weatherCooldown > 0) weatherCooldown--;
 		WeatherEvent event = this.event;
 		if (event != null && event.tick() == WeatherEvent.TickResult.STOP) {
-			this.clearEvent();
+			clearEvent();
 			weatherCooldown = weatherCooldownBetweenStates;
 		}
 	}
 
 	public void setWind(float wind) {
-		this.controller.setWind(wind);
+		controller.setWind(wind);
 	}
 
 	public void setEvent(@Nullable WeatherEvent event) {
@@ -60,7 +60,7 @@ public final class GameWeatherState implements IGameState {
 	}
 
 	public void clearEvent() {
-		this.setEvent(null);
+		setEvent(null);
 	}
 
 	@Nullable

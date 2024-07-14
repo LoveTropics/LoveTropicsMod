@@ -27,7 +27,7 @@ public final class GameClientStateSender {
 	}
 
 	public PlayerEntry byPlayer(ServerPlayer player) {
-		return this.players.computeIfAbsent(player.getUUID(), id -> new PlayerEntry());
+		return players.computeIfAbsent(player.getUUID(), id -> new PlayerEntry());
 	}
 
 	@SubscribeEvent
@@ -49,23 +49,23 @@ public final class GameClientStateSender {
 		private final Set<GameClientStateType<?>> removeQueue = new ObjectOpenHashSet<>();
 
 		public <T extends GameClientState> void enqueueSet(T state) {
-			this.removeQueue.remove(state.getType());
-			this.setQueue.put(state.getType(), state);
+			removeQueue.remove(state.getType());
+			setQueue.put(state.getType(), state);
 		}
 
 		public <T extends GameClientState> void enqueueRemove(GameClientStateType<T> type) {
-			this.setQueue.remove(type);
-			this.removeQueue.add(type);
+			setQueue.remove(type);
+			removeQueue.add(type);
 		}
 
 		void tick(ServerPlayer player) {
 			if (!setQueue.isEmpty() || !removeQueue.isEmpty()) {
 				for (GameClientState state : setQueue.values()) {
-					this.sendSet(state, player);
+					sendSet(state, player);
 				}
 
 				for (GameClientStateType<?> type : removeQueue) {
-					this.sendRemove(type, player);
+					sendRemove(type, player);
 				}
 
 				setQueue.clear();

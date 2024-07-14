@@ -11,40 +11,40 @@ public final class GameBossBar implements GameWidget {
 	private final ServerBossEvent bar;
 
 	public GameBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
-		this.bar = new ServerBossEvent(title, color, overlay);
-		this.bar.setDarkenScreen(false);
-		this.bar.setCreateWorldFog(false);
-		this.bar.setPlayBossMusic(false);
+		bar = new ServerBossEvent(title, color, overlay);
+		bar.setDarkenScreen(false);
+		bar.setCreateWorldFog(false);
+		bar.setPlayBossMusic(false);
 	}
 
 	public void setTitle(Component title) {
-		this.bar.setName(title);
+		bar.setName(title);
 	}
 
 	public void setProgress(float progress) {
 		if (Math.abs(progress - bar.getProgress()) > UPDATE_PROGRESS_THRESHOLD) {
-			this.bar.setProgress(progress);
+			bar.setProgress(progress);
 		}
 	}
 
 	public void setStyle(BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
-		this.bar.setColor(color);
-		this.bar.setOverlay(overlay);
+		bar.setColor(color);
+		bar.setOverlay(overlay);
 	}
 
 	@Override
 	public void addPlayer(ServerPlayer player) {
-		this.bar.addPlayer(player);
+		bar.addPlayer(player);
 	}
 
 	@Override
 	public void removePlayer(ServerPlayer player) {
-		this.bar.removePlayer(player);
+		bar.removePlayer(player);
 	}
 
 	@Override
 	public void close() {
-		this.bar.removeAllPlayers();
-		this.bar.setVisible(false);
+		bar.removeAllPlayers();
+		bar.setVisible(false);
 	}
 }

@@ -15,25 +15,25 @@ public final class GameEventListeners implements EventRegistrar {
 	public <T> void listen(GameEventType<T> type, T listener) {
 		List<Object> listeners = this.listeners.computeIfAbsent(type, e -> new ArrayList<>());
 		listeners.add(listener);
-		this.rebuildInvoker(type);
+		rebuildInvoker(type);
 	}
 
 	@Override
 	public <T> void unlisten(GameEventType<T> type, T listener) {
 		List<Object> listeners = this.listeners.get(type);
 		if (listeners != null && listeners.remove(listener)) {
-			this.rebuildInvoker(type);
+			rebuildInvoker(type);
 		}
 	}
 
 	private <T> void rebuildInvoker(GameEventType<T> type) {
-		Object combined = type.combineUnchecked(this.listeners.get(type));
-		this.invokers.put(type, combined);
+		Object combined = type.combineUnchecked(listeners.get(type));
+		invokers.put(type, combined);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nonnull
 	public <T> T invoker(GameEventType<T> type) {
-		return (T) this.invokers.getOrDefault(type, type.empty());
+		return (T) invokers.getOrDefault(type, type.empty());
 	}
 }

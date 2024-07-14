@@ -88,7 +88,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, this::start);
 
-		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> this.spawnPlayer(spawn));
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> spawnPlayer(spawn));
 		events.listen(GamePlayerEvents.SET_ROLE, this::onPlayerSetRole);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
@@ -117,7 +117,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 	private void onPlayerSetRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT) {
-			this.removeParticipant(player);
+			removeParticipant(player);
 		}
 	}
 
@@ -144,9 +144,9 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		GameTeamKey team = teams.getTeamForPlayer(player);
 		if (team == hiders.key()) {
-			this.onHiderCaptured(player);
+			onHiderCaptured(player);
 		} else if (team == seekers.key()) {
-			this.onSeekerDied(player);
+			onSeekerDied(player);
 		}
 		return InteractionResult.FAIL;
 	}
@@ -185,12 +185,12 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	private void onHiderCaptured(ServerPlayer player) {
 		teams.addPlayerTo(player, seekers.key());
 
-		this.respawnPlayer(player);
-		this.setSeeker(player);
+		respawnPlayer(player);
+		setSeeker(player);
 	}
 
 	private void onSeekerDied(ServerPlayer player) {
-		this.respawnPlayer(player);
+		respawnPlayer(player);
 	}
 
 	public record Creature(EntityType<?> entity, String[] regionKeys) {

@@ -50,9 +50,9 @@ public final class GameInstanceIntegrations implements IGameState {
 	public GameInstanceIntegrations(IGamePhase game, BackendIntegrations integrations) {
 		this.game = game;
 		this.integrations = integrations;
-		this.initiator = game.getInitiator();
+		initiator = game.getInitiator();
 
-		this.actions = new GameActionHandler(this.game, this);
+		actions = new GameActionHandler(this.game, this);
 	}
 
 	public UUID getUuid() {

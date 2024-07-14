@@ -66,17 +66,17 @@ public final class ClientGameDefinition {
 	}
 
 	public void encode(RegistryFriendlyByteBuf buffer) {
-		buffer.writeResourceLocation(this.id);
-		ComponentSerialization.STREAM_CODEC.encode(buffer, this.name);
-		buffer.writeBoolean(this.subtitle != null);
-		if (this.subtitle != null) {
-			ComponentSerialization.STREAM_CODEC.encode(buffer, this.subtitle);
+		buffer.writeResourceLocation(id);
+		ComponentSerialization.STREAM_CODEC.encode(buffer, name);
+		buffer.writeBoolean(subtitle != null);
+		if (subtitle != null) {
+			ComponentSerialization.STREAM_CODEC.encode(buffer, subtitle);
 		}
-		buffer.writeBoolean(this.icon != null);
-		if (this.icon != null) {
-			buffer.writeResourceLocation(this.icon);
+		buffer.writeBoolean(icon != null);
+		if (icon != null) {
+			buffer.writeResourceLocation(icon);
 		}
-		buffer.writeVarInt(this.minimumParticipants);
-		buffer.writeVarInt(this.maximumParticipants);
+		buffer.writeVarInt(minimumParticipants);
+		buffer.writeVarInt(maximumParticipants);
 	}
 }

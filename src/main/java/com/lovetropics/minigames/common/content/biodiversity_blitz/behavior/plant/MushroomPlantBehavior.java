@@ -45,7 +45,7 @@ public class MushroomPlantBehavior implements IGameBehavior {
                 Plant plant = plot.plants.getPlantAt(pos);
 
                 // Mushrooms will cause nearby dying entities to drop extra loot
-                if (plant != null && this.plantType.equals(plant.type())) {
+                if (plant != null && plantType.equals(plant.type())) {
                     // TODO: extra bonus in shade
                    r.add(new ItemEntity(e.level(), e.getX(), e.getY(), e.getZ(), new ItemStack(BiodiversityBlitz.OSA_POINT.get(), 1)));
                     break;

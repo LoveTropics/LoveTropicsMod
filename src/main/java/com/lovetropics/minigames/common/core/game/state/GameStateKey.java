@@ -30,7 +30,7 @@ public class GameStateKey<T extends IGameState> {
 		}
 
 		public T createDefault() {
-			return this.defaultFactory.get();
+			return defaultFactory.get();
 		}
 	}
 }

@@ -45,12 +45,12 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 		CurrencyManager currency = game.getState().getOrThrow(CurrencyManager.KEY);
 		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 
-		CurrencyTargetState target = new CurrencyTargetState(this.thresholdCurrency);
+		CurrencyTargetState target = new CurrencyTargetState(thresholdCurrency);
 		GameClientState.applyGlobally(target, events);
 
 		events.listen(BbEvents.CURRENCY_ACCUMULATE, (team, value, lastValue) -> {
-			if (value >= this.thresholdCurrency) {
-				this.winnerCandidates.add(team);
+			if (value >= thresholdCurrency) {
+				winnerCandidates.add(team);
 			}
 		});
 

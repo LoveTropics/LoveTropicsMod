@@ -27,8 +27,8 @@ public final class LobbyRegistrations implements PlayerSet {
 	}
 
 	public void clear() {
-		this.players.clear();
-		this.forcedRoles.clear();
+		players.clear();
+		forcedRoles.clear();
 	}
 
 	public TeamAllocator<PlayerRole, ServerPlayer> createAllocator() {

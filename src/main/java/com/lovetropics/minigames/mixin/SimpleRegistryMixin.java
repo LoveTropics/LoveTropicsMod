@@ -26,25 +26,25 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
 
     @Override
     public boolean ltminigames$remove(T entry) {
-        int rawId = this.toId.removeInt(entry);
+        int rawId = toId.removeInt(entry);
         if (rawId == -1) {
             return false;
         }
 
-        final Holder.Reference<T> reference = this.byId.remove(rawId);
+        final Holder.Reference<T> reference = byId.remove(rawId);
         final ResourceKey<T> key = reference.key();
 
-        this.byLocation.remove(key.location());
-        this.byKey.remove(key);
-        this.byValue.remove(entry);
-        this.registrationInfos.remove(entry);
-        if (this.unregisteredIntrusiveHolders != null) {
-            this.unregisteredIntrusiveHolders.remove(entry);
+        byLocation.remove(key.location());
+        byKey.remove(key);
+        byValue.remove(entry);
+        registrationInfos.remove(entry);
+        if (unregisteredIntrusiveHolders != null) {
+            unregisteredIntrusiveHolders.remove(entry);
         }
 
         // This is an extreme hack that only works because the network IDs aren't used for dimensions
-        for (int id = rawId; id < this.byId.size(); id++) {
-            this.toId.put(this.byId.get(id).value(), id);
+        for (int id = rawId; id < byId.size(); id++) {
+            toId.put(byId.get(id).value(), id);
         }
 
         return true;
@@ -52,7 +52,7 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
 
     @Override
     public boolean ltminigames$remove(ResourceLocation key) {
-        Holder.Reference<T> entry = this.byLocation.get(key);
-        return entry != null && this.ltminigames$remove(entry.value());
+        Holder.Reference<T> entry = byLocation.get(key);
+        return entry != null && ltminigames$remove(entry.value());
     }
 }

@@ -22,7 +22,7 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) {
         events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
             long ticks = game.ticks();
-            if (ticks % this.interval != 0) {
+            if (ticks % interval != 0) {
                 return;
             }
 

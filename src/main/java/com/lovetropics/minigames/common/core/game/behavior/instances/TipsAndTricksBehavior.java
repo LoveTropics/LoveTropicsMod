@@ -37,16 +37,16 @@ public final class TipsAndTricksBehavior implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(GamePhaseEvents.START, () -> {
             // Copy and randomize tips&tricks
-            this.remainingTexts = new ArrayList<>(this.texts);
-            Collections.shuffle(this.remainingTexts);
+            remainingTexts = new ArrayList<>(texts);
+            Collections.shuffle(remainingTexts);
 
-            this.startTime = game.ticks();
+            startTime = game.ticks();
         });
 
         events.listen(GamePhaseEvents.TICK, () -> {
-            if ((game.ticks() - this.startTime) % this.timeBetweenTips == 0) {
-                if (!this.remainingTexts.isEmpty()) {
-                    Component text = this.remainingTexts.removeFirst();
+            if ((game.ticks() - startTime) % timeBetweenTips == 0) {
+                if (!remainingTexts.isEmpty()) {
+                    Component text = remainingTexts.removeFirst();
                     game.getAllPlayers().sendMessage(text);
                 }
             }

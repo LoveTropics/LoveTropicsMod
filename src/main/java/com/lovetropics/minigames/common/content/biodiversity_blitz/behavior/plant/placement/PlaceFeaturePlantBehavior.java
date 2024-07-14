@@ -38,10 +38,10 @@ public record PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature,
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> {
 			ServerLevel world = game.getWorld();
-			ConfiguredFeature<?, ?> tree = this.feature.value();
-			Long2ObjectMap<BlockState> changedBlocks = this.generateFeature(world, pos, tree);
+			ConfiguredFeature<?, ?> tree = feature.value();
+			Long2ObjectMap<BlockState> changedBlocks = generateFeature(world, pos, tree);
 			if (changedBlocks != null) {
-				return this.buildPlacement(pos, changedBlocks);
+				return buildPlacement(pos, changedBlocks);
 			} else {
 				return null;
 			}
@@ -50,7 +50,7 @@ public record PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature,
 
 	@Nullable
 	private Long2ObjectMap<BlockState> generateFeature(ServerLevel world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
-		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, this.blocks);
+		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, blocks);
 
 		ChunkGenerator chunkGenerator = world.getChunkSource().getGenerator();
 		if (feature.place(capturingWorld, chunkGenerator, world.random, pos)) {
@@ -120,7 +120,7 @@ public record PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature,
 
 		@Override
 		public boolean setBlock(BlockPos pos, BlockState state, int flags, int recursionLeft) {
-			BlockState oldState = this.getBlockState(pos);
+			BlockState oldState = getBlockState(pos);
 			if (oldState == state) {
 				return false;
 			}

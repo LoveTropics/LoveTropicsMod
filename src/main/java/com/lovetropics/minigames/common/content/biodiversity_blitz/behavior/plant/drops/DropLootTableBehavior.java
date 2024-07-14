@@ -66,7 +66,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 			if (is7 || is3) {
 				Plant plant = plot.plants.getPlantAt(pos);
 
-				if (plant != null && plant.type().equals(this.plantType)) {
+				if (plant != null && plant.type().equals(plantType)) {
 					dropLoot(player, plot, plant, pos);
 					if (is7) {
 						world.setBlock(pos, state.setValue(BlockStateProperties.AGE_7, 0), 3);
@@ -83,10 +83,10 @@ public final class DropLootTableBehavior implements IGameBehavior {
 	}
 
 	private void dropLoot(ServerPlayer player, Plot plot, Plant plant, BlockPos pos) {
-		LootTable lootTable = this.getLootTable(game.getServer());
+		LootTable lootTable = getLootTable(game.getServer());
         ServerLevel world = game.getWorld();
 
-        LootParams params = this.buildLootParams(player, pos);
+        LootParams params = buildLootParams(player, pos);
         for (ItemStack stack : lootTable.getRandomItems(params)) {
             Block.popResource(world, pos, stack);
         }
@@ -103,6 +103,6 @@ public final class DropLootTableBehavior implements IGameBehavior {
 	}
 
 	private LootTable getLootTable(MinecraftServer server) {
-        return server.reloadableRegistries().getLootTable(this.lootTable);
+        return server.reloadableRegistries().getLootTable(lootTable);
     }
 }

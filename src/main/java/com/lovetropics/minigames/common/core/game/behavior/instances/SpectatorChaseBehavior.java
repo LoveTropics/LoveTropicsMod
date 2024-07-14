@@ -57,11 +57,11 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	private void removePlayer(IGamePhase game, ServerPlayer player) {
 		removeSpectator(player);
 
-		this.sendSpectatingUpdate(game);
+		sendSpectatingUpdate(game);
 	}
 
 	private void sendSpectatingUpdate(IGamePhase game) {
-		SpectatingClientState spectating = this.buildSpectatingState(game);
+		SpectatingClientState spectating = buildSpectatingState(game);
 		GameClientState.sendToPlayers(spectating, game.getSpectators());
 	}
 
