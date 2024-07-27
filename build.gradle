@@ -118,6 +118,8 @@ dependencies {
 
     jarJar(modImpl("com.lovetropics.lib:LTLib:$ltlib_version"))
 
+    modRuntime "com.lovetropics.extras:LTExtras:$ltextras_version"
+
     testImplementation platform("org.junit:junit-bom:5.7.0")
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
