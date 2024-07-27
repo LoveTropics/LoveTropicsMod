@@ -68,6 +68,7 @@ public class LTMinigamesGameTests {
 
         return testMap;
     });
+    public static final String TESTING_PACK = "testing";
 
     @SubscribeEvent
     static void register(final RegisterGameTestsEvent event) throws NoSuchMethodException {
@@ -76,7 +77,7 @@ public class LTMinigamesGameTests {
 
     @SubscribeEvent
     static void gather(final GatherDataEvent event) {
-        final PackOutput out = event.getGenerator().getPackOutput("testing");
+        final PackOutput out = event.getGenerator().getPackOutput(TESTING_PACK);
 
         final BehaviorFactory behaviors = new BehaviorFactory();
         event.getGenerator()
@@ -97,11 +98,11 @@ public class LTMinigamesGameTests {
     @SubscribeEvent
     static void addFinders(final AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA) {
-            PackLocationInfo info = new PackLocationInfo("testing", Component.literal("testing"), PackSource.BUILT_IN, Optional.empty());
+            PackLocationInfo info = new PackLocationInfo(TESTING_PACK, Component.literal("testing"), PackSource.BUILT_IN, Optional.empty());
             final var resources = new PathPackResources(info, ModList.get()
                     .getModContainerById(LoveTropics.ID).orElseThrow()
                     .getModInfo().getOwningFile()
-                    .getFile().findResource("testing"));
+                    .getFile().findResource(TESTING_PACK));
             event.addRepositorySource(onLoad -> onLoad.accept(Pack.readMetaAndCreate(
                     info, new Pack.ResourcesSupplier() {
                         @Override
