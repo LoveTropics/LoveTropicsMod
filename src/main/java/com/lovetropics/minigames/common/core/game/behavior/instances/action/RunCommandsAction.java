@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
@@ -8,7 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.state.DebugModeState;
-import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -46,30 +47,41 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) {
-        CommandDispatcher<CommandSourceStack> dispatcher = game.server().getCommands().getDispatcher();
+        Commands commands = game.server().getCommands();
         CommandSourceStack source = createCommandSource(game);
 
-        events.listen(GameActionEvents.APPLY, (context) -> executeCommands(dispatcher, source, globalCommands));
+        if (!globalCommands.isEmpty()) {
+            List<ParseResults<CommandSourceStack>> globalCommands = this.globalCommands.stream()
+                    .map(command -> commands.getDispatcher().parse(command, source))
+                    .toList();
 
-        events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-            CommandSourceStack targetSource = source.withEntity(target).withPosition(target.position());
-            return executeCommands(dispatcher, targetSource, playerCommands);
-        });
-    }
-
-    private static boolean executeCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandSourceStack source, List<String> commands) {
-        if (commands.isEmpty()) {
-            return false;
-        }
-        for (String command : commands) {
-            try {
-                dispatcher.execute(command, source);
-            } catch (CommandSyntaxException e) {
-                LOGGER.error("Failed to execute command `{}` for {}", command, e);
-                return false;
+            for (ParseResults<CommandSourceStack> parse : globalCommands) {
+                if (!parse.getExceptions().isEmpty()) {
+                    CommandSyntaxException exception = parse.getExceptions().values().iterator().next();
+                    if (exception.getRawMessage() instanceof Component component) {
+                        throw new GameException(component);
+                    }
+                    throw new GameException(Component.literal(exception.getMessage()));
+                }
             }
+
+            events.listen(GameActionEvents.APPLY, context -> {
+                for (ParseResults<CommandSourceStack> command : globalCommands) {
+                    commands.performCommand(command, command.getReader().getString());
+                }
+                return true;
+            });
         }
-        return true;
+
+        if (!playerCommands.isEmpty()) {
+            events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
+                CommandSourceStack targetSource = source.withEntity(target).withPosition(target.position());
+                for (String command : playerCommands) {
+                    commands.performPrefixedCommand(targetSource, command);
+                }
+                return true;
+            });
+        }
     }
 
     private static CommandSourceStack createCommandSource(IGamePhase game) {
