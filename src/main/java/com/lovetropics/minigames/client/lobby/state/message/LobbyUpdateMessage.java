@@ -29,7 +29,7 @@ public record LobbyUpdateMessage(int id, Optional<Update> update) implements Cus
     }
 
     public static LobbyUpdateMessage remove(IGameLobby lobby) {
-        return new LobbyUpdateMessage(lobby.getMetadata().id().networkId(), null);
+        return new LobbyUpdateMessage(lobby.getMetadata().id().networkId(), Optional.empty());
     }
 
     public static void handle(LobbyUpdateMessage message, IPayloadContext context) {
