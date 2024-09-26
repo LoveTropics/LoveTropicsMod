@@ -38,7 +38,7 @@ public record MicrogamesBehaviour(List<ResourceLocation> gameConfigs) implements
         if(game instanceof MultiGamePhase multiGamePhase){
             GameConfig gameConfig = GameConfigs.REGISTRY.get(ResourceLocation.parse(gameName));
             GamePhase.create(multiGamePhase.game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING).thenAccept((result) -> {
-                multiGamePhase.setActivePhase(result.getOk());
+                multiGamePhase.addAndSetActivePhase(result.getOk());
             });
         }
     }

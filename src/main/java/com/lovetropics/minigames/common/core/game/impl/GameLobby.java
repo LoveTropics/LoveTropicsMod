@@ -161,6 +161,10 @@ final class GameLobby implements IGameLobby {
 		return GameResult.ok();
 	}
 
+	public GameRewardsMap getRewardsMap() {
+		return rewardsMap;
+	}
+
 	private GameResult<Unit> onGamePhaseChange(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
 
