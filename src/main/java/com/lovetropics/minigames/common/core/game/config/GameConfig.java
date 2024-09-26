@@ -29,6 +29,8 @@ public final class GameConfig implements IGameDefinition {
 	public final GamePhaseConfig waiting;
 	public final GamePhaseConfig playing;
 
+	public final boolean isMultiGame;
+
 	public GameConfig(
 			ResourceLocation id,
 			ResourceLocation backendId,
@@ -39,7 +41,8 @@ public final class GameConfig implements IGameDefinition {
 			int minimumParticipants,
 			int maximumParticipants,
 			@Nullable GamePhaseConfig waiting,
-			GamePhaseConfig playing
+			GamePhaseConfig playing,
+			boolean isMultiGame
 	) {
 		this.id = id;
 		this.backendId = backendId;
@@ -51,6 +54,7 @@ public final class GameConfig implements IGameDefinition {
 		this.maximumParticipants = maximumParticipants;
 		this.waiting = waiting;
 		this.playing = playing;
+		this.isMultiGame = isMultiGame;
 	}
 
 	public static Codec<GameConfig> codec(ResourceLocation id) {
@@ -63,14 +67,16 @@ public final class GameConfig implements IGameDefinition {
 				Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 				Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
 				GamePhaseConfig.CODEC.optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
+				Codec.BOOL.optionalFieldOf("is_multi_game").forGetter(c -> Optional.of(c.isMultiGame)),
 				GamePhaseConfig.MAP_CODEC.forGetter(c -> c.playing)
-		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
+		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, is_multi_game, active) -> {
 			ResourceLocation backendId = backendIdOpt.orElse(id);
 			String statisticsKey = statisticsKeyOpt.orElse(id.getPath());
 			Component subtitle = subtitleOpt.orElse(null);
+			boolean isMultiGame = is_multi_game.orElse(false);
 			ResourceLocation icon = iconOpt.orElse(null);
 			GamePhaseConfig waiting = waitingOpt.orElse(null);
-			return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
+			return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active, isMultiGame);
 		}));
 	}
 
@@ -124,5 +130,10 @@ public final class GameConfig implements IGameDefinition {
 	@Override
 	public Optional<IGamePhaseDefinition> getWaitingPhase() {
 		return Optional.ofNullable(waiting);
+	}
+
+	@Override
+	public boolean isMultiGamePhase() {
+		return isMultiGame;
 	}
 }
