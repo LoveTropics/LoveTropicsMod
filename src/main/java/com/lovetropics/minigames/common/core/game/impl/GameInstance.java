@@ -9,6 +9,9 @@ import net.minecraft.server.MinecraftServer;
 
 import java.util.UUID;
 
+/**
+ * A unique instance of a specific minigame, stored in a GameLobby
+ */
 final class GameInstance implements IGame {
 	final GameLobby lobby;
 	final MinecraftServer server;

@@ -41,6 +41,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Think of a GamePhase like an act in a play, where the play is a GameInstance
+ */
 public class GamePhase implements IGamePhase {
 	final GameInstance game;
 	final MinecraftServer server;

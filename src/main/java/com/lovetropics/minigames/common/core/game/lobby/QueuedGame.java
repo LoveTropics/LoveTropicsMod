@@ -8,6 +8,9 @@ import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Essentially the data underlying a queued game which is stored in a game lobby
+ */
 public record QueuedGame(int networkId, IGameDefinition definition, BehaviorList playingBehaviors, @Nullable BehaviorList waitingBehaviors) {
 	private static final AtomicInteger NEXT_NETWORK_ID = new AtomicInteger();
 

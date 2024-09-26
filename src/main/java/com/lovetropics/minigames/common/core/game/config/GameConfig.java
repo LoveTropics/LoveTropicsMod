@@ -11,6 +11,9 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+/**
+ * Stores data-driven info about a minigame
+ */
 public final class GameConfig implements IGameDefinition {
 	public final ResourceLocation id;
 	public final ResourceLocation backendId;
