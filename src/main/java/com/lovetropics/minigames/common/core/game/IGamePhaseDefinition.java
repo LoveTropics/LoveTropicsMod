@@ -16,4 +16,5 @@ public interface IGamePhaseDefinition {
 	}
 
 	BehaviorList createBehaviors();
+
 }
