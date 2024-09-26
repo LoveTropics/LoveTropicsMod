@@ -131,7 +131,7 @@ public class GamePhase implements IGamePhase {
 		return GameResult.ok();
 	}
 
-	private ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role) {
+	protected ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role) {
 		SpawnBuilder spawn = new SpawnBuilder(player);
 		invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
 
