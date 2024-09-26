@@ -64,7 +64,7 @@ public class GamePhase implements IGamePhase {
 	GameStopReason stopped;
 	boolean destroyed;
 
-	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
+	protected GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
 		server = game.server();
 		this.definition = definition;
@@ -79,7 +79,7 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
+	public static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
 		MinecraftServer server = game.server();
 
 		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
@@ -90,6 +90,9 @@ public class GamePhase implements IGamePhase {
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
 					BehaviorList behaviors = definition.createBehaviors();
+					if(game.definition.isMultiGamePhase()){
+						return new MultiGamePhase(game, definition, phaseType, map, behaviors);
+					}
 					return new GamePhase(game, definition, phaseType, map, behaviors);
 				}), server);
 

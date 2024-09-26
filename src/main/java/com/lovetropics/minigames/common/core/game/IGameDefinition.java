@@ -70,6 +70,8 @@ public interface IGameDefinition {
 		return Integer.MAX_VALUE;
 	}
 
+	default boolean isMultiGamePhase() {return false;}
+
 	IGamePhaseDefinition getPlayingPhase();
 
 	default Optional<IGamePhaseDefinition> getWaitingPhase() {
