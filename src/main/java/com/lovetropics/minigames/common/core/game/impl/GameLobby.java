@@ -165,6 +165,7 @@ final class GameLobby implements IGameLobby {
 		return rewardsMap;
 	}
 
+	// If old phase is null, it probably means we're entering from the main event world
 	private GameResult<Unit> onGamePhaseChange(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
 
@@ -195,7 +196,7 @@ final class GameLobby implements IGameLobby {
 
 	private GameResult<Unit> startPhase(GamePhase phase) {
 		phase.state().register(GameRewardsMap.STATE, rewardsMap);
-		return phase.start();
+		return phase.start(false);
 	}
 
 	private void onGameInstanceChange(@Nullable GameInstance oldGame, @Nullable GameInstance newGame) {

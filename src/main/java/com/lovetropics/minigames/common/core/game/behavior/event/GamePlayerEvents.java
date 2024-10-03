@@ -205,6 +205,12 @@ public final class GamePlayerEvents {
 		return false;
 	});
 
+	public static final GameEventType<Return> RETURN = GameEventType.create(Return.class, listeners -> (playerId, role) -> {
+		for (Return listener : listeners) {
+			listener.onReturn(playerId, role);
+		}
+	});
+
 	private GamePlayerEvents() {
 	}
 
@@ -286,5 +292,9 @@ public final class GamePlayerEvents {
 
 	public interface Chat {
 		boolean onChat(ServerPlayer player, PlayerChatMessage message);
+	}
+
+	public interface Return {
+		void onReturn(UUID playerId, @Nullable PlayerRole role);
 	}
 }

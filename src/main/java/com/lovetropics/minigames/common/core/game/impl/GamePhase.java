@@ -25,6 +25,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -55,7 +56,7 @@ public class GamePhase implements IGamePhase {
 	final GameStateMap phaseState = new GameStateMap();
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
-	private final Set<UUID> addedPlayers = new ObjectArraySet<>();
+	protected final Set<UUID> addedPlayers = new ObjectArraySet<>();
 
 	final GameEventListeners events = new GameEventListeners();
 
@@ -99,7 +100,7 @@ public class GamePhase implements IGamePhase {
 		return GameResult.handleException("Unknown exception starting game phase", future);
 	}
 
-	GameResult<Unit> start() {
+	GameResult<Unit> start(final boolean savePlayerDataToMemory) {
 		try {
 			behaviors.registerTo(this, events);
 		} catch (GameException e) {
@@ -120,7 +121,7 @@ public class GamePhase implements IGamePhase {
 			Collections.shuffle(shuffledPlayers);
 
 			for (ServerPlayer player : shuffledPlayers) {
-				addAndSpawnPlayer(player, getRoleFor(player));
+				addAndSpawnPlayer(player, getRoleFor(player), savePlayerDataToMemory);
 			}
 
 			invoker(GamePhaseEvents.START).start();
@@ -131,7 +132,7 @@ public class GamePhase implements IGamePhase {
 		return GameResult.ok();
 	}
 
-	protected ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role) {
+	protected ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role, final boolean savePlayerDataToMemory) {
 		SpawnBuilder spawn = new SpawnBuilder(player);
 		invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
 
@@ -142,6 +143,10 @@ public class GamePhase implements IGamePhase {
 		invoker(GamePlayerEvents.SET_ROLE).onSetRole(newPlayer, role, null);
 
 		addedPlayers.add(player.getUUID());
+
+		if (savePlayerDataToMemory) {
+			game.playerStorage.setPlayerData(player, player.saveWithoutId(new CompoundTag()));
+		}
 
 		return newPlayer;
 	}
@@ -216,7 +221,7 @@ public class GamePhase implements IGamePhase {
 
 	void onPlayerJoin(ServerPlayer player) {
 		try {
-			ServerPlayer newPlayer = addAndSpawnPlayer(player, null);
+			ServerPlayer newPlayer = addAndSpawnPlayer(player, null, false);
 			invoker(GamePlayerEvents.JOIN).onAdd(newPlayer);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
