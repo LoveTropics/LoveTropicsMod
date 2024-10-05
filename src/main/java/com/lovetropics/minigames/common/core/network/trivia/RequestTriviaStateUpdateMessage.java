@@ -11,28 +11,23 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAnswer) implements CustomPacketPayload {
-    public static final Type<SelectTriviaAnswerMessage> TYPE = new Type<>(LoveTropics.location("select_trivia_answer"));
-    public static final StreamCodec<ByteBuf, SelectTriviaAnswerMessage> STREAM_CODEC = StreamCodec.composite(
-            BlockPos.STREAM_CODEC, SelectTriviaAnswerMessage::triviaBlock,
-            ByteBufCodecs.STRING_UTF8, SelectTriviaAnswerMessage::selectedAnswer,
-            SelectTriviaAnswerMessage::new
+public record RequestTriviaStateUpdateMessage(BlockPos triviaBlock) implements CustomPacketPayload {
+    public static final Type<RequestTriviaStateUpdateMessage> TYPE = new Type<>(LoveTropics.location("request_trivia_update"));
+    public static final StreamCodec<ByteBuf, RequestTriviaStateUpdateMessage> STREAM_CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, RequestTriviaStateUpdateMessage::triviaBlock,
+            RequestTriviaStateUpdateMessage::new
     );
 
-    public static void handle(final SelectTriviaAnswerMessage message, final IPayloadContext context) {
+    public static void handle(final RequestTriviaStateUpdateMessage message, final IPayloadContext context) {
         if(context.player().level().getBlockEntity(message.triviaBlock()) instanceof TriviaBlockEntity triviaBlockEntity){
             IGamePhase game = IGameManager.get().getGamePhaseFor(context.player());
             if (game != null) {
                 ServerPlayer player = (ServerPlayer) context.player();
-                boolean isCorrect = game.invoker(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION)
-                        .onAnswerQuestion(player, player.serverLevel(), message.triviaBlock(),
-                                triviaBlockEntity,
-                                triviaBlockEntity.getQuestion(), message.selectedAnswer());
-                
+                PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(message.triviaBlock(), triviaBlockEntity.getState()));
             }
-//            triviaBlockEntity.handleAnswerSelection(context.player(), message.selectedAnswer());
         }
     }
     @Override
