@@ -1,8 +1,6 @@
 package com.lovetropics.minigames.common.core.network.trivia;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.client.game.trivia.ClientTriviaHandler;
-import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
@@ -21,7 +19,7 @@ public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAns
     );
 
     public static void handle(final SelectTriviaAnswerMessage message, final IPayloadContext context) {
-        if(context.player().level().getBlockEntity(message.triviaBlock()) instanceof TriviaBlockEntity triviaBlockEntity){
+        if (context.player().level().getBlockEntity(message.triviaBlock()) instanceof final TriviaBlockEntity triviaBlockEntity){
             triviaBlockEntity.handleAnswerSelection(context.player(), message.selectedAnswer());
         }
     }

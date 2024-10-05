@@ -1,16 +1,21 @@
 package com.lovetropics.minigames.common.content.river_race.block;
 
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
+import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -113,10 +118,10 @@ public class TriviaBlockEntity extends BlockEntity {
     }
 
     public void handleAnswerSelection(Player player, String selectedAnswer){
-        if(getQuestion() != null){
+        if (getQuestion() != null) {
             TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer answer = getQuestion().getAnswer(selectedAnswer);
-            if(answer != null){
-                if(answer.correct()){
+            if (answer != null) {
+                if (answer.correct()) {
                     player.sendSystemMessage(Component.
                             literal("Correct! Do something here!")
                             .withStyle(ChatFormatting.GREEN));
@@ -127,6 +132,12 @@ public class TriviaBlockEntity extends BlockEntity {
                             .withStyle(ChatFormatting.RED));
                     unlocksAt = System.currentTimeMillis();
                     markUpdated();
+                }
+                if (player instanceof final ServerPlayer serverPlayer) {
+                    IGamePhase game = IGameManager.get().getGamePhaseAt(level, player.position());
+                    if (game != null) {
+                        game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(serverPlayer, answer.correct());
+                    }
                 }
             }
         }
