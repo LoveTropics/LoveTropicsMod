@@ -15,7 +15,7 @@ public class TriviaEvents {
         for (AnswerQuestion listener : listeners) {
             boolean isCorrect = listener.onAnswerQuestion(player, world, pos, triviaBlockEntity, question, answer);
             if (isCorrect) {
-                return isCorrect;
+                return true;
             }
         }
         return false;

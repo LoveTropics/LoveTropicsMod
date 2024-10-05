@@ -3,7 +3,9 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -125,7 +127,6 @@ public final class TriviaBehaviour implements IGameBehavior {
                                 .withStyle(ChatFormatting.GREEN));
                         triviaBlockEntity.markAsCorrect();
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
-                        return true;
                     } else {
                         //TODO: Make this a translation key
                         player.sendSystemMessage(Component.
@@ -134,6 +135,10 @@ public final class TriviaBehaviour implements IGameBehavior {
                         lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout()), pos);
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     }
+                    if (player instanceof final ServerPlayer serverPlayer) {
+                        game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(serverPlayer, answerObj.correct());
+                    }
+                    return answerObj.correct();
                 }
             }
             return false;
