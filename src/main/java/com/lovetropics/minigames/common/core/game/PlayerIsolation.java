@@ -1,10 +1,12 @@
 package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.core.game.impl.GameInstance;
 import com.lovetropics.minigames.common.util.LTGameTestFakePlayer;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
@@ -18,6 +20,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -42,6 +45,10 @@ public final class PlayerIsolation {
 	private PlayerIsolation() {
 	}
 
+	/**
+	 * Player going into a GamePhase
+	 * Saves player data and then teleports them
+	 */
 	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot) {
 		final TransferableState transferableState = TransferableState.copyOf(player);
 		return reloadPlayer(player, newPlayer -> {
@@ -53,6 +60,9 @@ public final class PlayerIsolation {
 		});
 	}
 
+	/**
+	 * Player is headed back to the main event world most likely
+	 */
 	public ServerPlayer restore(final ServerPlayer player) {
 		if (isIsolated(player)) {
 			return reloadPlayerFromDisk(player);
@@ -74,6 +84,29 @@ public final class PlayerIsolation {
 		});
 	}
 
+	public ServerPlayer reloadPlayerFromMemory(final GameInstance game, final ServerPlayer player) {
+		return reloadPlayer(player, newPlayer -> {
+			final MinecraftServer server = player.getServer();
+			final Optional<CompoundTag> playerTag = game.getPlayerStorage().fetchAndRemovePlayerData(player);
+
+			final ResourceKey<Level> dimensionKey = playerTag.isPresent() ? getPlayerDimension(playerTag.get()) : Level.OVERWORLD;
+			final ServerLevel newLevel = Objects.requireNonNullElse(server.getLevel(dimensionKey), server.overworld());
+			newPlayer.setServerLevel(newLevel);
+
+			if (playerTag.isPresent()) {
+				final CompoundTag playerData = playerTag.get();
+				setPlayerPosAndMotionFromTag(newPlayer, playerData);
+
+				// TODO is this like super way too much?
+				// We just need to make sure we transfer things like inventory
+				newPlayer.readAdditionalSaveData(playerData);
+
+				newPlayer.addTag(ISOLATED_TAG);
+				newPlayer.loadGameTypes(playerData);
+			}
+		});
+	}
+
 	private ServerPlayer reloadPlayer(final ServerPlayer oldPlayer, final Consumer<ServerPlayer> initializer) {
 		if (oldPlayer instanceof LTGameTestFakePlayer) {
 			initializer.accept(oldPlayer);
@@ -86,6 +119,8 @@ public final class PlayerIsolation {
 		reloadingPlayers.add(oldPlayer.getUUID());
 		EventHooks.firePlayerLoggedOut(oldPlayer);
 
+		// Only called once - when player enters the first game phase they enter
+		// this way, we only save to disk once
 		if (!isIsolated(oldPlayer)) {
 			((PlayerListAccess) playerList).ltminigames$save(oldPlayer);
 		}
@@ -165,6 +200,23 @@ public final class PlayerIsolation {
 
 	public boolean isReloading(final ServerPlayer player) {
 		return reloadingPlayers.contains(player.getUUID());
+	}
+
+	private static void setPlayerPosAndMotionFromTag(ServerPlayer newPlayer, CompoundTag playerData) {
+		ListTag posTag = playerData.getList("Pos", 6);
+		ListTag motionTag = playerData.getList("Motion", 6);
+		ListTag rotationTag = playerData.getList("Rotation", 5);
+		double xPos = motionTag.getDouble(0);
+		double yPos = motionTag.getDouble(1);
+		double zPos = motionTag.getDouble(2);
+		newPlayer.setDeltaMovement(Math.abs(xPos) > 10.0 ? 0.0 : xPos, Math.abs(yPos) > 10.0 ? 0.0 : yPos, Math.abs(zPos) > 10.0 ? 0.0 : zPos);
+		double epsilon = 3.0000512E7;
+		newPlayer.setPosRaw(Mth.clamp(posTag.getDouble(0), -epsilon, epsilon), Mth.clamp(posTag.getDouble(1), -2.0E7, 2.0E7), Mth.clamp(posTag.getDouble(2), -3.0000512E7, 3.0000512E7));
+		newPlayer.setYRot(rotationTag.getFloat(0));
+		newPlayer.setXRot(rotationTag.getFloat(1));
+		newPlayer.setOldPosAndRot();
+		newPlayer.setYHeadRot(newPlayer.getYRot());
+		newPlayer.setYBodyRot(newPlayer.getYRot());
 	}
 
 	// State that can be transferred into isolation, but not back out

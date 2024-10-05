@@ -22,7 +22,7 @@ public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAns
     );
 
     public static void handle(final SelectTriviaAnswerMessage message, final IPayloadContext context) {
-        if(context.player().level().getBlockEntity(message.triviaBlock()) instanceof TriviaBlockEntity triviaBlockEntity){
+        if (context.player().level().getBlockEntity(message.triviaBlock()) instanceof final TriviaBlockEntity triviaBlockEntity){
             IGamePhase game = IGameManager.get().getGamePhaseFor(context.player());
             if (game != null) {
                 ServerPlayer player = (ServerPlayer) context.player();
@@ -30,7 +30,7 @@ public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAns
                         .onAnswerQuestion(player, player.serverLevel(), message.triviaBlock(),
                                 triviaBlockEntity,
                                 triviaBlockEntity.getQuestion(), message.selectedAnswer());
-                
+
             }
 //            triviaBlockEntity.handleAnswerSelection(context.player(), message.selectedAnswer());
         }

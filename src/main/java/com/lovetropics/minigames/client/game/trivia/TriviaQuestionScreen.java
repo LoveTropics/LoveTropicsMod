@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.game.trivia;
 
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
-import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
 import com.lovetropics.minigames.common.core.network.trivia.RequestTriviaStateUpdateMessage;
 import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
 import net.minecraft.ChatFormatting;
@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class TriviaQuestionScreen extends Screen {
 

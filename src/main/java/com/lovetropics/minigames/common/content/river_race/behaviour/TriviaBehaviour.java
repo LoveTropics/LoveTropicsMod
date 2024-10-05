@@ -105,8 +105,7 @@ public final class TriviaBehaviour implements IGameBehavior {
                     }
                 }
                 if (triviaBlockEntity.getQuestion() != null) {
-                    PacketDistributor.sendToPlayer(player,
-                            new ShowTriviaMessage(pos, triviaBlockEntity.getQuestion(), triviaBlockEntity.getState()));
+                    PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, triviaBlockEntity.getQuestion(), triviaBlockEntity.getState()));
                 }
                 return InteractionResult.SUCCESS_NO_ITEM_USED;
             }
