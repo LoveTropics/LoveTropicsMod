@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.river_race;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.river_race.behaviour.MicrogamesBehaviour;
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
+import com.lovetropics.minigames.common.content.river_race.behaviour.VictoryPointsBehavior;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
@@ -17,6 +18,7 @@ public class RiverRace {
     private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
     public static final GameBehaviorEntry<TriviaBehaviour> TRIVIA_BEHAVIOUR = REGISTRATE.object("trivia").behavior(TriviaBehaviour.CODEC).register();
     public static final GameBehaviorEntry<MicrogamesBehaviour> MICROGAMES_BEHAVIOUR = REGISTRATE.object("microgames").behavior(MicrogamesBehaviour.CODEC).register();
+    public static final GameBehaviorEntry<VictoryPointsBehavior> VICTORY_POINTS_BEHAVIOR = REGISTRATE.object("victory_points").behavior(VictoryPointsBehavior.CODEC).register();
 
     public static final BlockEntry<TriviaBlock.GateTriviaBlock> TRIVIA_GATE = REGISTRATE
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)

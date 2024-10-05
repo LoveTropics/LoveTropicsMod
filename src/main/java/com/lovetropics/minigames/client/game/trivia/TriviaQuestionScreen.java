@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.game.trivia;
 
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
-import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -9,6 +9,7 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class TriviaQuestionScreen extends Screen {
 
@@ -37,8 +38,8 @@ public class TriviaQuestionScreen extends Screen {
 
 
     private void handleAnswerClick(Button clickedButton){
-        //TODO: send network packet to server with information
         String selectedAnswer = clickedButton.getMessage().getString();
+        PacketDistributor.sendToServer(new SelectTriviaAnswerMessage(triviaBlockPos, selectedAnswer));
     }
 
     @Override

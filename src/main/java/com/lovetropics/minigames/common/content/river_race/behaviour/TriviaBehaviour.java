@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.network.trivia.ShowTriviaMessage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -82,8 +81,7 @@ public record TriviaBehaviour(List<TriviaZone> zones) implements IGameBehavior {
                     }
                 }
                 if(triviaBlockEntity.getQuestion() != null) {
-                    PacketDistributor.sendToPlayer(player,
-                            new ShowTriviaMessage(pos, triviaBlockEntity.getQuestion()));
+                    PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, triviaBlockEntity.getQuestion()));
                 }
                 return InteractionResult.SUCCESS_NO_ITEM_USED;
             }
