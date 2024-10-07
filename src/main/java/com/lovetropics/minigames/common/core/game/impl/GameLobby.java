@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
+import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsState;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
@@ -53,6 +54,7 @@ final class GameLobby implements IGameLobby {
 			new ChatNotifyListener()
 	);
 	private final GameRewardsMap rewardsMap = new GameRewardsMap();
+	@Nullable private VictoryPointsState points;
 
 	private boolean needsRolePrompt = false;
 	private boolean closed;
@@ -165,6 +167,15 @@ final class GameLobby implements IGameLobby {
 		return rewardsMap;
 	}
 
+	public VictoryPointsState createOrGetPoints(final MultiGamePhase gamePhase) {
+		if (points != null) {
+			return points;
+		}
+
+		points = new VictoryPointsState(gamePhase);
+		return points;
+	}
+
 	// If old phase is null, it probably means we're entering from the main event world
 	private GameResult<Unit> onGamePhaseChange(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
@@ -196,6 +207,9 @@ final class GameLobby implements IGameLobby {
 
 	private GameResult<Unit> startPhase(GamePhase phase) {
 		phase.state().register(GameRewardsMap.STATE, rewardsMap);
+		if (phase instanceof final MultiGamePhase multiPhase) {
+			phase.state().register(VictoryPointsState.KEY, createOrGetPoints(multiPhase));
+		}
 		return phase.start(false);
 	}
 
