@@ -1,8 +1,9 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
-import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsState;
+import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -17,6 +18,7 @@ import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -28,22 +30,54 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class MultiGamePhase extends GamePhase {
+
+    @FunctionalInterface
+    interface GameStateRegistration<L, M, R> {
+        void registerState(L lobby, M phase, R id);
+    }
+
+    private enum MultiPhaseGameStates {
+        RIVER_RACE((lobby, phase, id) -> {
+            IGameState state = lobby.getMultiPhaseDataMap().get(id);
+            if (state instanceof RiverRaceState riverRaceState) {
+                riverRaceState.reset();
+            } else {
+                lobby.getMultiPhaseDataMap().put(id, new RiverRaceState(phase));
+            }
+            phase.phaseState.register(RiverRaceState.KEY, (RiverRaceState) lobby.getMultiPhaseDataMap().get(id));
+        });
+
+        final GameStateRegistration<GameLobby, MultiGamePhase, ResourceLocation> registration;
+
+        MultiPhaseGameStates(GameStateRegistration<GameLobby, MultiGamePhase, ResourceLocation> registration) {
+            this.registration = registration;
+        }
+    }
 
     @Nullable
     private GamePhase activePhase = null;
     private final List<ResourceLocation> subPhaseGames = Lists.newArrayList();
+    private static final Map<ResourceLocation, MultiPhaseGameStates> gameStateMap = Maps.newHashMap();
 
     protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
         super(game, definition, phaseType, map, behaviors);
+
+        gameStateMap.put(ResourceLocation.parse("lt:river_race"), MultiPhaseGameStates.RIVER_RACE);
+    }
+
+    public void registerState(final GameLobby lobby) {
+        final ResourceLocation id = game.definition.getId();
+        gameStateMap.get(id).registration.registerState(lobby, this, id);
     }
 
     public void setActivePhase(GamePhase activePhase, final boolean saveInventory) {
         this.activePhase = activePhase;
         MultiGameManager.INSTANCE.addGamePhaseToDimension(activePhase.dimension(), activePhase);
         activePhase.state().register(GameRewardsMap.STATE, ((GameLobby) lobby()).getRewardsMap());
-        activePhase.state().register(VictoryPointsState.KEY, ((GameLobby) lobby()).createOrGetPoints(this));
+        activePhase.state().register(RiverRaceState.KEY, (RiverRaceState) ((GameLobby) lobby()).createOrGetMultiPhaseState(this));
         activePhase.start(saveInventory);
     }
 

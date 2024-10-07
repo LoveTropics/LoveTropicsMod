@@ -1,7 +1,8 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
-import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsState;
+import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
+import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsGameState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -63,23 +64,24 @@ public class VictoryPointsBehavior implements IGameBehavior {
     }
 
     private void tryAddPoints(final ServerPlayer player, final int points) {
-        final VictoryPointsState pointState = points();
+        final VictoryPointsGameState pointState = state();
         if (pointState != null) {
             pointState.addPointsToTeam(player, points);
         }
     }
 
     private int getPoints(final ServerPlayer player) {
-        final VictoryPointsState pointState = points();
-        if (pointState != null) {
-            return pointState.getPoints(player);
+        final VictoryPointsGameState gameState = state();
+        if (gameState != null) {
+            return gameState.getVictoryPoints(player);
         }
         return -1;
     }
 
     @Nullable
-    private VictoryPointsState points() {
-        return game.state().getOrNull(VictoryPointsState.KEY);
+    private VictoryPointsGameState state() {
+        // TODO how to make this more generic to not be specific to river race?
+        return game.state().getOrNull(RiverRaceState.KEY);
     }
 
     private InteractionResult onBlockBroken(ServerPlayer serverPlayer, BlockPos blockPos, BlockState blockState, InteractionHand interactionHand) {
