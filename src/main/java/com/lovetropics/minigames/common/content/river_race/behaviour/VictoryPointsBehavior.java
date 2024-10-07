@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -19,6 +18,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.state.BlockState;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class VictoryPointsBehavior implements IGameBehavior {
 
     public static final MapCodec<VictoryPointsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -28,8 +30,6 @@ public class VictoryPointsBehavior implements IGameBehavior {
     ).apply(i, VictoryPointsBehavior::new));
 
     private IGamePhase game;
-
-    private VictoryPointsState points;
 
     private final int pointsPerQuestion;
     private final int pointsPerBlockCollected;
@@ -50,17 +50,36 @@ public class VictoryPointsBehavior implements IGameBehavior {
         // Victory points from collectible blocks
         events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBlockBroken);
         // Victory points from winning microgame
-        // TODO is this the right event to use here?
-        events.listen(GameLogicEvents.GAME_OVER, this::onGameOver);
+        events.listen(GameLogicEvents.WIN_TRIGGERED, this::onWinTriggered);
     }
 
-    @Override
-    public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-        points = phaseState.register(VictoryPointsState.KEY, new VictoryPointsState(game));
+    private void onWinTriggered(Component component) {
+        for (final ServerPlayer player : game.participants()) {
+            if (Objects.equals(player.getDisplayName(), component)) {
+                tryAddPoints(player, pointsPerGameWon);
+                player.displayClientMessage(Component.literal("YOU WIN!!!! Victory points for team: " + getPoints(player)), false);
+            }
+        }
     }
 
-    private void onGameOver() {
+    private void tryAddPoints(final ServerPlayer player, final int points) {
+        final VictoryPointsState pointState = points();
+        if (pointState != null) {
+            pointState.addPointsToTeam(player, points);
+        }
+    }
 
+    private int getPoints(final ServerPlayer player) {
+        final VictoryPointsState pointState = points();
+        if (pointState != null) {
+            return pointState.getPoints(player);
+        }
+        return -1;
+    }
+
+    @Nullable
+    private VictoryPointsState points() {
+        return game.state().getOrNull(VictoryPointsState.KEY);
     }
 
     private InteractionResult onBlockBroken(ServerPlayer serverPlayer, BlockPos blockPos, BlockState blockState, InteractionHand interactionHand) {
@@ -69,10 +88,10 @@ public class VictoryPointsBehavior implements IGameBehavior {
 
     private void onQuestionAnswered(ServerPlayer player, boolean correct) {
         if (correct) {
-            points.addPointsToTeam(player, pointsPerQuestion);
-            player.displayClientMessage(Component.literal("CORRECT! Victory points for team: " + points.getPoints(player)), false);
+            tryAddPoints(player, pointsPerQuestion);
+            player.displayClientMessage(Component.literal("CORRECT! Victory points for team: " + getPoints(player)), false);
         } else {
-            player.displayClientMessage(Component.literal("WRONG >:( Victory points for team: " + points.getPoints(player)), false);
+            player.displayClientMessage(Component.literal("WRONG >:( Victory points for team: " + getPoints(player)), false);
         }
     }
 }

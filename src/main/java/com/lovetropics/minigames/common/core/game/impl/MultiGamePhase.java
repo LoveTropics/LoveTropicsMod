@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
+import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsState;
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -40,7 +42,8 @@ public class MultiGamePhase extends GamePhase {
     public void setActivePhase(GamePhase activePhase, final boolean saveInventory) {
         this.activePhase = activePhase;
         MultiGameManager.INSTANCE.addGamePhaseToDimension(activePhase.dimension(), activePhase);
-        activePhase.state().register(GameRewardsMap.STATE, ((GameLobby) activePhase.lobby()).getRewardsMap());
+        activePhase.state().register(GameRewardsMap.STATE, ((GameLobby) lobby()).getRewardsMap());
+        activePhase.state().register(VictoryPointsState.KEY, ((GameLobby) lobby()).createOrGetPoints(this));
         activePhase.start(saveInventory);
     }
 
@@ -176,6 +179,8 @@ public class MultiGamePhase extends GamePhase {
         GamePhase.create(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING).thenAccept((result) -> {
             setActivePhase(result.getOk(), saveInventory);
         });
+
+        invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
 
         return true;
     }

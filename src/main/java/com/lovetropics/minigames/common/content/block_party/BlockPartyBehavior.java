@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -171,6 +172,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				if (winningPlayer != null) {
 					message = MinigameTexts.PLAYER_WON.apply(winningPlayer.getDisplayName()).withStyle(ChatFormatting.GREEN);
 					game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
+
+					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer.getDisplayName());
 				} else {
 					message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
 				}
