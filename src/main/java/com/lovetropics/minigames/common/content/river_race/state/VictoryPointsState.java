@@ -46,4 +46,8 @@ public class VictoryPointsState implements IGameState {
     public int getPoints(ServerPlayer player) {
         return getPoints(getTeamForPlayer(player));
     }
+
+    public void reset() {
+        pointsTracker.clear();
+    }
 }
