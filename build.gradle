@@ -49,7 +49,7 @@ neoForge {
         client {
             client()
 
-            programArguments.addAll '--username', 'Dev###'
+            programArguments.addAll '--username', 'Dev' + new Random().nextInt(999)
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
