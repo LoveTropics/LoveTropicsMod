@@ -19,6 +19,7 @@ import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
+import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
@@ -120,6 +121,7 @@ public class LoveTropics {
                     TrashDiveTexts.KEYS.forEach(consumer);
                     TurtleRaceTexts.KEYS.forEach(consumer);
                     QottottTexts.KEYS.forEach(consumer);
+                    RiverRaceTexts.collectTranslations(consumer);
                 })
                 .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))
