@@ -28,7 +28,8 @@
     "client.IntegratedPlayerListMixin",
     "client.MinecraftMixin",
     "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor"
+    "client.PoseStackAccessor",
+    "client.HiddenRecipeBookMixin"
   ],
   "injectors": {
     "defaultRequire": 1

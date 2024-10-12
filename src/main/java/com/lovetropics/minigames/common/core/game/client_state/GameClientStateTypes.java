@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconCl
 import com.lovetropics.minigames.common.core.game.client_state.instance.FogClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.GlowTeamMembersState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HealthTagClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.HideRecipeBookState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.PointTagClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceTexturesClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
@@ -43,6 +44,7 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<TeamMembersClientState> TEAM_MEMBERS = register("team_members", TeamMembersClientState.CODEC);
 	public static final GameClientTweakEntry<GlowTeamMembersState> GLOW_TEAM_MEMBERS = register("glow_team_members", MapCodec.unit(GlowTeamMembersState.INSTANCE));
 	public static final GameClientTweakEntry<PointTagClientState> POINT_TAGS = register("point_tags", PointTagClientState.CODEC);
+	public static final GameClientTweakEntry<HideRecipeBookState> HIDE_RECIPE_BOOK = register("hide_recipe_book", HideRecipeBookState.CODEC);
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final MapCodec<T> codec) {
 		return REGISTRATE.object(name)

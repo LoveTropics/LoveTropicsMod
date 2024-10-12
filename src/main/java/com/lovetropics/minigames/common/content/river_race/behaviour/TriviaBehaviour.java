@@ -33,6 +33,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class TriviaBehaviour implements IGameBehavior {
 
@@ -42,7 +43,7 @@ public final class TriviaBehaviour implements IGameBehavior {
     ).apply(i, TriviaBehaviour::new));
     private final List<TriviaZone> zones;
     private final int questionLockout;
-    private HashMap<Long, BlockPos> lockedOutTriviaBlocks = new HashMap<>();
+    private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
 
     public TriviaBehaviour(List<TriviaZone> zones, int questionLockout) {
         this.zones = zones;
