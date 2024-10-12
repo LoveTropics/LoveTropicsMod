@@ -95,6 +95,10 @@ public interface IGamePhase extends IGame {
 		return getPlayersWithRole(PlayerRole.SPECTATOR);
 	}
 
+	default PlayerSet overlords() {
+		return getPlayersWithRole(PlayerRole.OVERLORD);
+	}
+
 	@Nullable
 	default PlayerRole getRoleFor(ServerPlayer player) {
 		for (PlayerRole role : PlayerRole.ROLES) {

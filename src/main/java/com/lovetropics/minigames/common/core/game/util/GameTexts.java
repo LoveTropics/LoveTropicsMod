@@ -213,6 +213,7 @@ public final class GameTexts {
 
 		public static final Component PARTICIPATING = KEYS.add("participating", "Participating");
 		public static final Component SPECTATING = KEYS.add("spectating", "Spectating");
+		public static final Component OVERLORDING = KEYS.add("overlording", "Overlording");
 
 		public static final Component FREE_CAMERA = KEYS.add("free_camera", "Free Camera");
 		public static final TranslationCollector.Fun1 CLICK_TO_SELECT = KEYS.add1("click_to_select", "%s [Click to Select]");
@@ -235,7 +236,13 @@ public final class GameTexts {
 		}
 
 		public static Component roleDescription(PlayerRole role) {
-			return role == PlayerRole.SPECTATOR ? SPECTATING : PARTICIPATING;
+			if (role == PlayerRole.SPECTATOR) {
+				return SPECTATING;
+			} else if (role == PlayerRole.OVERLORD) {
+				return OVERLORDING;
+			} else {
+				return PARTICIPATING;
+			}
 		}
 
 		public static MutableComponent selectRoleMessage(Component play, Component spectate) {
