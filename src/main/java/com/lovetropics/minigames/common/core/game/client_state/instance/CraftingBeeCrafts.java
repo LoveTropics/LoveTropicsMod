@@ -6,14 +6,20 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.UUID;
 
-public record CraftingBeeCrafts(List<Craft> crafts) implements GameClientState {
-    public static final MapCodec<CraftingBeeCrafts> CODEC = Craft.CODEC.listOf()
-            .fieldOf("crafts").xmap(CraftingBeeCrafts::new, CraftingBeeCrafts::crafts);
+public record CraftingBeeCrafts(List<Craft> crafts, UUID gameId, int allowedHints) implements GameClientState {
+    public static final MapCodec<CraftingBeeCrafts> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
+            Craft.CODEC.listOf().fieldOf("crafts").forGetter(CraftingBeeCrafts::crafts),
+            UUIDUtil.CODEC.fieldOf("gameId").forGetter(CraftingBeeCrafts::gameId),
+            Codec.INT.fieldOf("allowedHints").forGetter(CraftingBeeCrafts::allowedHints)
+    ).apply(in, CraftingBeeCrafts::new));
 
     @Override
     public GameClientStateType<?> getType() {
