@@ -7,11 +7,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -211,6 +214,12 @@ public final class GamePlayerEvents {
 		}
 	});
 
+	public static final GameEventType<Craft> CRAFT = GameEventType.create(Craft.class, listeners -> (player, item, container) -> {
+		for (Craft listener : listeners) {
+			listener.onCraft(player, item, container);
+		}
+	});
+
 	private GamePlayerEvents() {
 	}
 
@@ -296,5 +305,9 @@ public final class GamePlayerEvents {
 
 	public interface Return {
 		void onReturn(UUID playerId, @Nullable PlayerRole role);
+	}
+
+	public interface Craft {
+		void onCraft(Player player, ItemStack crafted, Container craftingContainer);
 	}
 }

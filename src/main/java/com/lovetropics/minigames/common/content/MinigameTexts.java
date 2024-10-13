@@ -67,6 +67,7 @@ public final class MinigameTexts {
     public static final Component WINNER_TITLE = KEYS.add("winner.title", "WINNER");
     public static final Component WINNER_SUBTITLE = KEYS.add("winner.subtitle", "You've emerged victorious!");
 
+    public static final TranslationCollector.Fun1 TEAM_WON = KEYS.add1("team_won", "⭐ Team %s won the game!");
     public static final TranslationCollector.Fun1 PLAYER_WON = KEYS.add1("player_won", "⭐ %s won the game!");
 	public static final Component NOBODY_WON = KEYS.add("nobody_won", "⭐ Nobody won the game!");
 	public static final Component RESULTS = KEYS.add("results", "The game is over! Here are the results:");
