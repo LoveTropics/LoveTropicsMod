@@ -37,6 +37,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -64,6 +65,8 @@ public class GamePhase implements IGamePhase {
 	@Nullable
 	GameStopReason stopped;
 	boolean destroyed;
+
+	private final LinkedList<ScheduledTask> pendingRunnables = new LinkedList<>();
 
 	protected GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
@@ -154,11 +157,29 @@ public class GamePhase implements IGamePhase {
 	@Nullable
 	GameStopReason tick() {
 		try {
+			if (!pendingRunnables.isEmpty()) {
+				var itr = pendingRunnables.iterator();
+				while (itr.hasNext()) {
+					var task = itr.next();
+					if (task.counter <= 0) {
+						task.toRun.run();
+						itr.remove();
+					} else {
+						task.counter--;
+					}
+				}
+			}
+
 			invoker(GamePhaseEvents.TICK).tick();
 		} catch (Exception e) {
 			cancelWithError(e);
 		}
 		return stopped;
+	}
+
+	@Override
+	public void schedule(float seconds, Runnable task) {
+		pendingRunnables.add(new ScheduledTask(task, (int)(server().tickRateManager().tickrate() * seconds)));
 	}
 
 	@Override
@@ -322,5 +343,15 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public boolean isActive() {
 		return !destroyed;
+	}
+
+	private static class ScheduledTask {
+		private final Runnable toRun;
+		private int counter;
+
+		private ScheduledTask(Runnable toRun, int counter) {
+			this.toRun = toRun;
+			this.counter = counter;
+		}
 	}
 }

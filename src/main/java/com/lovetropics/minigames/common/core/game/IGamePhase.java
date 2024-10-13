@@ -67,6 +67,11 @@ public interface IGamePhase extends IGame {
 	GameResult<Unit> requestStop(GameStopReason reason);
 
 	/**
+	 * Schedule a task to be run after the specified amount of seconds.
+	 */
+	void schedule(float seconds, Runnable task);
+
+	/**
 	 * Adds the player to this game instance with the given role, or if already in the change, changes their role.
 	 * The given player will be removed from their former role, if any.
 	 *
