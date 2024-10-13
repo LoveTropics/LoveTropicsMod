@@ -169,6 +169,8 @@
   "ltminigames.minigame.chaos_block_party": "Chaos Block Party",
   "ltminigames.minigame.conservation_exploration": "Conservation Exploration",
   "ltminigames.minigame.crafting_bee.dont_cheat": "Don't cheat!",
+  "ltminigames.minigame.crafting_bee.hint": "Click to show a hint, displaying the position of a random number of ingredients",
+  "ltminigames.minigame.crafting_bee.hints_left": "You have %s hints left",
   "ltminigames.minigame.crafting_bee.team_has_completed_recipes": "Team %s has completed %s out of %s recipes",
   "ltminigames.minigame.donation.acid_rain": "Acid Rain",
   "ltminigames.minigame.donation.acid_rain.description": "Rain acid down on the players' heads for 1 minute!",
