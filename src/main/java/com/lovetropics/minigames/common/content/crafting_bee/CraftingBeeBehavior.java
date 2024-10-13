@@ -20,11 +20,11 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -33,28 +33,33 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CraftingBeeBehavior implements IGameBehavior {
     public static final MapCodec<CraftingBeeBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
             RecipeSelector.CODEC.codec().listOf().fieldOf("selectors").forGetter(c -> c.selectors),
-            IngredientDecomposer.CODEC.codec().listOf().fieldOf("decomposers").forGetter(c -> c.decomposers)
+            IngredientDecomposer.CODEC.codec().listOf().fieldOf("decomposers").forGetter(c -> c.decomposers),
+            Codec.INT.optionalFieldOf("hints_per_player", 3).forGetter(c -> c.allowedHints)
     ).apply(in, CraftingBeeBehavior::new));
 
     private final List<RecipeSelector> selectors;
     private final List<IngredientDecomposer> decomposers;
+    private final int allowedHints;
 
     private TeamState teams;
     private IGamePhase game;
 
     private ListMultimap<GameTeamKey, CraftingTask> tasks;
 
-    public CraftingBeeBehavior(List<RecipeSelector> selectors, List<IngredientDecomposer> decomposers) {
+    public CraftingBeeBehavior(List<RecipeSelector> selectors, List<IngredientDecomposer> decomposers, int allowedHints) {
         this.selectors = selectors;
         this.decomposers = decomposers;
+        this.allowedHints = allowedHints;
     }
 
     @Override
@@ -91,7 +96,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
         for (CraftingTask task : tasks) {
             var ingredients = task.recipe.decompose();
-            var items = ingredients.stream().flatMap(this::singleDecomposition).toList();
+            var items = ingredients.stream().flatMap(this::singleDecomposition).collect(Collectors.toCollection(ArrayList::new));
+            Collections.shuffle(items);
 
             // Evenly distribute the items between the players
             int p = 0;
@@ -104,13 +110,14 @@ public class CraftingBeeBehavior implements IGameBehavior {
     }
 
     private Stream<ItemStack> singleDecomposition(Ingredient ingredient) {
+        if (ingredient.isEmpty()) return Stream.empty();
+
         for (IngredientDecomposer decomposer : decomposers) {
             var decomposed = decomposer.decompose(ingredient);
             if (decomposed != null) {
                 return decomposed.stream().flatMap(this::singleDecomposition);
             }
         }
-        if (ingredient.getItems().length == 0) return Stream.empty();
 
         // We have reduced the ingredient to its most basic form, so now we just pick the first item of the ingredient
         for (ItemStack item : ingredient.getItems()) {
@@ -128,7 +135,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
         var teamTasks = tasks.get(team);
         var task = teamTasks.stream().filter(c -> ItemStack.isSameItemSameComponents(crafted, c.output)).findFirst().orElse(null);
-        if (task == null) return;
+        if (task == null || task.done) return;
 
         task.done = true;
 
@@ -157,7 +164,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
     private void sync(Player player) {
         if (player instanceof ServerPlayer sp) {
-            GameClientState.sendToPlayer(new CraftingBeeCrafts(tasks.get(teams.getTeamForPlayer(player)).stream().map(CraftingTask::toCraft).toList()), sp);
+            GameClientState.sendToPlayer(new CraftingBeeCrafts(tasks.get(teams.getTeamForPlayer(player)).stream().map(CraftingTask::toCraft).toList(),
+                    game.gameUuid(), allowedHints), sp);
         }
     }
 
@@ -168,10 +176,10 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
     private static class CraftingTask {
         private final ItemStack output;
-        private final RecipeSelector.SelectedRecipe recipe;
+        private final SelectedRecipe recipe;
         private boolean done;
 
-        private CraftingTask(ItemStack output, RecipeSelector.SelectedRecipe recipe) {
+        private CraftingTask(ItemStack output, SelectedRecipe recipe) {
             this.output = output;
             this.recipe = recipe;
         }

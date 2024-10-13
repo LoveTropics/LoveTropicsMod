@@ -29,7 +29,7 @@ public class HiddenRecipeBookMixin {
 
     @Inject(method = "init", at = @At("HEAD"))
     private void hideBookIfOpen(CallbackInfo ci) {
-        if (ClientGameStateManager.getOrNull(GameClientStateTypes.HIDE_RECIPE_BOOK) != null && recipeBookComponent.isVisible()) {
+        if (ClientGameStateManager.getOrNull(GameClientStateTypes.HIDE_RECIPE_BOOK) != null) {
             Minecraft.getInstance().player.getRecipeBook().setBookSetting(RecipeBookType.CRAFTING, false, false);
         }
     }

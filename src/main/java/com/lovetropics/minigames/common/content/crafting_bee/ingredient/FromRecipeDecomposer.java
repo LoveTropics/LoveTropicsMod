@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.crafting_bee.ingredient;
 
-import com.lovetropics.minigames.common.content.crafting_bee.RecipeSelector;
+import com.lovetropics.minigames.common.content.crafting_bee.SelectedRecipe;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -38,7 +38,7 @@ public class FromRecipeDecomposer implements IngredientDecomposer {
         cache.clear();
 
         for (ResourceLocation recipe : recipes) {
-            level.getServer().getRecipeManager().byKey(recipe).map(RecipeSelector.SelectedRecipe::new)
+            level.getServer().getRecipeManager().byKey(recipe).map(SelectedRecipe::new)
                     .ifPresent(r -> cache.put(
                             r.getResult(level.registryAccess()).getItem(),
                             r.decompose()
