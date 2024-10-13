@@ -15,6 +15,8 @@ import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
+import com.lovetropics.minigames.common.content.crafting_bee.CraftingBee;
+import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
@@ -117,6 +119,7 @@ public class LoveTropics {
                     MinigameTexts.KEYS.forEach(consumer);
                     BiodiversityBlitzTexts.collectTranslations(consumer);
                     BlockPartyTexts.KEYS.forEach(consumer);
+                    CraftingBeeTexts.KEYS.forEach(consumer);
                     SurviveTheTideTexts.KEYS.forEach(consumer);
                     TrashDiveTexts.KEYS.forEach(consumer);
                     TurtleRaceTexts.KEYS.forEach(consumer);
@@ -145,6 +148,7 @@ public class LoveTropics {
         SurviveTheTide.init();
         TrashDive.init();
         BlockParty.init();
+        CraftingBee.init();
         TurtleRace.init();
         Qottott.init();
         Spleef.init();

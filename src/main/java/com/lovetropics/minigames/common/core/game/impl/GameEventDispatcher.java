@@ -181,6 +181,16 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
+	public void onPlayerCraft(PlayerEvent.ItemCraftedEvent event) {
+		var entity = event.getEntity();
+
+		IGamePhase game = gameLookup.getGamePhaseFor(entity);
+		if (game != null) {
+			game.invoker(GamePlayerEvents.CRAFT).onCraft(entity, event.getCrafting(), event.getInventory());
+		}
+	}
+
+	@SubscribeEvent
 	public void onMobDrop(LivingDropsEvent event) {
 		LivingEntity entity = event.getEntity();
 
