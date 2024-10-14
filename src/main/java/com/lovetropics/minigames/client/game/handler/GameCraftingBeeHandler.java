@@ -5,7 +5,7 @@ import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
 import com.lovetropics.minigames.common.content.crafting_bee.SelectedRecipe;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
-import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCrafts;
+import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -188,7 +188,7 @@ public class GameCraftingBeeHandler {
     }
 
     @Nullable
-    private static CraftingBeeCrafts getState() {
+    private static CraftingBeeCraftsClientState getState() {
         return ClientGameStateManager.getOrNull(GameClientStateTypes.CRAFTING_BEE_CRAFTS);
     }
 
