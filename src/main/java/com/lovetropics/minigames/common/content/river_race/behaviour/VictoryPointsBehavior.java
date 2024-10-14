@@ -9,6 +9,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -59,6 +62,15 @@ public class VictoryPointsBehavior implements IGameBehavior {
             if (Objects.equals(player.getDisplayName(), component)) {
                 tryAddPoints(player, pointsPerGameWon);
                 player.displayClientMessage(Component.literal("YOU WIN!!!! Victory points for team: " + getPoints(player)), false);
+                return;
+            }
+        }
+
+        var teams = game.instanceState().getOrNull(TeamState.KEY);
+        if (teams == null) return;
+        for (final GameTeam team : teams) {
+            if (Objects.equals(team.config().name(), component)) {
+                tryAddPoints(team.key(), pointsPerGameWon);
             }
         }
     }
@@ -67,6 +79,13 @@ public class VictoryPointsBehavior implements IGameBehavior {
         final VictoryPointsGameState pointState = state();
         if (pointState != null) {
             pointState.addPointsToTeam(player, points);
+        }
+    }
+
+    private void tryAddPoints(final GameTeamKey team, final int points) {
+        final VictoryPointsGameState pointState = state();
+        if (pointState != null) {
+            pointState.addPointsToTeam(team, points);
         }
     }
 
