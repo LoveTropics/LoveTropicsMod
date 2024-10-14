@@ -8,18 +8,17 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.UUID;
 
-public record CraftingBeeCrafts(List<Craft> crafts, UUID gameId, int allowedHints) implements GameClientState {
-    public static final MapCodec<CraftingBeeCrafts> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
-            Craft.CODEC.listOf().fieldOf("crafts").forGetter(CraftingBeeCrafts::crafts),
-            UUIDUtil.CODEC.fieldOf("gameId").forGetter(CraftingBeeCrafts::gameId),
-            Codec.INT.fieldOf("allowedHints").forGetter(CraftingBeeCrafts::allowedHints)
-    ).apply(in, CraftingBeeCrafts::new));
+public record CraftingBeeCraftsClientState(List<Craft> crafts, UUID gameId, int allowedHints) implements GameClientState {
+    public static final MapCodec<CraftingBeeCraftsClientState> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
+            Craft.CODEC.listOf().fieldOf("crafts").forGetter(CraftingBeeCraftsClientState::crafts),
+            UUIDUtil.CODEC.fieldOf("gameId").forGetter(CraftingBeeCraftsClientState::gameId),
+            Codec.INT.fieldOf("allowedHints").forGetter(CraftingBeeCraftsClientState::allowedHints)
+    ).apply(in, CraftingBeeCraftsClientState::new));
 
     @Override
     public GameClientStateType<?> getType() {

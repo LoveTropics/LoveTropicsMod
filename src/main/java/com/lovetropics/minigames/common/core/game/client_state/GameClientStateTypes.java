@@ -2,16 +2,18 @@ package com.lovetropics.minigames.common.core.game.client_state;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
-import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCrafts;
+import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.FogClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.GlowTeamMembersState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HealthTagClientState;
-import com.lovetropics.minigames.common.core.game.client_state.instance.HideRecipeBookState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.HideRecipeBookClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.InvertControlsClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.PointTagClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceTexturesClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SidebarClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.SwapMovementClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TeamMembersClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
@@ -45,8 +47,10 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<TeamMembersClientState> TEAM_MEMBERS = register("team_members", TeamMembersClientState.CODEC);
 	public static final GameClientTweakEntry<GlowTeamMembersState> GLOW_TEAM_MEMBERS = register("glow_team_members", MapCodec.unit(GlowTeamMembersState.INSTANCE));
 	public static final GameClientTweakEntry<PointTagClientState> POINT_TAGS = register("point_tags", PointTagClientState.CODEC);
-	public static final GameClientTweakEntry<HideRecipeBookState> HIDE_RECIPE_BOOK = register("hide_recipe_book", HideRecipeBookState.CODEC);
-	public static final GameClientTweakEntry<CraftingBeeCrafts> CRAFTING_BEE_CRAFTS = register("crafting_bee_crafts", CraftingBeeCrafts.CODEC);
+	public static final GameClientTweakEntry<HideRecipeBookClientState> HIDE_RECIPE_BOOK = register("hide_recipe_book", HideRecipeBookClientState.CODEC);
+	public static final GameClientTweakEntry<CraftingBeeCraftsClientState> CRAFTING_BEE_CRAFTS = register("crafting_bee_crafts", CraftingBeeCraftsClientState.CODEC);
+	public static final GameClientTweakEntry<InvertControlsClientState> INVERT_CONTROLS = register("invert_controls", InvertControlsClientState.CODEC);
+	public static final GameClientTweakEntry<SwapMovementClientState> SWAP_MOVEMENT = register("swap_movement", SwapMovementClientState.CODEC);
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final MapCodec<T> codec) {
 		return REGISTRATE.object(name)

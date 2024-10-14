@@ -14,9 +14,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
-import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCrafts;
+import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -183,7 +182,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
     private void sync(Player player) {
         if (player instanceof ServerPlayer sp) {
-            GameClientState.sendToPlayer(new CraftingBeeCrafts(tasks.get(teams.getTeamForPlayer(player)).stream().map(CraftingTask::toCraft).toList(),
+            GameClientState.sendToPlayer(new CraftingBeeCraftsClientState(tasks.get(teams.getTeamForPlayer(player)).stream().map(CraftingTask::toCraft).toList(),
                     game.gameUuid(), allowedHints), sp);
         }
     }
@@ -203,8 +202,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
             this.recipe = recipe;
         }
 
-        public CraftingBeeCrafts.Craft toCraft() {
-            return new CraftingBeeCrafts.Craft(output, recipe.id(), done);
+        public CraftingBeeCraftsClientState.Craft toCraft() {
+            return new CraftingBeeCraftsClientState.Craft(output, recipe.id(), done);
         }
     }
 }

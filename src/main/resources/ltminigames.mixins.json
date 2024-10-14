@@ -29,7 +29,9 @@
     "client.MinecraftMixin",
     "client.PlayerTabOverlayGuiMixin",
     "client.PoseStackAccessor",
-    "client.HiddenRecipeBookMixin"
+    "client.HiddenRecipeBookMixin",
+    "client.MouseHandlerMixin",
+    "client.KeyboardInputMixin"
   ],
   "injectors": {
     "defaultRequire": 1
