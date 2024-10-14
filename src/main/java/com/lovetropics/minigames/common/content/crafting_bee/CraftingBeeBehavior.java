@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCrafts;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -24,12 +25,18 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +62,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
     private IGamePhase game;
 
     private ListMultimap<GameTeamKey, CraftingTask> tasks;
+    private volatile boolean done;
 
     public CraftingBeeBehavior(List<RecipeSelector> selectors, List<IngredientDecomposer> decomposers, int allowedHints) {
         this.selectors = selectors;
@@ -72,8 +80,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
         teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         events.listen(GamePhaseEvents.START, this::start);
-
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
+        events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
     }
 
     private void start() {
@@ -131,7 +139,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
     private void onCraft(Player player, ItemStack crafted, Container container) {
         var team = teams.getTeamForPlayer(player);
-        if (team == null) return;
+        if (team == null || done) return;
 
         var teamTasks = tasks.get(team);
         var task = teamTasks.stream().filter(c -> ItemStack.isSameItemSameComponents(crafted, c.output)).findFirst().orElse(null);
@@ -142,20 +150,31 @@ public class CraftingBeeBehavior implements IGameBehavior {
         sync(team);
 
         var completed = teamTasks.stream().filter(t -> t.done).count();
-        var teamName = teams.getTeamByKey(team).config().styledName();
+        var teamConfig = teams.getTeamByKey(team).config();
 
-        game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamName, completed, teamTasks.size()));
+        game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), completed, teamTasks.size()));
 
         if (completed == teamTasks.size()) {
 
             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
-            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamName);
+            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamConfig.name());
+            game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+
+            done = true;
 
             game.allPlayers().forEach(ServerPlayer::closeContainer);
 
-            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamName).withStyle(ChatFormatting.GREEN), true));
+            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
             game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
         }
+    }
+
+    private InteractionResult useBlock(ServerPlayer player, ServerLevel world, BlockPos pos, InteractionHand hand, BlockHitResult traceResult) {
+        // don't allow players to use the crafting table after the game was won
+        if (world.getBlockState(pos).is(Blocks.CRAFTING_TABLE) && done) {
+            return InteractionResult.FAIL;
+        }
+        return InteractionResult.PASS;
     }
 
     private void sync(GameTeamKey team) {
