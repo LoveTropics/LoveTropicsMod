@@ -13,6 +13,7 @@
     "SimpleRegistryMixin",
     "TagManagerAccessor",
     "WorldGenSettingsMixin",
+    "FallingBlockEntityMixin",
     "chat.ServerGamePacketListenerImplMixin",
     "disguise.LivingEntityMixin",
     "gametest.GameTestHelperAccess",

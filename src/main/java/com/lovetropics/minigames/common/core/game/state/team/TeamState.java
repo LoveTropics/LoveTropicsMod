@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -99,6 +100,11 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	@Nullable
 	public GameTeamKey getTeamForPlayer(Player player) {
 		return getTeamForPlayer(player.getUUID());
+	}
+
+	@Nullable
+	public GameTeamKey getTeamForPlayer(PlayerKey player) {
+		return getTeamForPlayer(player.id());
 	}
 
 	@Nullable
