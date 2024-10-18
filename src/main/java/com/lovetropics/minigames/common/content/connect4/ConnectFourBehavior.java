@@ -66,6 +66,7 @@ public class ConnectFourBehavior implements IGameBehavior {
     private BlockBox placingRegion;
 
     private GameTeamKey[][] pieces;
+    private int placedPieces;
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -74,6 +75,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         pieces = new GameTeamKey[7][6];
+        placedPieces = 0;
 
         events.listen(GamePhaseEvents.START, this::onStart);
 
@@ -142,6 +144,7 @@ public class ConnectFourBehavior implements IGameBehavior {
                 break;
             }
         }
+        placedPieces++;
 
         var team = playingTeams.current().key();
 
@@ -158,7 +161,14 @@ public class ConnectFourBehavior implements IGameBehavior {
             game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
             game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
         } else {
-            nextPlayer();
+            if (placedPieces == 7 * 6) {
+                game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+
+                game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
+                game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
+            } else {
+                nextPlayer();
+            }
         }
     }
 
