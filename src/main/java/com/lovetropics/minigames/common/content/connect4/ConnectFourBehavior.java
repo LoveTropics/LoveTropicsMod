@@ -1,0 +1,235 @@
+package com.lovetropics.minigames.common.content.connect4;
+
+import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.MinigameTexts;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.util.SequentialList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+
+public class ConnectFourBehavior implements IGameBehavior {
+    public static final MapCodec<ConnectFourBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
+            Codec.unboundedMap(GameTeamKey.CODEC, GameBlock.CODEC.codec()).fieldOf("team_blocks").forGetter(c -> c.teamBlocks),
+            Codec.STRING.fieldOf("placing_region").forGetter(c -> c.placingRegionKey),
+            BlockState.CODEC.fieldOf("separator").forGetter(c -> c.separator),
+            BlockState.CODEC.fieldOf("blocker").forGetter(c -> c.blocker)
+    ).apply(in, ConnectFourBehavior::new));
+
+    private final Map<GameTeamKey, GameBlock> teamBlocks;
+    private final String placingRegionKey;
+    private final BlockState separator;
+    private final BlockState blocker;
+
+    public ConnectFourBehavior(Map<GameTeamKey, GameBlock> teamBlocks, String placingRegionKey, BlockState separator, BlockState blocker) {
+        this.teamBlocks = teamBlocks;
+        this.placingRegionKey = placingRegionKey;
+        this.separator = separator;
+        this.blocker = blocker;
+    }
+
+    private IGamePhase game;
+
+    @Nullable
+    private PendingGate pendingGate;
+
+    private SequentialList<PlayingTeam> playingTeams;
+
+    private TeamState teams;
+    private BlockBox placingRegion;
+
+    private GameTeamKey[][] pieces;
+
+    @Override
+    public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        this.game = game;
+        placingRegion = game.mapRegions().getOrThrow(placingRegionKey);
+        teams = game.instanceState().getOrThrow(TeamState.KEY);
+
+        pieces = new GameTeamKey[7][6];
+
+        events.listen(GamePhaseEvents.START, this::onStart);
+
+        events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
+        events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> player.isCreative() ? InteractionResult.PASS : InteractionResult.FAIL);
+
+        events.listen(GameWorldEvents.BLOCK_LANDED, this::onBlockLanded);
+    }
+
+    private void onStart() {
+        var teams = new ArrayList<PlayingTeam>(this.teams.getTeamKeys().size());
+        this.teams.getTeamKeys().forEach(key -> {
+            var players = this.teams.getPlayersForTeam(key).stream().map(PlayerKey::from).toList();
+            if (!players.isEmpty()) {
+                teams.add(new PlayingTeam(key, new SequentialList<>(players, -1)));
+            }
+        });
+        Collections.shuffle(teams);
+        playingTeams = new SequentialList<>(teams, -1);
+
+        nextPlayer();
+    }
+
+    private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn) {
+        if (player.isCreative()) return InteractionResult.PASS;
+
+        if (!Objects.equals(playingTeams.current().players.current(), PlayerKey.from(player)) || !placingRegion.contains(pos))
+            return InteractionResult.FAIL;
+
+        var expected = teamBlocks.get(playingTeams.current().key).powder;
+        if (expected != placed.getBlock()) return InteractionResult.FAIL;
+
+        var below = pos.below();
+        pendingGate = new PendingGate(below, player.level().getBlockState(below));
+        player.level().setBlock(below, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+
+        return InteractionResult.PASS;
+    }
+
+    private void onBlockLanded(Level level, BlockPos pos, BlockState state) {
+        if (level.isClientSide) return;
+
+        var expected = teamBlocks.get(playingTeams.current().key);
+
+        if (!state.is(expected.powder)) return;
+
+        level.setBlock(pos, expected.solid.defaultBlockState(), Block.UPDATE_ALL);
+
+        if (pendingGate != null) {
+            level.setBlock(pendingGate.gatePosition(), pendingGate.gate(), Block.UPDATE_ALL);
+            pendingGate = null;
+        }
+
+        level.setBlock(pos.above(), separator, Block.UPDATE_ALL);
+        // Separator above, and gate above that
+        if (placingRegion.contains(pos.getX(), pos.getY() + 3, pos.getZ())) {
+            level.setBlock(pos.above(3), blocker, Block.UPDATE_ALL);
+        }
+
+        int x = (pos.getX() - placingRegion.min().getX()) / 2;
+        var column = pieces[x];
+        int y;
+        for (y = 0; y < column.length; y++) {
+            if (column[y] == null) {
+                column[y] = playingTeams.current().key();
+                break;
+            }
+        }
+
+        var team = playingTeams.current().key();
+
+        game.allPlayers().getPlayerBy(playingTeams.current().players().current()).setGlowingTag(false);
+
+        if (checkWin(x, y, team)) {
+            game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
+            var teamConfig = teams.getTeamByKey(team).config();
+            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamConfig.styledName());
+            game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+
+            game.allPlayers().forEach(ServerPlayer::closeContainer);
+
+            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
+            game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
+        } else {
+            nextPlayer();
+        }
+    }
+
+    private void nextPlayer() {
+        var nextTeam = playingTeams.next();
+        var nextPlayer = nextTeam.players().next();
+
+        game.allPlayers().sendMessage(ConnectFourTexts.TEAM_GOES_NEXT.apply(teams.getTeamByKey(nextTeam.key).config().styledName()), false);
+
+        var player = game.allPlayers().getPlayerBy(nextPlayer);
+        player.addItem(teamBlocks.get(nextTeam.key).powder.asItem().getDefaultInstance());
+
+        player.setGlowingTag(true);
+        player.displayClientMessage(ConnectFourTexts.IT_IS_YOUR_TURN.copy().withStyle(ChatFormatting.GOLD), true);
+    }
+
+    private boolean checkWin(int x, int y, GameTeamKey team) {
+        if (checkLine(x, y, 0, -1, team)) { // vertical
+            return true;
+        }
+
+        for (int offset = 0; offset < 4; ++offset) {
+            if (checkLine(x - 3 + offset, y, 1, 0, team)) { // horizontal
+                return true;
+            }
+
+            if (checkLine(x - 3 + offset, y + 3 - offset, 1, -1, team)) { // leading diagonal
+                return true;
+            }
+
+            if (checkLine(x - 3 + offset, y - 3 + offset, 1, 1, team)) { // trailing diagonal
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private boolean checkLine(int xs, int ys, int dx, int dy, GameTeamKey team) {
+        for (int i = 0; i < 4; i++) {
+            int x = xs + (dx * i);
+            int y = ys + (dy * i);
+
+            if (x < 0 || x > pieces.length - 1) {
+                return false;
+            }
+
+            if (y < 0 || y > pieces[x].length - 1) {
+                return false;
+            }
+
+            if (team != pieces[x][y]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private record GameBlock(Block powder, Block solid) {
+        public static final MapCodec<GameBlock> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
+                BuiltInRegistries.BLOCK.byNameCodec().fieldOf("powder").forGetter(GameBlock::powder),
+                BuiltInRegistries.BLOCK.byNameCodec().fieldOf("solid").forGetter(GameBlock::solid)
+        ).apply(in, GameBlock::new));
+    }
+
+    private record PendingGate(BlockPos gatePosition, BlockState gate) {
+    }
+
+    private record PlayingTeam(GameTeamKey key, SequentialList<PlayerKey> players) {
+
+    }
+}

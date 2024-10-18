@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
 import javax.annotation.Nullable;
@@ -42,6 +43,12 @@ public final class GameWorldEvents {
 		}
 	});
 
+	public static final GameEventType<BlockLanded> BLOCK_LANDED = GameEventType.create(BlockLanded.class, listeners -> (level, pos, state) -> {
+		for (var listener : listeners) {
+			listener.onBlockLanded(level, pos, state);
+		}
+	});
+
 	private GameWorldEvents() {
 	}
 
@@ -59,5 +66,9 @@ public final class GameWorldEvents {
 
 	public interface SetWeather {
 		void onSetWeather(@Nullable WeatherEvent lastEvent, @Nullable WeatherEvent event);
+	}
+
+	public interface BlockLanded {
+		void onBlockLanded(Level level, BlockPos pos, BlockState state);
 	}
 }
