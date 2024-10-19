@@ -14,7 +14,7 @@ public record SimpleTagToItemDecomposer() implements IngredientDecomposer {
     public @Nullable List<Ingredient> decompose(Ingredient ingredient) {
         // This is a "hack". Neo will sometimes replace a vanilla recipe with a difference ingredient (#chests - #chests/trapped)
         // we just resolve it and return the first item
-        if (ingredient.getCustomIngredient() instanceof DifferenceIngredient) {
+        if (ingredient.getCustomIngredient() != null) {
             return List.of(Ingredient.of(ingredient.getItems()[0]));
         } else if (ingredient.getValues().length == 1 && ingredient.getValues()[0] instanceof Ingredient.TagValue) {
             var items = ingredient.getValues()[0].getItems();

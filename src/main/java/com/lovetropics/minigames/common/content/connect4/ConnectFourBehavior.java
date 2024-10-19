@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.connect4;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -39,8 +40,11 @@ public class ConnectFourBehavior implements IGameBehavior {
     public static final MapCodec<ConnectFourBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
             Codec.unboundedMap(GameTeamKey.CODEC, GameBlock.CODEC.codec()).fieldOf("team_blocks").forGetter(c -> c.teamBlocks),
             Codec.STRING.fieldOf("placing_region").forGetter(c -> c.placingRegionKey),
-            BlockState.CODEC.fieldOf("separator").forGetter(c -> c.separator),
-            BlockState.CODEC.fieldOf("blocker").forGetter(c -> c.blocker)
+            MoreCodecs.BLOCK_STATE.fieldOf("separator").forGetter(c -> c.separator),
+            MoreCodecs.BLOCK_STATE.fieldOf("blocker").forGetter(c -> c.blocker),
+            Codec.INT.fieldOf("grid_width").forGetter(c -> c.width),
+            Codec.INT.fieldOf("grid_height").forGetter(c -> c.height),
+            Codec.INT.optionalFieldOf("connect", 4).forGetter(c -> c.connectAmount)
     ).apply(in, ConnectFourBehavior::new));
 
     private final Map<GameTeamKey, GameBlock> teamBlocks;
@@ -48,11 +52,16 @@ public class ConnectFourBehavior implements IGameBehavior {
     private final BlockState separator;
     private final BlockState blocker;
 
-    public ConnectFourBehavior(Map<GameTeamKey, GameBlock> teamBlocks, String placingRegionKey, BlockState separator, BlockState blocker) {
+    private final int width, height, connectAmount;
+
+    public ConnectFourBehavior(Map<GameTeamKey, GameBlock> teamBlocks, String placingRegionKey, BlockState separator, BlockState blocker, int width, int height, int connectAmount) {
         this.teamBlocks = teamBlocks;
         this.placingRegionKey = placingRegionKey;
         this.separator = separator;
         this.blocker = blocker;
+        this.width = width;
+        this.height = height;
+        this.connectAmount = connectAmount;
     }
 
     private IGamePhase game;
@@ -74,7 +83,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         placingRegion = game.mapRegions().getOrThrow(placingRegionKey);
         teams = game.instanceState().getOrThrow(TeamState.KEY);
 
-        pieces = new GameTeamKey[7][6];
+        pieces = new GameTeamKey[width][height];
         placedPieces = 0;
 
         events.listen(GamePhaseEvents.START, this::onStart);
@@ -161,7 +170,7 @@ public class ConnectFourBehavior implements IGameBehavior {
             game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
             game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
         } else {
-            if (placedPieces == 7 * 6) {
+            if (placedPieces == width * height) {
                 game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
                 game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
@@ -190,16 +199,16 @@ public class ConnectFourBehavior implements IGameBehavior {
             return true;
         }
 
-        for (int offset = 0; offset < 4; ++offset) {
-            if (checkLine(x - 3 + offset, y, 1, 0, team)) { // horizontal
+        for (int offset = 0; offset < connectAmount; offset++) {
+            if (checkLine(x - (connectAmount - 1) + offset, y, 1, 0, team)) { // horizontal
                 return true;
             }
 
-            if (checkLine(x - 3 + offset, y + 3 - offset, 1, -1, team)) { // leading diagonal
+            if (checkLine(x - (connectAmount + 1) + offset, y + (connectAmount - 1) - offset, 1, -1, team)) { // leading diagonal
                 return true;
             }
 
-            if (checkLine(x - 3 + offset, y - 3 + offset, 1, 1, team)) { // trailing diagonal
+            if (checkLine(x - (connectAmount + 1) + offset, y - (connectAmount + 1) + offset, 1, 1, team)) { // trailing diagonal
                 return true;
             }
         }
@@ -209,7 +218,7 @@ public class ConnectFourBehavior implements IGameBehavior {
 
 
     private boolean checkLine(int xs, int ys, int dx, int dy, GameTeamKey team) {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < connectAmount; i++) {
             int x = xs + (dx * i);
             int y = ys + (dy * i);
 
