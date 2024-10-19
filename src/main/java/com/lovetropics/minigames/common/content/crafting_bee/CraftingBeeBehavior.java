@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
@@ -48,7 +49,7 @@ import java.util.stream.Stream;
 
 public class CraftingBeeBehavior implements IGameBehavior {
     public static final MapCodec<CraftingBeeBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
-            RecipeSelector.CODEC.codec().listOf().fieldOf("selectors").forGetter(c -> c.selectors),
+            RecipeSelector.CODEC.listOf().fieldOf("selectors").forGetter(c -> c.selectors),
             IngredientDecomposer.CODEC.codec().listOf().fieldOf("decomposers").forGetter(c -> c.decomposers),
             Codec.INT.optionalFieldOf("hints_per_player", 3).forGetter(c -> c.allowedHints)
     ).apply(in, CraftingBeeBehavior::new));
@@ -81,6 +82,9 @@ public class CraftingBeeBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.START, this::start);
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
         events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
+
+        events.listen(GamePhaseEvents.STOP, reason -> GameClientState.removeFromPlayers(GameClientStateTypes.CRAFTING_BEE_CRAFTS.get(), game.allPlayers()));
+        events.listen(GamePlayerEvents.REMOVE, player -> GameClientState.removeFromPlayer(GameClientStateTypes.CRAFTING_BEE_CRAFTS.get(), player));
     }
 
     private void start() {
