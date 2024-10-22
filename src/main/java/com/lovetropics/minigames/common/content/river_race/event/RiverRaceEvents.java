@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.river_race.event;
 
+import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -7,9 +8,9 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class RiverRaceEvents {
 
-    public static final GameEventType<AnswerTriviaQuestion> ANSWER_QUESTION = GameEventType.create(AnswerTriviaQuestion.class, listeners -> (player, correct) -> {
+    public static final GameEventType<AnswerTriviaQuestion> ANSWER_QUESTION = GameEventType.create(AnswerTriviaQuestion.class, listeners -> (player, triviaType, correct) -> {
         for (AnswerTriviaQuestion listener : listeners) {
-            listener.onAnswer(player, correct);
+            listener.onAnswer(player, triviaType, correct);
         }
     });
 
@@ -26,7 +27,7 @@ public class RiverRaceEvents {
     });
 
     public interface AnswerTriviaQuestion {
-        void onAnswer(ServerPlayer player, final boolean correct);
+        void onAnswer(ServerPlayer player, final TriviaBlock.TriviaType triviaType, final boolean correct);
     }
 
     public interface VictoryPointsChanged {
