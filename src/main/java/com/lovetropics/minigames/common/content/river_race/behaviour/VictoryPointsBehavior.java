@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
+import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsState;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -67,9 +68,11 @@ public class VictoryPointsBehavior implements IGameBehavior {
         return InteractionResult.PASS;
     }
 
-    private void onQuestionAnswered(ServerPlayer player, boolean correct) {
+    private void onQuestionAnswered(ServerPlayer player, TriviaBlock.TriviaType triviaType, boolean correct) {
         if (correct) {
-            points.addPointsToTeam(player, pointsPerQuestion);
+            if(triviaType == TriviaBlock.TriviaType.COLLECTABLE) {
+                points.addPointsToTeam(player, pointsPerQuestion);
+            }
             player.displayClientMessage(Component.literal("CORRECT! Victory points for team: " + points.getPoints(player)), false);
         } else {
             player.displayClientMessage(Component.literal("WRONG >:( Victory points for team: " + points.getPoints(player)), false);

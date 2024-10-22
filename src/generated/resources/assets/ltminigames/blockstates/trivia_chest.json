@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "ltminigames:block/trivia_chest"
+    }
+  }
+}

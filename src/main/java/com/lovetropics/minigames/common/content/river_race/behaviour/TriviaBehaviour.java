@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
+import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -11,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.network.trivia.ShowTriviaMessage;
 import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponseMessage;
 import com.mojang.serialization.Codec;
@@ -19,15 +22,22 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.timers.TimerCallback;
+import net.minecraft.world.level.timers.TimerQueue;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +52,7 @@ public final class TriviaBehaviour implements IGameBehavior {
     ).apply(i, TriviaBehaviour::new));
     private final List<TriviaZone> zones;
     private final int questionLockout;
+    private final GameScheduler scheduler = new GameScheduler();
     private HashMap<Long, BlockPos> lockedOutTriviaBlocks = new HashMap<>();
 
     public TriviaBehaviour(List<TriviaZone> zones, int questionLockout) {
@@ -58,6 +69,7 @@ public final class TriviaBehaviour implements IGameBehavior {
             spawn.teleportTo(game.level(), floorPos.above());
         });
         events.listen(GamePhaseEvents.TICK, () -> {
+            scheduler.tick();
             Set<Long> longs = lockedOutTriviaBlocks.keySet();
             for (Long l : longs) {
                 if(System.currentTimeMillis() >= l){
@@ -75,8 +87,8 @@ public final class TriviaBehaviour implements IGameBehavior {
             if (hand == InteractionHand.OFF_HAND) {
                 return InteractionResult.PASS;
             }
-            if (world.getBlockEntity(pos) instanceof TriviaBlockEntity triviaBlockEntity) {
-                if (!triviaBlockEntity.hasQuestion()) {
+            if (world.getBlockEntity(pos) instanceof HasTrivia hasTrivia && !hasTrivia.getState().isAnswered()) {
+                if (!hasTrivia.hasQuestion()) {
                     String inRegion = null;
                     for (String region : game.mapRegions().keySet()) {
                         if (region.startsWith("zone_")) {
@@ -94,20 +106,20 @@ public final class TriviaBehaviour implements IGameBehavior {
                             TriviaZone triviaZone = first.get();
                             List<TriviaQuestion> filteredDifficultyList = triviaZone.questionPool.stream()
                                     .filter(question -> question.difficulty()
-                                            .equalsIgnoreCase(triviaBlockEntity.getTriviaBlockType().difficulty()))
+                                            .equalsIgnoreCase(hasTrivia.getTriviaType().difficulty()))
                                     .toList();
                             //Bad...
                             if (!filteredDifficultyList.isEmpty()) {
                                 TriviaQuestion question = filteredDifficultyList.get(new Random().nextInt(filteredDifficultyList.size()));
-                                triviaBlockEntity.setQuestion(question);
+                                hasTrivia.setQuestion(question);
                             } else {
                                 player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));
                             }
                         }
                     }
                 }
-                if (triviaBlockEntity.getQuestion() != null) {
-                    PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, triviaBlockEntity.getQuestion(), triviaBlockEntity.getState()));
+                if (hasTrivia.getQuestion() != null) {
+                    PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, hasTrivia.getQuestion(), hasTrivia.getState()));
                 }
                 return InteractionResult.SUCCESS_NO_ITEM_USED;
             }
@@ -115,7 +127,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         });
         events.listen(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION, (ServerPlayer player, ServerLevel world,
                                                                   BlockPos pos,
-                                                                  TriviaBlockEntity triviaBlockEntity,
+                                                                  HasTrivia triviaBlockEntity,
                                                                   TriviaQuestion question, String answer) -> {
             if (question != null && !triviaBlockEntity.getState().lockedOut()) {
                 TriviaQuestion.TriviaQuestionAnswer answerObj = question.getAnswer(answer);
@@ -125,6 +137,11 @@ public final class TriviaBehaviour implements IGameBehavior {
                         player.sendSystemMessage(Component.
                                 literal("Correct! Do something here!")
                                 .withStyle(ChatFormatting.GREEN));
+                        if(triviaBlockEntity.getTriviaType() == TriviaBlock.TriviaType.GATE){
+                            //TODO: Open gate
+                            Block blockType = null;
+                            findNeighboursOfTypeAndDestroy(scheduler, world, pos, blockType);
+                        }
                         triviaBlockEntity.markAsCorrect();
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     } else {
@@ -136,13 +153,32 @@ public final class TriviaBehaviour implements IGameBehavior {
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     }
                     if (player instanceof final ServerPlayer serverPlayer) {
-                        game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(serverPlayer, answerObj.correct());
+                        game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(serverPlayer, triviaBlockEntity.getTriviaType(), answerObj.correct());
                     }
                     return answerObj.correct();
                 }
             }
             return false;
         });
+    }
+
+    private static void findNeighboursOfTypeAndDestroy(GameScheduler scheduler, ServerLevel world, BlockPos pos, Block blockType) {
+        for (Direction direction : Direction.values()) {
+            BlockPos relative = pos.relative(direction);
+            BlockState blockState = world.getBlockState(relative);
+            if(!blockState.isAir()){
+                if(blockType == null){
+                    blockType = blockState.getBlock();
+                }
+                if(blockState.is(blockType)){
+                    world.destroyBlock(relative, false);
+                    Block finalBlockType = blockType;
+                    scheduler.delayedTickEvent("gateDestroy" + relative, () -> {
+                        findNeighboursOfTypeAndDestroy(scheduler, world, relative, finalBlockType);
+                    }, 10);
+                }
+            }
+        }
     }
 
     public List<TriviaZone> zones() {

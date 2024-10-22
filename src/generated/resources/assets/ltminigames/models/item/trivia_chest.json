@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/chest",
+  "textures": {
+    "particle": "ltminigames:block/trivia_reward"
+  }
+}

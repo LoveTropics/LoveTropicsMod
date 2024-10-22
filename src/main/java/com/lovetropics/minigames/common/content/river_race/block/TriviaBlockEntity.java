@@ -1,26 +1,18 @@
 package com.lovetropics.minigames.common.content.river_race.block;
 
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
-import com.lovetropics.minigames.common.core.network.trivia.ShowTriviaMessage;
-import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
-import com.lovetropics.minigames.common.core.game.IGameManager;
-import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -29,7 +21,7 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-public class TriviaBlockEntity extends BlockEntity {
+public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
 
     public record TriviaBlockState(boolean isAnswered, Optional<String> correctAnswer, boolean lockedOut, long unlocksAt){
         public static final StreamCodec<ByteBuf, TriviaBlockState> STREAM_CODEC = StreamCodec.composite(
@@ -41,28 +33,27 @@ public class TriviaBlockEntity extends BlockEntity {
         );
     }
     private static final Logger LOGGER = LogUtils.getLogger();
-
-    private static final String TAG_QUESTION = "question";
-    private static final String TAG_UNLOCKS_AT = "unlocksAt";
-    private static final String TAG_ANSWERED = "answered";
+    public static final String TAG_QUESTION = "question";
+    public static final String TAG_UNLOCKS_AT = "unlocksAt";
+    public static final String TAG_ANSWERED = "answered";
     private TriviaBehaviour.TriviaQuestion question;
     private long unlocksAt;
     private boolean answered;
-    private TriviaBlock.TriviaBlockType triviaBlockType;
+    private TriviaBlock.TriviaType triviaType;
     public TriviaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
         if(blockState.getBlock() instanceof TriviaBlock triviaBlock){
-            this.triviaBlockType = triviaBlock.getType();
+            this.triviaType = triviaBlock.getType();
         }
     }
 
-    public TriviaBlockEntity setTriviaType(TriviaBlock.TriviaBlockType blockType){
-        this.triviaBlockType = blockType;
+    public TriviaBlockEntity setTriviaType(TriviaBlock.TriviaType blockType){
+        this.triviaType = blockType;
         return this;
     }
 
-    public TriviaBlock.TriviaBlockType getTriviaBlockType() {
-        return triviaBlockType;
+    public TriviaBlock.TriviaType getTriviaBlockType() {
+        return triviaType;
     }
 
     @Override
@@ -141,6 +132,11 @@ public class TriviaBlockEntity extends BlockEntity {
 
     public TriviaBehaviour.TriviaQuestion getQuestion() {
         return question;
+    }
+
+    @Override
+    public TriviaBlock.TriviaType getTriviaType() {
+        return triviaType;
     }
 
     public long lockout(int lockoutSeconds){
