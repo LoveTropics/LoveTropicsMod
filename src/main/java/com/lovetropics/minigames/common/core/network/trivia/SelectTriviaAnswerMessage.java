@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.network.trivia;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
+import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -22,7 +23,7 @@ public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAns
     );
 
     public static void handle(final SelectTriviaAnswerMessage message, final IPayloadContext context) {
-        if (context.player().level().getBlockEntity(message.triviaBlock()) instanceof final TriviaBlockEntity triviaBlockEntity){
+        if (context.player().level().getBlockEntity(message.triviaBlock()) instanceof final HasTrivia triviaBlockEntity){
             IGamePhase game = IGameManager.get().getGamePhaseFor(context.player());
             if (game != null) {
                 ServerPlayer player = (ServerPlayer) context.player();

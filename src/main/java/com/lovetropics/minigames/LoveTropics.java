@@ -5,6 +5,7 @@ import com.lovetropics.minigames.client.game.handler.GameSidebarRenderer;
 import com.lovetropics.minigames.client.game.handler.spectate.SpectatingUi;
 import com.lovetropics.minigames.client.lobby.LobbyKeybinds;
 import com.lovetropics.minigames.client.lobby.LobbyStateGui;
+import com.lovetropics.minigames.client.render.block.TriviaChestRenderer;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
@@ -67,6 +68,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -232,6 +234,7 @@ public class LoveTropics {
         @SubscribeEvent
         public static void setupClient(final FMLClientSetupEvent event) {
             LobbyKeybinds.init();
+            BlockEntityRenderers.register(RiverRace.TRIVIA_CHEST_BLOCK_ENTITY.get(), TriviaChestRenderer::new);
         }
 
         @SubscribeEvent
