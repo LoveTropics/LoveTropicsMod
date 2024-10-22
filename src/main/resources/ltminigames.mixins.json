@@ -13,6 +13,7 @@
     "SimpleRegistryMixin",
     "TagManagerAccessor",
     "WorldGenSettingsMixin",
+    "FallingBlockEntityMixin",
     "chat.ServerGamePacketListenerImplMixin",
     "disguise.LivingEntityMixin",
     "gametest.GameTestHelperAccess",
@@ -28,7 +29,10 @@
     "client.IntegratedPlayerListMixin",
     "client.MinecraftMixin",
     "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor"
+    "client.PoseStackAccessor",
+    "client.HiddenRecipeBookMixin",
+    "client.MouseHandlerMixin",
+    "client.KeyboardInputMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
@@ -20,15 +21,18 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
+import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 // TODO: do we want a different game lobby implementation for something like carnival games?
 /**
@@ -53,6 +57,10 @@ final class GameLobby implements IGameLobby {
 			new ChatNotifyListener()
 	);
 	private final GameRewardsMap rewardsMap = new GameRewardsMap();
+
+	// Game ID -> state
+	// Useful for things that should retain state no matter how deep into microgames you go
+	private final Map<ResourceLocation, IGameState> multiPhaseDataMap = Maps.newHashMap();
 
 	private boolean needsRolePrompt = false;
 	private boolean closed;
@@ -165,6 +173,18 @@ final class GameLobby implements IGameLobby {
 		return rewardsMap;
 	}
 
+	public Map<ResourceLocation, IGameState> getMultiPhaseDataMap() {
+		return multiPhaseDataMap;
+	}
+
+	public IGameState createOrGetMultiPhaseState(final MultiGamePhase gamePhase) {
+		final ResourceLocation gameID = gamePhase.game.definition().getId();
+		if (!multiPhaseDataMap.containsKey(gameID)) {
+			gamePhase.registerState(this);
+		}
+		return multiPhaseDataMap.get(gameID);
+	}
+
 	// If old phase is null, it probably means we're entering from the main event world
 	private GameResult<Unit> onGamePhaseChange(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
@@ -196,6 +216,10 @@ final class GameLobby implements IGameLobby {
 
 	private GameResult<Unit> startPhase(GamePhase phase) {
 		phase.state().register(GameRewardsMap.STATE, rewardsMap);
+		if (phase instanceof final MultiGamePhase multiPhase) {
+			multiPhaseDataMap.clear();
+			multiPhase.registerState(this);
+		}
 		return phase.start(false);
 	}
 

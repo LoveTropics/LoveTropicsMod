@@ -2,14 +2,17 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
-import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsState;
+import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
+import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsGameState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -20,6 +23,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.state.BlockState;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class VictoryPointsBehavior implements IGameBehavior {
 
     public static final MapCodec<VictoryPointsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -29,8 +35,6 @@ public class VictoryPointsBehavior implements IGameBehavior {
     ).apply(i, VictoryPointsBehavior::new));
 
     private IGamePhase game;
-
-    private VictoryPointsState points;
 
     private final int pointsPerQuestion;
     private final int pointsPerBlockCollected;
@@ -51,17 +55,53 @@ public class VictoryPointsBehavior implements IGameBehavior {
         // Victory points from collectible blocks
         events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBlockBroken);
         // Victory points from winning microgame
-        // TODO is this the right event to use here?
-        events.listen(GameLogicEvents.GAME_OVER, this::onGameOver);
+        events.listen(GameLogicEvents.WIN_TRIGGERED, this::onWinTriggered);
     }
 
-    @Override
-    public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-        points = phaseState.register(VictoryPointsState.KEY, new VictoryPointsState(game));
+    private void onWinTriggered(Component component) {
+        for (final ServerPlayer player : game.participants()) {
+            if (Objects.equals(player.getDisplayName(), component)) {
+                tryAddPoints(player, pointsPerGameWon);
+                player.displayClientMessage(Component.literal("YOU WIN!!!! Victory points for team: " + getPoints(player)), false);
+                return;
+            }
+        }
+
+        var teams = game.instanceState().getOrNull(TeamState.KEY);
+        if (teams == null) return;
+        for (final GameTeam team : teams) {
+            if (Objects.equals(team.config().name(), component)) {
+                tryAddPoints(team.key(), pointsPerGameWon);
+            }
+        }
     }
 
-    private void onGameOver() {
+    private void tryAddPoints(final ServerPlayer player, final int points) {
+        final VictoryPointsGameState pointState = state();
+        if (pointState != null) {
+            pointState.addPointsToTeam(player, points);
+        }
+    }
 
+    private void tryAddPoints(final GameTeamKey team, final int points) {
+        final VictoryPointsGameState pointState = state();
+        if (pointState != null) {
+            pointState.addPointsToTeam(team, points);
+        }
+    }
+
+    private int getPoints(final ServerPlayer player) {
+        final VictoryPointsGameState gameState = state();
+        if (gameState != null) {
+            return gameState.getVictoryPoints(player);
+        }
+        return -1;
+    }
+
+    @Nullable
+    private VictoryPointsGameState state() {
+        // TODO how to make this more generic to not be specific to river race?
+        return game.state().getOrNull(RiverRaceState.KEY);
     }
 
     private InteractionResult onBlockBroken(ServerPlayer serverPlayer, BlockPos blockPos, BlockState blockState, InteractionHand interactionHand) {
@@ -71,11 +111,11 @@ public class VictoryPointsBehavior implements IGameBehavior {
     private void onQuestionAnswered(ServerPlayer player, TriviaBlock.TriviaType triviaType, boolean correct) {
         if (correct) {
             if(triviaType == TriviaBlock.TriviaType.COLLECTABLE) {
-                points.addPointsToTeam(player, pointsPerQuestion);
+                tryAddPoints(player, pointsPerQuestion);
             }
-            player.displayClientMessage(Component.literal("CORRECT! Victory points for team: " + points.getPoints(player)), false);
+            player.displayClientMessage(Component.literal("CORRECT! Victory points for team: " + getPoints(player)), false);
         } else {
-            player.displayClientMessage(Component.literal("WRONG >:( Victory points for team: " + points.getPoints(player)), false);
+            player.displayClientMessage(Component.literal("WRONG >:( Victory points for team: " + getPoints(player)), false);
         }
     }
 }

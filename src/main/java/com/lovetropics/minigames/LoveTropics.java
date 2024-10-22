@@ -16,10 +16,15 @@ import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
+import com.lovetropics.minigames.common.content.connect4.ConnectFour;
+import com.lovetropics.minigames.common.content.connect4.ConnectFourTexts;
+import com.lovetropics.minigames.common.content.crafting_bee.CraftingBee;
+import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
+import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
@@ -118,10 +123,13 @@ public class LoveTropics {
                     MinigameTexts.KEYS.forEach(consumer);
                     BiodiversityBlitzTexts.collectTranslations(consumer);
                     BlockPartyTexts.KEYS.forEach(consumer);
+                    CraftingBeeTexts.KEYS.forEach(consumer);
+                    ConnectFourTexts.KEYS.forEach(consumer);
                     SurviveTheTideTexts.KEYS.forEach(consumer);
                     TrashDiveTexts.KEYS.forEach(consumer);
                     TurtleRaceTexts.KEYS.forEach(consumer);
                     QottottTexts.KEYS.forEach(consumer);
+                    RiverRaceTexts.collectTranslations(consumer);
                 })
                 .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))
@@ -145,6 +153,8 @@ public class LoveTropics {
         SurviveTheTide.init();
         TrashDive.init();
         BlockParty.init();
+        CraftingBee.init();
+        ConnectFour.init();
         TurtleRace.init();
         Qottott.init();
         Spleef.init();
