@@ -56,16 +56,22 @@ public class MultiGamePhase extends GamePhase {
             this.registration = registration;
         }
     }
-
+    private ResourceLocation gameId;
     @Nullable
     private GamePhase activePhase = null;
+    @Nullable
+    private ResourceLocation activePhaseId = null;
     private final List<ResourceLocation> subPhaseGames = Lists.newArrayList();
     private static final Map<ResourceLocation, MultiPhaseGameStates> gameStateMap = Maps.newHashMap();
 
-    protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
+    protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors, ResourceLocation gameId) {
         super(game, definition, phaseType, map, behaviors);
+        this.gameId = gameId;
+        gameStateMap.put(gameId, MultiPhaseGameStates.RIVER_RACE);
+    }
 
-        gameStateMap.put(ResourceLocation.parse("lt:river_race"), MultiPhaseGameStates.RIVER_RACE);
+    protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
+        this(game, definition, phaseType, map, behaviors, ResourceLocation.parse("lt:river_race"));
     }
 
     public void registerState(final GameLobby lobby) {
@@ -73,12 +79,20 @@ public class MultiGamePhase extends GamePhase {
         gameStateMap.get(id).registration.registerState(lobby, this, id);
     }
 
-    public void setActivePhase(GamePhase activePhase, final boolean saveInventory) {
+    public void setActivePhase(GamePhase activePhase, final boolean saveInventory, ResourceLocation activePhaseId) {
         this.activePhase = activePhase;
+        this.activePhaseId = activePhaseId;
         MultiGameManager.INSTANCE.addGamePhaseToDimension(activePhase.dimension(), activePhase);
         activePhase.state().register(GameRewardsMap.STATE, ((GameLobby) lobby()).getRewardsMap());
         activePhase.state().register(RiverRaceState.KEY, (RiverRaceState) ((GameLobby) lobby()).createOrGetMultiPhaseState(this));
         activePhase.start(saveInventory);
+    }
+
+    public ResourceLocation getActiveGameId(){
+        if(activePhaseId != null){
+            return activePhaseId;
+        }
+        return definition().getId();
     }
 
     public void returnHere(){
@@ -104,6 +118,10 @@ public class MultiGamePhase extends GamePhase {
 
     public List<ResourceLocation> getSubPhaseGames() {
         return subPhaseGames;
+    }
+
+    public ResourceLocation getGameId() {
+        return gameId;
     }
 
     @Override
@@ -137,6 +155,7 @@ public class MultiGamePhase extends GamePhase {
                 MultiGameManager.INSTANCE.removeGamePhaseFromDimension(activePhase.dimension(), activePhase);
                 activePhase.destroy();
                 activePhase = null;
+                activePhaseId = null;
 
                 if (!startNextQueuedMicrogame(false)) {
                     returnHere();
@@ -189,6 +208,7 @@ public class MultiGamePhase extends GamePhase {
         if(activePhase != null){
             activePhase.destroy();
             activePhase = null;
+            activePhaseId = null;
             return;
         }
         super.destroy();
@@ -210,8 +230,8 @@ public class MultiGamePhase extends GamePhase {
 
         final ResourceLocation gameKey = subPhaseGames.removeFirst();
         GameConfig gameConfig = GameConfigs.REGISTRY.get(gameKey);
-        GamePhase.create(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING).thenAccept((result) -> {
-            setActivePhase(result.getOk(), saveInventory);
+        GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.getId()).thenAccept((result) -> {
+            setActivePhase(result.getOk(), saveInventory, gameKey);
         });
 
         invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);

@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBloc
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
+import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -77,6 +78,7 @@ public class RiverRace {
                 prov.add(LoveTropics.ID + ".container.triviaChestDouble", "Large Trivia Chest");
             })
             .register();
+
     public static final BlockEntityEntry<TriviaBlockEntity> TRIVIA_BLOCK_ENTITY = BlockEntityEntry.cast(REGISTRATE.get("trivia_gate", Registries.BLOCK_ENTITY_TYPE));
     public static final BlockEntityEntry<TriviaChestBlockEntity> TRIVIA_CHEST_BLOCK_ENTITY = BlockEntityEntry.cast(REGISTRATE.get("trivia_chest", Registries.BLOCK_ENTITY_TYPE));
 

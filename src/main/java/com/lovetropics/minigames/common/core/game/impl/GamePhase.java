@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -96,6 +97,25 @@ public class GamePhase implements IGamePhase {
 					BehaviorList behaviors = definition.createBehaviors();
 					if(game.definition.isMultiGamePhase()){
 						return new MultiGamePhase(game, definition, phaseType, map, behaviors);
+					}
+					return new GamePhase(game, definition, phaseType, map, behaviors);
+				}), server);
+
+		return GameResult.handleException("Unknown exception starting game phase", future);
+	}
+	public static CompletableFuture<GameResult<GamePhase>> createMultiGame(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, ResourceLocation gameId) {
+		MinecraftServer server = game.server();
+
+		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
+		if (result.isError()) {
+			return CompletableFuture.completedFuture(result.castError());
+		}
+
+		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
+				.thenApplyAsync(r -> r.map(map -> {
+					BehaviorList behaviors = definition.createBehaviors();
+					if(game.definition.isMultiGamePhase()){
+						return new MultiGamePhase(game, definition, phaseType, map, behaviors, gameId);
 					}
 					return new GamePhase(game, definition, phaseType, map, behaviors);
 				}), server);
