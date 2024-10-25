@@ -5,8 +5,12 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicate;
 import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.fml.ModLoadingContext;
 
 import java.util.function.Function;
@@ -43,6 +47,18 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 
 	public <T extends EntityPredicate, P> EntityPredicateBuilder<T, P> entityPredicate(P parent, String name, MapCodec<T> codec) {
 		return entry(name, callback -> new EntityPredicateBuilder<>(this, parent, name, callback, codec));
+	}
+
+	public <T extends LootItemConditionType> LootItemConditionTypeBuilder<T, LoveTropicsRegistrate> lootItemConditionType(Supplier<T> lootItemConditionTypeSupplier) {
+		return lootItemConditionType(this, lootItemConditionTypeSupplier);
+	}
+
+	public <T extends LootItemConditionType, P> LootItemConditionTypeBuilder<T, P> lootItemConditionType(P parent, Supplier<T> lootItemConditionTypeSupplier) {
+		return lootItemConditionType(parent, currentName(), lootItemConditionTypeSupplier);
+	}
+
+	public <T extends LootItemConditionType, P> LootItemConditionTypeBuilder<T, P> lootItemConditionType(P parent, String name, Supplier<T> lootItemConditionTypeSupplier) {
+		return entry(name, callback -> new LootItemConditionTypeBuilder<>(this, parent, name, callback, lootItemConditionTypeSupplier));
 	}
 
 	public <T extends GameClientState> GameClientTweakBuilder<T, LoveTropicsRegistrate> clientState(MapCodec<T> codec) {
