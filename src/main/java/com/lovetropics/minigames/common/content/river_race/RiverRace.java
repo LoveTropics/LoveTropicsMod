@@ -2,8 +2,7 @@ package com.lovetropics.minigames.common.content.river_race;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.CustomItemRenderers;
-import com.lovetropics.minigames.client.render.block.TriviaChestRenderer;
-import com.lovetropics.minigames.common.content.river_race.behaviour.MicrogamesBehaviour;
+import com.lovetropics.minigames.common.content.river_race.behaviour.StartMicrogamesAction;
 import com.lovetropics.minigames.common.content.river_race.behaviour.RiverRaceMerchantBehavior;
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.behaviour.VictoryPointsBehavior;
@@ -18,15 +17,12 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.world.level.material.MapColor;
 
 public class RiverRace {
     private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
     public static final GameBehaviorEntry<TriviaBehaviour> TRIVIA_BEHAVIOUR = REGISTRATE.object("trivia").behavior(TriviaBehaviour.CODEC).register();
-    public static final GameBehaviorEntry<MicrogamesBehaviour> MICROGAMES_BEHAVIOUR = REGISTRATE.object("microgames").behavior(MicrogamesBehaviour.CODEC).register();
+    public static final GameBehaviorEntry<StartMicrogamesAction> START_MICROGAMES_ACTION = REGISTRATE.object("start_microgames").behavior(StartMicrogamesAction.CODEC).register();
     public static final GameBehaviorEntry<VictoryPointsBehavior> VICTORY_POINTS_BEHAVIOR = REGISTRATE.object("victory_points").behavior(VictoryPointsBehavior.CODEC).register();
     public static final GameBehaviorEntry<RiverRaceMerchantBehavior> RIVER_RACE_MERCHANT_BEHAVIOR = REGISTRATE.object("river_race_merchant").behavior(RiverRaceMerchantBehavior.CODEC).register();
 
