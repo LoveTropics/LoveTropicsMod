@@ -45,9 +45,20 @@ neoForge {
 
     addModdingDependenciesTo sourceSets.test
 
+    mods {
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+        }
+        "${project.mod_id}_test" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.test
+        }
+    }
+
     runs {
         client {
             client()
+            loadedMods = [mods."${mod_id}"]
 
             programArguments.addAll '--username', 'Dev' + new Random().nextInt(999)
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -55,6 +66,7 @@ neoForge {
 
         server {
             server()
+            loadedMods = [mods."${mod_id}"]
 
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -62,24 +74,21 @@ neoForge {
 
         gameTestServer {
             type = "gameTestServer"
+            sourceSet = sourceSets.test
+            loadedMods = [mods."${mod_id}_test"]
+
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         data {
             data()
+            loadedMods = [mods."${mod_id}_test"]
 
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
         }
 
         configureEach {
             logLevel = org.slf4j.event.Level.WARN
-        }
-    }
-
-    mods {
-        "${project.mod_id}" {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.test
         }
     }
 }
