@@ -64,11 +64,6 @@ public final class TriviaBehaviour implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        BlockBox spawnRegion = game.mapRegions().getOrThrow("spawn");
-        events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
-            BlockPos floorPos = spawnRegion.sample(game.level().getRandom());
-            spawn.teleportTo(game.level(), floorPos.above());
-        });
         events.listen(GamePhaseEvents.TICK, () -> {
             scheduler.tick();
             Set<Long> longs = lockedOutTriviaBlocks.keySet();
