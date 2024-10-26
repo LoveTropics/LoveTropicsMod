@@ -22,14 +22,16 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
-public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory, GameActionList<ServerPlayer> respawnAction, boolean spectateKiller) implements IGameBehavior {
+public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory, GameActionList<ServerPlayer> respawnAction, boolean spectateKiller, boolean extinguishFire, boolean clearEffects) implements IGameBehavior {
 	public static final MapCodec<ImmediateRespawnBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlayerRole.CODEC.optionalFieldOf("role").forGetter(c -> c.role),
 			PlayerRole.CODEC.optionalFieldOf("respawn_as").forGetter(c -> c.respawnAsRole),
 			TemplatedText.CODEC.optionalFieldOf("death_message").forGetter(c -> c.deathMessage),
 			Codec.BOOL.optionalFieldOf("drop_inventory", false).forGetter(c -> c.dropInventory),
 			GameActionList.PLAYER_CODEC.optionalFieldOf("respawn_action", GameActionList.EMPTY).forGetter(c -> c.respawnAction),
-			Codec.BOOL.optionalFieldOf("spectate_killer", true).forGetter(c -> c.spectateKiller)
+			Codec.BOOL.optionalFieldOf("spectate_killer", true).forGetter(c -> c.spectateKiller),
+			Codec.BOOL.optionalFieldOf("extinguish_fire", false).forGetter(c -> c.extinguishFire),
+			Codec.BOOL.optionalFieldOf("clear_effects", false).forGetter(c -> c.clearEffects)
 	).apply(i, ImmediateRespawnBehavior::new));
 
 	@Override
@@ -68,7 +70,12 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		}
 
 		player.setHealth(20.0F);
-		player.extinguishFire();
+		if(extinguishFire) {
+			player.extinguishFire();
+		}
+		if(clearEffects) {
+			player.removeAllEffects();
+		}
 
 		respawnAction.apply(game, GameActionContext.EMPTY, player);
 	}
