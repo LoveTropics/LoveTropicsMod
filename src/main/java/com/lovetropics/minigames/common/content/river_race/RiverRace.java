@@ -31,6 +31,8 @@ public class RiverRace {
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
             .initialProperties(() -> Blocks.STONE)
             .properties(BlockBehaviour.Properties::noLootTable)
+            .blockEntity(TriviaBlockEntity::new)
+            .build()
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
             })
