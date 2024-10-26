@@ -35,6 +35,7 @@ public final class MinigameTexts {
 	public static final Component LEVITATION = KEYS.add("levitation", "Levitation");
 	public static final Component QOTTOTT = KEYS.add("qottott", "Qottott");
 	public static final Component CONNECT_FOUR = KEYS.add("connect_four", "Connect Four");
+	public static final Component CRAFTING_BEE = KEYS.add("crafting_bee", "Crafting Bee");
 
 	// TODO: These should move into SurviveTheTideTexts
 	public static final Component[] SURVIVE_THE_TIDE_INTRO = {

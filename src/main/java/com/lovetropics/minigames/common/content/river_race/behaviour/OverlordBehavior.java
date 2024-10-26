@@ -31,7 +31,7 @@ public class OverlordBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        // THIS IS TEMPORARY LOL CHILL ANYBODY WHO READS THIS
+        /* THIS IS TEMPORARY LOL CHILL ANYBODY WHO READS THIS
         events.listen(GamePlayerEvents.CHAT, (player, message) -> {
 
 
@@ -52,5 +52,6 @@ public class OverlordBehavior implements IGameBehavior {
             }
             return false;
         });
+        */
     }
 }
