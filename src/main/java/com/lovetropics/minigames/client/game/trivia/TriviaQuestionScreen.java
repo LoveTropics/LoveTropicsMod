@@ -166,6 +166,9 @@ public class TriviaQuestionScreen extends Screen {
         for (AnswerButton button : buttons) {
             button.setActive(getButtonState(button.getMessage().getString()));
         }
+        if(triviaBlockState.isAnswered()){
+            this.onClose();
+        }
     }
 
     @Override
