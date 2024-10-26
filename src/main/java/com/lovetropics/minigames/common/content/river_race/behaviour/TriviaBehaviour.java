@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.river_race.RiverRace;
+import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
@@ -129,22 +131,16 @@ public final class TriviaBehaviour implements IGameBehavior {
                 TriviaQuestion.TriviaQuestionAnswer answerObj = question.getAnswer(answer);
                 if (answerObj != null) {
                     if (answerObj.correct()) {
-                        //TODO: Make this a translation key
-                        player.sendSystemMessage(Component.
-                                literal("Correct! Do something here!")
-                                .withStyle(ChatFormatting.GREEN));
+                        player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
                         if(triviaBlockEntity.getTriviaType() == TriviaBlock.TriviaType.GATE){
-                            //TODO: Open gate
+                            world.destroyBlock(pos, false);
                             Block blockType = null;
                             findNeighboursOfTypeAndDestroy(scheduler, world, pos, blockType);
                         }
                         triviaBlockEntity.markAsCorrect();
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     } else {
-                        //TODO: Make this a translation key
-                        player.sendSystemMessage(Component.
-                                literal("Incorrect! This question is now locked out for " + questionLockout() + " seconds!")
-                                .withStyle(ChatFormatting.RED));
+                        player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout()));
                         lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout()), pos);
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     }

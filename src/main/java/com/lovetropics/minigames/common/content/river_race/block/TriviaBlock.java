@@ -28,11 +28,16 @@ public class TriviaBlock extends Block implements EntityBlock {
             super(properties, TriviaType.COLLECTABLE);
         }
     }
-
+    public static class VictoryTriviaBlock extends TriviaBlock {
+        public VictoryTriviaBlock(Properties properties) {
+            super(properties, TriviaType.VICTORY);
+        }
+    }
     public enum TriviaType implements StringRepresentable {
         REWARD("easy"),
         GATE("medium"),
-        COLLECTABLE("hard");
+        COLLECTABLE("hard"),
+        VICTORY("hard");
 
         private String difficulty;
         TriviaType(String difficulty){
