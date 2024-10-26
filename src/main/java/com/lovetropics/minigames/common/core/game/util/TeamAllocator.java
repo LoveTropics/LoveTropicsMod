@@ -19,6 +19,7 @@ public final class TeamAllocator<T, V> {
 	private final Object2IntMap<T> teamSizes = new Object2IntOpenHashMap<>();
 	@Nullable
 	private T overflowTeam;
+	private List<T> lockedTeams = new ArrayList<>();
 
 	public TeamAllocator(Collection<T> teams) {
 		Preconditions.checkArgument(!teams.isEmpty(), "cannot allocate with no teams");
@@ -37,6 +38,11 @@ public final class TeamAllocator<T, V> {
 	public void setOverflowTeam(T team) {
 		Preconditions.checkArgument(teams.contains(team), "invalid team: " + team);
 		overflowTeam = team;
+	}
+
+	public void addLockedTeam(T team) {
+		Preconditions.checkArgument(teams.contains(team), "invalid team: " + team);
+		lockedTeams.add(team);
 	}
 
 	public void addPlayer(V player, @Nullable T preference) {
@@ -72,6 +78,9 @@ public final class TeamAllocator<T, V> {
 		List<T> availableTeams = new ArrayList<>(teams);
 		if (overflowTeam != null) {
 			availableTeams.remove(overflowTeam);
+		}
+		if(!lockedTeams.isEmpty()){
+			availableTeams.removeAll(lockedTeams);
 		}
 
 		List<V> players = new ArrayList<>(this.players);
