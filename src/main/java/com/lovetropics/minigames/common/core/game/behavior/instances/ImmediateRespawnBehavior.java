@@ -68,6 +68,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		}
 
 		player.setHealth(20.0F);
+		player.extinguishFire();
 
 		respawnAction.apply(game, GameActionContext.EMPTY, player);
 	}
