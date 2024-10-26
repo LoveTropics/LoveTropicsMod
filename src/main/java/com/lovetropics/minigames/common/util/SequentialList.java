@@ -26,4 +26,8 @@ public class SequentialList<T> {
 
         return current();
     }
+
+    public List<T> all() {
+        return list;
+    }
 }

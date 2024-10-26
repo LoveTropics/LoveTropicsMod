@@ -26,6 +26,10 @@ public final class TimedGameState implements IGameState {
 		return ticksRemaining;
 	}
 
+	public void increaseRemaining(long add) {
+		ticksRemaining += add;
+	}
+
 	public boolean isPaused() {
 		return paused;
 	}

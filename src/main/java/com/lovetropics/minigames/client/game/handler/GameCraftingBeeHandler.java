@@ -59,6 +59,18 @@ public class GameCraftingBeeHandler {
     private static UUID lastKnownGame;
     private static Map<ResourceLocation, RecipeHint> hintGrids;
 
+    static final ClientGameStateHandler<CraftingBeeCraftsClientState> HANDLER = new ClientGameStateHandler<CraftingBeeCraftsClientState>() {
+        @Override
+        public void accept(CraftingBeeCraftsClientState state) {
+            lastKnownGame = null;
+        }
+
+        @Override
+        public void disable(CraftingBeeCraftsClientState state) {
+
+        }
+    };
+
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("ltminigames", "textures/gui/minigames/crafting_bee/items_bar.png");
     private static final ResourceLocation GRID_TEXTURE = ResourceLocation.fromNamespaceAndPath("ltminigames", "textures/gui/minigames/crafting_bee/crafting_grid.png");
 
