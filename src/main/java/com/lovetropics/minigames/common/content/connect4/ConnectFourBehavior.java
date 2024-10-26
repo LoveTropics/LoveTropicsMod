@@ -144,7 +144,10 @@ public class ConnectFourBehavior implements IGameBehavior {
             level.setBlock(pos.above(3), blocker, Block.UPDATE_ALL);
         }
 
-        int x = (pos.getX() - placingRegion.min().getX()) / 2;
+        int x = (pos.getX() - Math.min(placingRegion.min().getX(), placingRegion.max().getX())) / 2;
+        if (placingRegion.min().getX() == placingRegion.max().getX()) {
+            x = (pos.getZ() - Math.min(placingRegion.min().getZ(), placingRegion.max().getZ())) / 2;
+        }
         var column = pieces[x];
         int y;
         for (y = 0; y < column.length; y++) {
