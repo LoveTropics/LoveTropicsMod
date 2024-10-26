@@ -63,6 +63,7 @@ import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
 import com.lovetropics.minigames.common.core.item.MinigameDataComponents;
 import com.lovetropics.minigames.common.core.item.MinigameItems;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
+import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
@@ -75,6 +76,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -90,10 +92,12 @@ import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import org.slf4j.Logger;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -113,6 +117,7 @@ public class LoveTropics {
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
+        NeoForge.EVENT_BUS.addListener(this::onAttemptSpawn);
 
         modBus.addListener(ConfigLT::onLoad);
         modBus.addListener(ConfigLT::onFileChange);
@@ -225,6 +230,15 @@ public class LoveTropics {
 
     private void onServerStopping(final ServerStoppingEvent event) {
         BackendIntegrations.get().sendClose();
+    }
+
+    private void onAttemptSpawn(final MobSpawnEvent.PositionCheck event) {
+        if (event.getSpawnType() == MobSpawnType.SPAWNER) {
+            var workspace = MapWorkspaceManager.get(event.getLevel().getServer());
+            if (workspace.getWorkspace(event.getLevel().getLevel().dimension()) != null) {
+                event.setResult(MobSpawnEvent.PositionCheck.Result.FAIL);
+            }
+        }
     }
 
     public static void onServerStoppingUnsafely(MinecraftServer server) {
