@@ -31,8 +31,6 @@ public class RiverRace {
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
             .initialProperties(() -> Blocks.STONE)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockEntity(TriviaBlockEntity::new)
-            .build()
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
             })
@@ -42,8 +40,6 @@ public class RiverRace {
             .block("trivia_collectable", TriviaBlock.CollectableTriviaBlock::new)
             .initialProperties(() -> Blocks.STONE)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockEntity(TriviaBlockEntity::new)
-            .build()
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
             })
@@ -53,8 +49,6 @@ public class RiverRace {
             .block("trivia_reward", TriviaBlock.RewardTriviaBlock::new)
             .initialProperties(() -> Blocks.STONE)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockEntity(TriviaBlockEntity::new)
-            .build()
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
             })
@@ -79,7 +73,9 @@ public class RiverRace {
             })
             .register();
 
-    public static final BlockEntityEntry<TriviaBlockEntity> TRIVIA_BLOCK_ENTITY = BlockEntityEntry.cast(REGISTRATE.get("trivia_gate", Registries.BLOCK_ENTITY_TYPE));
+    public static final BlockEntityEntry<TriviaBlockEntity> TRIVIA_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("trivia_block_entity", TriviaBlockEntity::new)
+                    .validBlocks(TRIVIA_GATE, TRIVIA_COLLECTABLE, TRIVIA_REWARD).register();
     public static final BlockEntityEntry<TriviaChestBlockEntity> TRIVIA_CHEST_BLOCK_ENTITY = BlockEntityEntry.cast(REGISTRATE.get("trivia_chest", Registries.BLOCK_ENTITY_TYPE));
 
 
