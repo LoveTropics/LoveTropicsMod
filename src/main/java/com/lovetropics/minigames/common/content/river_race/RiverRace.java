@@ -2,10 +2,7 @@ package com.lovetropics.minigames.common.content.river_race;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.CustomItemRenderers;
-import com.lovetropics.minigames.common.content.river_race.behaviour.StartMicrogamesAction;
-import com.lovetropics.minigames.common.content.river_race.behaviour.RiverRaceMerchantBehavior;
-import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
-import com.lovetropics.minigames.common.content.river_race.behaviour.VictoryPointsBehavior;
+import com.lovetropics.minigames.common.content.river_race.behaviour.*;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlock;
@@ -26,6 +23,7 @@ public class RiverRace {
     public static final GameBehaviorEntry<StartMicrogamesAction> START_MICROGAMES_ACTION = REGISTRATE.object("start_microgames").behavior(StartMicrogamesAction.CODEC).register();
     public static final GameBehaviorEntry<VictoryPointsBehavior> VICTORY_POINTS_BEHAVIOR = REGISTRATE.object("victory_points").behavior(VictoryPointsBehavior.CODEC).register();
     public static final GameBehaviorEntry<RiverRaceMerchantBehavior> RIVER_RACE_MERCHANT_BEHAVIOR = REGISTRATE.object("river_race_merchant").behavior(RiverRaceMerchantBehavior.CODEC).register();
+    public static final GameBehaviorEntry<ProgressBehaviour> RIVER_RACE_PROGRESS_BEHAVIOUR = REGISTRATE.object("river_race_progress").behavior(ProgressBehaviour.CODEC).register();
 
     public static final BlockEntry<TriviaBlock.GateTriviaBlock> TRIVIA_GATE = REGISTRATE
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
