@@ -32,7 +32,8 @@
     "client.PoseStackAccessor",
     "client.HiddenRecipeBookMixin",
     "client.MouseHandlerMixin",
-    "client.KeyboardInputMixin"
+    "client.KeyboardInputMixin",
+    "client.ScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

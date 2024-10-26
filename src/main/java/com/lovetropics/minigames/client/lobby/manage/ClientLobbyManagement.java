@@ -55,12 +55,13 @@ public final class ClientLobbyManagement {
 	}
 
 	public static final class Session {
-		final int id;
-		final ClientLobbyManageState lobby;
+		private final int id;
+		private final ClientLobbyManageState lobby;
 		@Nullable
-		ManageLobbyScreen screen;
+		private ManageLobbyScreen screen;
+		private Listener listener = Listener.EMPTY;
 
-		Session(int id, ClientLobbyManageState lobby) {
+		private Session(int id, ClientLobbyManageState lobby) {
 			this.id = id;
 			this.lobby = lobby;
 		}
@@ -143,29 +144,24 @@ public final class ClientLobbyManagement {
 
 			if (screen == null) {
 				screen = new ManageLobbyScreen(this);
+				listener = screen;
 			}
 			Minecraft.getInstance().setScreen(screen);
 		}
 
 		public void handleName(String name) {
 			lobby.setName(name);
-			if (screen != null) {
-				screen.updateNameField();
-			}
+			listener.updateNameField();
 		}
 
 		public void handleCurrentGame(@Nullable ClientCurrentGame game) {
 			lobby.setCurrentGame(game);
-			if (screen != null) {
-				screen.updateGameEntries();
-			}
+			listener.updateGameEntries();
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
 			lobby.updateQueue(queue, updated);
-			if (screen != null) {
-				screen.updateGameEntries();
-			}
+			listener.updateGameEntries();
 		}
 
 		public void handlePlayers(List<ClientLobbyPlayer> players) {
@@ -174,16 +170,40 @@ public final class ClientLobbyManagement {
 
 		public void handleControlsState(LobbyControls.State state) {
 			lobby.setControlsState(state);
-			if (screen != null) {
-				screen.updateControlsState();
-			}
+			listener.updateControlsState();
 		}
 
 		public void handleVisibility(LobbyVisibility visibility, boolean canFocusLive) {
 			lobby.setVisibility(visibility, canFocusLive);
-			if (screen != null) {
-				screen.updatePublishState();
-			}
+			listener.updatePublishState();
 		}
+	}
+
+	public interface Listener {
+		Listener EMPTY = new Listener() {
+			@Override
+			public void updateNameField() {
+			}
+
+			@Override
+			public void updateGameEntries() {
+			}
+
+			@Override
+			public void updateControlsState() {
+			}
+
+			@Override
+			public void updatePublishState() {
+			}
+		};
+
+		void updateNameField();
+
+		void updateGameEntries();
+
+		void updateControlsState();
+
+		void updatePublishState();
 	}
 }

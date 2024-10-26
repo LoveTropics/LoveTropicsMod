@@ -1,264 +1,170 @@
 package com.lovetropics.minigames.client.lobby.manage.screen;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientLobbyManagement;
-import com.lovetropics.minigames.client.lobby.manage.screen.game_list.GameList;
-import com.lovetropics.minigames.client.lobby.manage.screen.player_list.LobbyPlayerList;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
-import com.lovetropics.minigames.client.lobby.screen.game_config.GameConfig;
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.client.screen.FlexUi;
-import com.lovetropics.minigames.client.screen.flex.Box;
-import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
+import com.lovetropics.minigames.client.screen.list.OrderableListEntry;
+import com.lovetropics.minigames.client.screen.list.OrderableSelectionList;
+import com.lovetropics.minigames.client.screen.tab.TabbedScreen;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.CommonLayouts;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.CommonColors;
-import net.minecraft.util.Mth;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-public final class ManageLobbyScreen extends Screen {
+public final class ManageLobbyScreen extends TabbedScreen<ManageLobbyScreen.Tab> implements ClientLobbyManagement.Listener {
+	private static final int FOOTER_WIDTH = Window.BASE_WIDTH - 10;
+
+	private static final int CONTENT_WIDTH = 210;
+	private static final int SPACING = 6;
+
 	private final ClientLobbyManagement.Session session;
 
-	private ManageLobbyLayout layout;
-
-	private EditBox nameField;
-	private Button publishButton;
-
-	private GameList gameList;
-	private GameConfig gameConfig;
-	private LobbyPlayerList playerList;
-
-	private Button closeButton;
-
-	private Button playButton;
-	private Button skipButton;
-
-	private Button restartButton;
-
-	private int selectedGameId = -1;
+	private GamesList gamesList;
 
 	public ManageLobbyScreen(ClientLobbyManagement.Session session) {
-		super(GameTexts.Ui.MANAGE_GAME_LOBBY);
+		super(GameTexts.Ui.MANAGE_GAME_LOBBY, List.of(Tab.values()));
 		this.session = session;
 	}
 
 	@Override
-	protected void init() {
-		layout = new ManageLobbyLayout(this);
+	protected void populateLayout(HeaderAndFooterLayout layout, Tab tab) {
+		switch (tab) {
+			case GAMES -> gamesList = layout.addToContents(new GamesList(this));
+			case LOBBY -> {
+				LinearLayout content = layout.addToContents(LinearLayout.vertical().spacing(SPACING));
 
-		ClientLobbyManageState lobby = session.lobby();
-
-		selectedGameId = -1;
-		gameList = addWidget(new GameList(this, layout.gameList, layout.leftFooter, lobby, new GameList.Handlers() {
-			@Override
-			public void selectQueuedGame(int queuedGameId) {
-				if (queuedGameId == selectedGameId) return;
-				selectedGameId = queuedGameId;
-				gameConfig.setGame(session.lobby().getQueue().byId(queuedGameId));
+				content.addChild(createLabeledEditBox(CONTENT_WIDTH, Button.DEFAULT_HEIGHT, GameTexts.Ui.LOBBY_NAME));
+				content.addChild(Button.builder(GameTexts.Ui.PUBLISH, b -> {}).width(CONTENT_WIDTH).build());
+				content.addChild(Button.builder(GameTexts.Ui.CLOSE_LOBBY.copy().withStyle(ChatFormatting.RED), b -> closeLobby()).width(CONTENT_WIDTH).build());
 			}
-
-			@Override
-			public void enqueueGame(int installedGameIndex) {
-				List<ClientGameDefinition> installedGames = lobby.getInstalledGames();
-				if (installedGameIndex >= 0 && installedGameIndex < installedGames.size()) {
-					session.enqueueGame(installedGames.get(installedGameIndex));
-				}
+			case PLAYERS -> {
 			}
+		}
 
-			@Override
-			public void removeQueuedGame(int queuedGameId) {
-				session.removeQueuedGame(queuedGameId);
-			}
-
-			@Override
-			public void reorderQueuedGame(int queuedGameId, int offset) {
-				ClientLobbyQueue queue = lobby.getQueue();
-				int index = queue.indexById(queuedGameId);
-				if (index != -1) {
-					int newIndex = Mth.clamp(index + offset, 0, queue.size() - 1);
-					session.reorderQueuedGame(queuedGameId, newIndex);
-				}
-			}
-		}));
-
-		// TODO actually save config data
-		gameConfig = addWidget(new GameConfig(this, layout.edit, () -> {
-			int selectedId = selectedGameId;
-			if (selectedId != -1) {
-				session.configure(selectedId);
-			}
-		}));
-
-		nameField = addWidget(FlexUi.createTextField(layout.name, font, GameTexts.Ui.LOBBY_NAME));
-		nameField.setMaxLength(200);
-		nameField.setValue(lobby.getName());
-
-		publishButton = addRenderableWidget(FlexUi.createButton(layout.publish, GameTexts.Ui.PUBLISH, button -> {
-			if (session.lobby().getVisibility().isPrivate()) {
-				session.publishLobby();
-			} else {
-				session.focusLive();
-			}
-		}));
-
-		playerList = addWidget(new LobbyPlayerList(this, lobby, layout.playerList));
-
-		playButton = addRenderableWidget(FlexUi.createButton(layout.play, Component.literal("▶"), b -> {
-			session.selectControl(LobbyControls.Type.PLAY);
-		}));
-		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, Component.literal("⏭"), b -> {
-			session.selectControl(LobbyControls.Type.SKIP);
-		}));
-		restartButton = addRenderableWidget(FlexUi.createButton(layout.restart, Component.literal("⟳"), b -> {
-			session.selectControl(LobbyControls.Type.RESTART);
-		}));
-
-		Component closeLobby = GameTexts.Ui.CLOSE_LOBBY.copy()
-				.withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
-		closeButton = addRenderableWidget(FlexUi.createButton(layout.close, closeLobby, b -> {
-			session.closeLobby();
-			onClose();
-		}));
-		addRenderableWidget(FlexUi.createButton(layout.done, CommonComponents.GUI_DONE, b -> onClose()));
-
-		updateGameEntries();
-		updatePublishState();
-		updateControlsState();
+		// TODO: Make custom HeaderAndFooterLayout
+		Layout footer = createFooter(tab);
+		layout.addToFooter(footer, s -> s.padding(0, SPACING));
+		footer.arrangeElements();
+		layout.setFooterHeight(footer.getHeight() + SPACING * 2);
 	}
 
-	// TODO: custom text field instance
 	@Override
-	public void setFocused(@Nullable GuiEventListener listener) {
-		GuiEventListener lastListener = getFocused();
-		if (lastListener != null && lastListener != listener) {
-			onLoseFocus(lastListener);
+	protected void updateLayout(HeaderAndFooterLayout newLayout) {
+		super.updateLayout(newLayout);
+		gamesList.updateSize(width, newLayout);
+	}
+
+	private Layout createLabeledEditBox(int width, int height, Component label) {
+		return CommonLayouts.labeledElement(font, new EditBox(font, 0, 0, width, height, label), label, s -> s.padding(1));
+	}
+
+	private Layout createFooter(Tab tab) {
+		GridLayout footer = new GridLayout().spacing(SPACING);
+		footer.defaultCellSetting().alignHorizontallyCenter();
+
+		if (tab == Tab.GAMES) {
+			int topButtonWidth = (FOOTER_WIDTH - SPACING) / 2;
+			footer.addChild(Button.builder(Component.literal("Play"), b -> onClose()).width(topButtonWidth).build(), 0, 0, 1, 2).active = false;
+			footer.addChild(Button.builder(Component.literal("Add"), b -> onClose()).width(topButtonWidth).build(), 0, 2, 1, 2);
+			int bottomButtonWidth = (FOOTER_WIDTH - SPACING * 3) / 4;
+			footer.addChild(Button.builder(Component.literal("Edit"), b -> onClose()).width(bottomButtonWidth).build(), 1, 0).active = false;
+			footer.addChild(Button.builder(Component.literal("Remove"), b -> onClose()).width(bottomButtonWidth).build(), 1, 1).active = false;
+			footer.addChild(Button.builder(Component.literal("Skip"), b -> onClose()).width(bottomButtonWidth).build(), 1, 2).active = false;
+			footer.addChild(Button.builder(CommonComponents.GUI_DONE, b -> onClose()).width(bottomButtonWidth).build(), 1, 3);
+		} else {
+			GridLayout.RowHelper helper = footer.createRowHelper(1);
+			helper.addChild(Button.builder(CommonComponents.GUI_DONE, b -> onClose()).build(), helper.newCellSettings());
 		}
-		super.setFocused(listener);
+
+		return footer;
 	}
 
-	private void onLoseFocus(GuiEventListener listener) {
-		if (listener == nameField) {
-			applyNameField();
-		}
-	}
-
-	public void updateGameEntries() {
-		gameList.updateEntries();
-
-		ClientLobbyManageState lobby = session.lobby();
-		closeButton.active = lobby.getCurrentGame() == null && lobby.getQueue().isEmpty();
-	}
-
-	public void updateNameField() {
-		ClientLobbyManageState lobby = session.lobby();
-		nameField.setValue(lobby.getName());
-	}
-
-	public void updateControlsState() {
-		ClientLobbyManageState lobby = session.lobby();
-		LobbyControls.State controls = lobby.getControlsState();
-		playButton.active = controls.enabled(LobbyControls.Type.PLAY);
-		skipButton.active = controls.enabled(LobbyControls.Type.SKIP);
-		restartButton.active = controls.enabled(LobbyControls.Type.RESTART);
-	}
-
-	public void updatePublishState() {
-		ClientLobbyManageState lobby = session.lobby();
-		LobbyVisibility visibility = lobby.getVisibility();
-		switch (visibility) {
-			case PRIVATE:
-			default:
-				publishButton.setMessage(GameTexts.Ui.PUBLISH);
-				publishButton.active = true;
-				break;
-			case PUBLIC:
-				publishButton.setMessage(GameTexts.Ui.FOCUS_LIVE);
-				publishButton.active = lobby.canFocusLive();
-				break;
-			case PUBLIC_LIVE:
-				publishButton.setMessage(GameTexts.Ui.FOCUS_LIVE);
-				publishButton.active = false;
-				break;
-		}
+	private void closeLobby() {
+		session.closeLobby();
+		onClose();
 	}
 
 	@Override
 	public void removed() {
 		super.removed();
-
 		session.close();
-		applyNameField();
-	}
-
-	private void applyNameField() {
-		String name = nameField.getValue();
-		if (!name.equals(session.lobby().getName())) {
-			session.setName(name);
-		}
-	}
-
-	@Override
-	public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		super.renderBackground(graphics, mouseX, mouseY, partialTicks);
-
-		FlexUi.fill(layout.leftColumn, graphics, 0x80101010);
-		FlexUi.fill(layout.rightColumn, graphics, 0x80101010);
-
-		for (Layout marginal : layout.marginals) {
-			FlexUi.fill(marginal, graphics, 0xFF101010);
-		}
-	}
-
-	@Override
-	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		super.render(graphics, mouseX, mouseY, partialTicks);
-
-		gameList.render(graphics, mouseX, mouseY, partialTicks);
-		gameConfig.render(graphics, mouseX, mouseY, partialTicks);
-
-		gameList.renderOverlays(graphics, mouseX, mouseY, partialTicks);
-
-		// TODO: make this name rendering better
-		graphics.drawString(font, nameField.getMessage(), nameField.getX(), nameField.getY() - font.lineHeight - 2, CommonColors.WHITE);
-		nameField.render(graphics, mouseX, mouseY, partialTicks);
-
-		playerList.render(graphics, mouseX, mouseY);
-
-		Box header = layout.header.content();
-		graphics.drawCenteredString(font, title, header.centerX(), header.centerY(), CommonColors.WHITE);
-
-		ClientLobbyQueue queue = session.lobby().getQueue();
-		ClientLobbyQueuedGame selectedEntry = queue.byId(selectedGameId);
-		if (selectedEntry != null) {
-			renderSelectedGame(selectedEntry, graphics, mouseX, mouseY, partialTicks);
-		}
-
-		playerList.renderTooltip(graphics, mouseX, mouseY);
-	}
-
-	private void renderSelectedGame(ClientLobbyQueuedGame game, GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		FlexUi.fill(layout.centerHeader, graphics, 0x80101010);
-
-		Component title = GameTexts.Ui.managingGame(game.definition());
-
-		Box header = layout.centerHeader.content();
-		graphics.drawCenteredString(font, title, header.centerX(), header.centerY() - font.lineHeight / 2, CommonColors.WHITE);
 	}
 
 	@Override
 	public boolean isPauseScreen() {
 		return false;
+	}
+
+	@Override
+	public void updateNameField() {
+
+	}
+
+	@Override
+	public void updateGameEntries() {
+
+	}
+
+	@Override
+	public void updateControlsState() {
+
+	}
+
+	@Override
+	public void updatePublishState() {
+
+	}
+
+	public static class GamesList extends OrderableSelectionList<GamesList.Entry> {
+		private static final int ENTRY_HEIGHT = 36;
+
+		public GamesList(Screen screen) {
+			super(screen, ENTRY_HEIGHT);
+		}
+
+		private static class Entry extends OrderableListEntry<Entry> {
+			public Entry(OrderableSelectionList<Entry> list, Screen screen) {
+				super(list, screen);
+			}
+
+			@Override
+			public Component getNarration() {
+				return CommonComponents.EMPTY;
+			}
+
+			@Override
+			public void render(GuiGraphics graphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovered, float partialTick) {
+
+			}
+		}
+	}
+
+	public enum Tab implements TabbedScreen.Tab {
+		// TODO
+		GAMES(Component.literal("Games")),
+		LOBBY(Component.literal("Lobby")),
+		PLAYERS(Component.literal("Players")),
+		;
+
+		private final Component title;
+
+		Tab(Component title) {
+			this.title = title;
+		}
+
+		@Override
+		public Component title() {
+			return title;
+		}
 	}
 }
