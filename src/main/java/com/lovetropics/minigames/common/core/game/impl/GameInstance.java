@@ -1,9 +1,10 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.player.PlayerStorage;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import net.minecraft.server.MinecraftServer;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 /**
  * A unique instance of a specific minigame, stored in a GameLobby
  */
-final class GameInstance implements IGame {
+public final class GameInstance implements IGame {
 	final GameLobby lobby;
 	final MinecraftServer server;
 	final IGameDefinition definition;
@@ -20,6 +21,8 @@ final class GameInstance implements IGame {
 	final GameStateMap stateMap = new GameStateMap();
 
 	final UUID uuid = UUID.randomUUID();
+
+	final PlayerStorage playerStorage = new PlayerStorage();
 
 	GameInstance(GameLobby lobby, IGameDefinition definition) {
 		this.lobby = lobby;
@@ -51,5 +54,9 @@ final class GameInstance implements IGame {
 	public boolean isActive() {
 		final IGamePhase phase = lobby.getCurrentPhase();
 		return phase != null && phase.game() == this;
+	}
+
+	public PlayerStorage getPlayerStorage() {
+		return playerStorage;
 	}
 }

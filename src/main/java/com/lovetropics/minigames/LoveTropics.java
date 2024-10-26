@@ -5,6 +5,7 @@ import com.lovetropics.minigames.client.game.handler.GameSidebarRenderer;
 import com.lovetropics.minigames.client.game.handler.spectate.SpectatingUi;
 import com.lovetropics.minigames.client.lobby.LobbyKeybinds;
 import com.lovetropics.minigames.client.lobby.LobbyStateGui;
+import com.lovetropics.minigames.client.render.block.TriviaChestRenderer;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
@@ -15,9 +16,15 @@ import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
+import com.lovetropics.minigames.common.content.connect4.ConnectFour;
+import com.lovetropics.minigames.common.content.connect4.ConnectFourTexts;
+import com.lovetropics.minigames.common.content.crafting_bee.CraftingBee;
+import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
+import com.lovetropics.minigames.common.content.river_race.RiverRace;
+import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
@@ -50,6 +57,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTy
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicates;
+import com.lovetropics.minigames.common.core.game.predicate.loot.LootItemConditions;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
 import com.lovetropics.minigames.common.core.item.MinigameDataComponents;
@@ -61,6 +69,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -115,10 +124,13 @@ public class LoveTropics {
                     MinigameTexts.KEYS.forEach(consumer);
                     BiodiversityBlitzTexts.collectTranslations(consumer);
                     BlockPartyTexts.KEYS.forEach(consumer);
+                    CraftingBeeTexts.KEYS.forEach(consumer);
+                    ConnectFourTexts.KEYS.forEach(consumer);
                     SurviveTheTideTexts.KEYS.forEach(consumer);
                     TrashDiveTexts.KEYS.forEach(consumer);
                     TurtleRaceTexts.KEYS.forEach(consumer);
                     QottottTexts.KEYS.forEach(consumer);
+                    RiverRaceTexts.collectTranslations(consumer);
                 })
                 .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))
@@ -134,6 +146,7 @@ public class LoveTropics {
         GameBehaviorTypes.init(modBus);
         ActionTargetTypes.init(modBus);
         EntityPredicates.init(modBus);
+        LootItemConditions.init();
         GameClientStateTypes.init(modBus);
         StreamHosts.init();
 
@@ -142,9 +155,12 @@ public class LoveTropics {
         SurviveTheTide.init();
         TrashDive.init();
         BlockParty.init();
+        CraftingBee.init();
+        ConnectFour.init();
         TurtleRace.init();
         Qottott.init();
         Spleef.init();
+        RiverRace.init();
 
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
         PlayerDisguise.ATTACHMENT_TYPES.register(modBus);
@@ -220,6 +236,7 @@ public class LoveTropics {
         @SubscribeEvent
         public static void setupClient(final FMLClientSetupEvent event) {
             LobbyKeybinds.init();
+            BlockEntityRenderers.register(RiverRace.TRIVIA_CHEST_BLOCK_ENTITY.get(), TriviaChestRenderer::new);
         }
 
         @SubscribeEvent

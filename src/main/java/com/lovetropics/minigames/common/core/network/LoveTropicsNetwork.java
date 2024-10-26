@@ -11,6 +11,10 @@ import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.client.particle_line.DrawParticleLineMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
+import com.lovetropics.minigames.common.core.network.trivia.RequestTriviaStateUpdateMessage;
+import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
+import com.lovetropics.minigames.common.core.network.trivia.ShowTriviaMessage;
+import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponseMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
@@ -51,5 +55,10 @@ public final class LoveTropicsNetwork {
         registrar.playToClient(SpectatorPlayerActivityMessage.TYPE, SpectatorPlayerActivityMessage.STREAM_CODEC, SpectatorPlayerActivityMessage::handle);
 
         registrar.playToClient(RiseTideMessage.TYPE, RiseTideMessage.STREAM_CODEC, RiseTideMessage::handle);
+
+        registrar.playToClient(ShowTriviaMessage.TYPE, ShowTriviaMessage.STREAM_CODEC, ShowTriviaMessage::handle);
+        registrar.playToServer(SelectTriviaAnswerMessage.TYPE, SelectTriviaAnswerMessage.STREAM_CODEC, SelectTriviaAnswerMessage::handle);
+        registrar.playToServer(RequestTriviaStateUpdateMessage.TYPE, RequestTriviaStateUpdateMessage.STREAM_CODEC, RequestTriviaStateUpdateMessage::handle);
+        registrar.playToClient(TriviaAnswerResponseMessage.TYPE, TriviaAnswerResponseMessage.STREAM_CODEC, TriviaAnswerResponseMessage::handle);
     }
 }

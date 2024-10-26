@@ -12,6 +12,7 @@
       }
     }
   ],
+  "is_multi_game": false,
   "map": {
     "type": "ltminigames:inline",
     "dimension": "minecraft:overworld"

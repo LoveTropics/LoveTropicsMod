@@ -25,8 +25,10 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,6 +38,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -55,7 +58,7 @@ public class GamePhase implements IGamePhase {
 	final GameStateMap phaseState = new GameStateMap();
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
-	private final Set<UUID> addedPlayers = new ObjectArraySet<>();
+	protected final Set<UUID> addedPlayers = new ObjectArraySet<>();
 
 	final GameEventListeners events = new GameEventListeners();
 
@@ -64,7 +67,9 @@ public class GamePhase implements IGamePhase {
 	GameStopReason stopped;
 	boolean destroyed;
 
-	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
+	private final LinkedList<ScheduledTask> pendingRunnables = new LinkedList<>();
+
+	protected GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
 		server = game.server();
 		this.definition = definition;
@@ -79,7 +84,7 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
+	public static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
 		MinecraftServer server = game.server();
 
 		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
@@ -90,13 +95,35 @@ public class GamePhase implements IGamePhase {
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
 					BehaviorList behaviors = definition.createBehaviors();
+					if(game.definition.isMultiGamePhase()){
+						return new MultiGamePhase(game, definition, phaseType, map, behaviors);
+					}
+					return new GamePhase(game, definition, phaseType, map, behaviors);
+				}), server);
+
+		return GameResult.handleException("Unknown exception starting game phase", future);
+	}
+	public static CompletableFuture<GameResult<GamePhase>> createMultiGame(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, ResourceLocation gameId) {
+		MinecraftServer server = game.server();
+
+		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
+		if (result.isError()) {
+			return CompletableFuture.completedFuture(result.castError());
+		}
+
+		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
+				.thenApplyAsync(r -> r.map(map -> {
+					BehaviorList behaviors = definition.createBehaviors();
+					if(game.definition.isMultiGamePhase()){
+						return new MultiGamePhase(game, definition, phaseType, map, behaviors, gameId);
+					}
 					return new GamePhase(game, definition, phaseType, map, behaviors);
 				}), server);
 
 		return GameResult.handleException("Unknown exception starting game phase", future);
 	}
 
-	GameResult<Unit> start() {
+	GameResult<Unit> start(final boolean savePlayerDataToMemory) {
 		try {
 			behaviors.registerTo(this, events);
 		} catch (GameException e) {
@@ -117,7 +144,7 @@ public class GamePhase implements IGamePhase {
 			Collections.shuffle(shuffledPlayers);
 
 			for (ServerPlayer player : shuffledPlayers) {
-				addAndSpawnPlayer(player, getRoleFor(player));
+				addAndSpawnPlayer(player, getRoleFor(player), savePlayerDataToMemory);
 			}
 
 			invoker(GamePhaseEvents.START).start();
@@ -128,7 +155,7 @@ public class GamePhase implements IGamePhase {
 		return GameResult.ok();
 	}
 
-	private ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role) {
+	protected ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role, final boolean savePlayerDataToMemory) {
 		SpawnBuilder spawn = new SpawnBuilder(player);
 		invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
 
@@ -140,17 +167,39 @@ public class GamePhase implements IGamePhase {
 
 		addedPlayers.add(player.getUUID());
 
+		if (savePlayerDataToMemory) {
+			game.playerStorage.setPlayerData(player, player.saveWithoutId(new CompoundTag()));
+		}
+
 		return newPlayer;
 	}
 
 	@Nullable
 	GameStopReason tick() {
 		try {
+			if (!pendingRunnables.isEmpty()) {
+				var itr = pendingRunnables.iterator();
+				while (itr.hasNext()) {
+					var task = itr.next();
+					if (task.counter <= 0) {
+						task.toRun.run();
+						itr.remove();
+					} else {
+						task.counter--;
+					}
+				}
+			}
+
 			invoker(GamePhaseEvents.TICK).tick();
 		} catch (Exception e) {
 			cancelWithError(e);
 		}
 		return stopped;
+	}
+
+	@Override
+	public void schedule(float seconds, Runnable task) {
+		pendingRunnables.add(new ScheduledTask(task, (int)(server().tickRateManager().tickrate() * seconds)));
 	}
 
 	@Override
@@ -213,7 +262,7 @@ public class GamePhase implements IGamePhase {
 
 	void onPlayerJoin(ServerPlayer player) {
 		try {
-			ServerPlayer newPlayer = addAndSpawnPlayer(player, null);
+			ServerPlayer newPlayer = addAndSpawnPlayer(player, null, false);
 			invoker(GamePlayerEvents.JOIN).onAdd(newPlayer);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
@@ -314,5 +363,15 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public boolean isActive() {
 		return !destroyed;
+	}
+
+	private static class ScheduledTask {
+		private final Runnable toRun;
+		private int counter;
+
+		private ScheduledTask(Runnable toRun, int counter) {
+			this.toRun = toRun;
+			this.counter = counter;
+		}
 	}
 }
