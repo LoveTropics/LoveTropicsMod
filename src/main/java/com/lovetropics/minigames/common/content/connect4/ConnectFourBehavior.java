@@ -207,11 +207,11 @@ public class ConnectFourBehavior implements IGameBehavior {
                 return true;
             }
 
-            if (checkLine(x - (connectAmount + 1) + offset, y + (connectAmount - 1) - offset, 1, -1, team)) { // leading diagonal
+            if (checkLine(x - (connectAmount - 1) + offset, y + (connectAmount - 1) - offset, 1, -1, team)) { // leading diagonal
                 return true;
             }
 
-            if (checkLine(x - (connectAmount + 1) + offset, y - (connectAmount + 1) + offset, 1, 1, team)) { // trailing diagonal
+            if (checkLine(x - (connectAmount - 1) + offset, y - (connectAmount - 1) + offset, 1, 1, team)) { // trailing diagonal
                 return true;
             }
         }
