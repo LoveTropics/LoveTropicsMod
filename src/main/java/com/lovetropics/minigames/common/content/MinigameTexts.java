@@ -31,6 +31,7 @@ public final class MinigameTexts {
 	public static final Component HIDE_AND_SEEK = KEYS.add("hide_and_seek", "Hide & Seek");
 	public static final Component CALAMITY = KEYS.add("calamity", "Calamity");
 	public static final Component BLOCK_PARTY = KEYS.add("block_party", "Block Party");
+	public static final Component BLOCK_PARTY_TEAMS = KEYS.add("block_party_teams", "Block Party Teams");
 	public static final Component CHAOS_BLOCK_PARTY = KEYS.add("chaos_block_party", "Chaos Block Party");
 	public static final Component LEVITATION = KEYS.add("levitation", "Levitation");
 	public static final Component QOTTOTT = KEYS.add("qottott", "Qottott");
