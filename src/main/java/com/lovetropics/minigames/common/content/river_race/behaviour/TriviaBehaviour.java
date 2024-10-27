@@ -79,13 +79,6 @@ public final class TriviaBehaviour implements IGameBehavior {
                 }
             }
         });
-        // Prevent breaking gates!
-        events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> {
-            if(state.is(STAINED_GLASS)){
-                return InteractionResult.FAIL;
-            }
-            return InteractionResult.PASS;
-        });
         events.listen(GamePlayerEvents.USE_BLOCK, (ServerPlayer player, ServerLevel world,
                                                    BlockPos pos, InteractionHand hand, BlockHitResult traceResult) -> {
             if (hand == InteractionHand.OFF_HAND) {
@@ -143,6 +136,25 @@ public final class TriviaBehaviour implements IGameBehavior {
                             world.destroyBlock(pos, false);
                             Block blockType = null;
                             findNeighboursOfTypeAndDestroy(scheduler, world, pos, blockType);
+                        } else if(triviaBlockEntity.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
+                            String inRegion = null;
+                            for (String region : game.mapRegions().keySet()) {
+                                if (region.startsWith("zone_")) {
+                                    if (game.mapRegions().getOrThrow(region).contains(pos)) {
+                                        inRegion = region;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(inRegion != null) {
+                                CollectablesBehaviour collectables = game.state().getOrNull(CollectablesBehaviour.COLLECTABLES);
+                                if (collectables != null) {
+                                    CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inRegion);
+                                    if(collectable != null){
+                                        collectables.givePlayerCollectable(game, collectable, player);
+                                    }
+                                }
+                            }
                         }
                         triviaBlockEntity.markAsCorrect();
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));

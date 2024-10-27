@@ -20,6 +20,8 @@ import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.map.MapRegions;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -232,6 +234,8 @@ public class MultiGamePhase extends GamePhase {
         GameConfig gameConfig = GameConfigs.REGISTRY.get(gameKey);
         GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.getId()).thenAccept((result) -> {
             setActivePhase(result.getOk(), saveInventory, gameKey);
+            game.allPlayers().showTitle(Component.empty().append(gameConfig.name).withStyle(ChatFormatting.GREEN),
+                    gameConfig.subtitle, 10, 40, 10);
         });
 
         invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
