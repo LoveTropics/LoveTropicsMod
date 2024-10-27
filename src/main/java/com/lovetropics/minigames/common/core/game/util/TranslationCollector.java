@@ -41,6 +41,11 @@ public class TranslationCollector {
 		return (a, b, c, d) -> Component.translatable(fullKey, a, b, c, d);
 	}
 
+	public Fun5 add5(String key, String value) {
+		String fullKey = put(key, value);
+		return (a, b, c, d, e) -> Component.translatable(fullKey, a, b, c, d, e);
+	}
+
 	private String put(String key, String value) {
 		String fullKey = prefix + key;
 		if (values.putIfAbsent(fullKey, value) != null) {
@@ -82,6 +87,14 @@ public class TranslationCollector {
 
 		default Fun4 withStyle(final ChatFormatting color) {
 			return (a, b, c, d) -> apply(a, b, c, d).withStyle(color);
+		}
+	}
+
+	public interface Fun5 {
+		MutableComponent apply(Object a, Object b, Object c, Object d, Object e);
+
+		default Fun5 withStyle(final ChatFormatting color) {
+			return (a, b, c, d, e) -> apply(a, b, c, d, e).withStyle(color);
 		}
 	}
 }

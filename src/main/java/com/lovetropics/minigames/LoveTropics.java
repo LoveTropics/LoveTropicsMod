@@ -61,6 +61,7 @@ import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.world.gamedata.GameDataAccessor;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
@@ -131,6 +132,7 @@ public class LoveTropics {
                     TurtleRaceTexts.KEYS.forEach(consumer);
                     QottottTexts.KEYS.forEach(consumer);
                     RiverRaceTexts.collectTranslations(consumer);
+                    GameDataAccessor.KEYS.forEach(consumer);
                 })
                 .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))
@@ -215,7 +217,6 @@ public class LoveTropics {
         GamePackageCommand.register(dispatcher);
         ManageGameLobbyCommand.register(dispatcher);
         ExtendedBossBarCommand.register(dispatcher);
-        GameDataCommand.register(dispatcher);
         ParticleLineCommand.register(event.getBuildContext(), dispatcher);
         ChatCommand.register(dispatcher);
     }
