@@ -35,14 +35,17 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Appl
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearDisguiseAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearEffectsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EliminatePlayerAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ExtinguishPlayerFireAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ResetHungerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetBlockAtPlayerAction;
@@ -192,6 +195,9 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
 	public static final GameBehaviorEntry<SyncTeamsBehavior> SYNC_TEAMS = register("sync_teams", SyncTeamsBehavior.CODEC);
 	public static final GameBehaviorEntry<AddEquipmentAction> ADD_EQUIPMENT = register("add_equipment", AddEquipmentAction.CODEC);
+	public static final GameBehaviorEntry<ResetHungerAction> RESET_HUNGER = register("reset_hunger", ResetHungerAction.CODEC);
+	public static final GameBehaviorEntry<ClearEffectsAction> CLEAR_EFFECTS = register("clear_effects", ClearEffectsAction.CODEC);
+	public static final GameBehaviorEntry<ExtinguishPlayerFireAction> EXTINGUISH_PLAYER_ACTION = register("extinguish_player", ExtinguishPlayerFireAction.CODEC);
 	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);
 	public static final GameBehaviorEntry<SetDayTimeBehavior> SET_DAY_TIME = register("set_day_time", SetDayTimeBehavior.CODEC);
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
