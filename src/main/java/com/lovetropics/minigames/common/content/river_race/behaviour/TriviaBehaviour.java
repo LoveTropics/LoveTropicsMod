@@ -1,15 +1,11 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
-import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
-import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -25,21 +21,20 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TickTask;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.timers.TimerCallback;
-import net.minecraft.world.level.timers.TimerQueue;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
@@ -53,10 +48,14 @@ public final class TriviaBehaviour implements IGameBehavior {
             ExtraCodecs.nonEmptyList(TriviaZone.CODEC.listOf()).fieldOf("zones").forGetter(TriviaBehaviour::zones),
             Codec.INT.optionalFieldOf("question_lockout", 30).forGetter(TriviaBehaviour::questionLockout)
     ).apply(i, TriviaBehaviour::new));
+
+    private static final TagKey<Block> STAINED_GLASS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("lt", "all_stained_glass"));
+
     private final List<TriviaZone> zones;
     private final int questionLockout;
     private final GameScheduler scheduler = new GameScheduler();
     private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
+    private final List<TriviaQuestion> usedQuestions = new ArrayList<>();
 
     public TriviaBehaviour(List<TriviaZone> zones, int questionLockout) {
         this.zones = zones;
@@ -70,15 +69,22 @@ public final class TriviaBehaviour implements IGameBehavior {
             scheduler.tick();
             Set<Long> longs = lockedOutTriviaBlocks.keySet();
             for (Long l : longs) {
-                if(System.currentTimeMillis() >= l){
+                if(game.level().getGameTime() >= l){
                     BlockPos blockPos = lockedOutTriviaBlocks.get(l);
                     BlockEntity blockEntity = game.level().getBlockEntity(blockPos);
-                    if(blockEntity instanceof TriviaBlockEntity triviaBlockEntity){
+                    if(blockEntity instanceof HasTrivia triviaBlockEntity){
                         triviaBlockEntity.unlock();
                         lockedOutTriviaBlocks.remove(l);
                     }
                 }
             }
+        });
+        // Prevent breaking gates!
+        events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> {
+            if(state.is(STAINED_GLASS)){
+                return InteractionResult.FAIL;
+            }
+            return InteractionResult.PASS;
         });
         events.listen(GamePlayerEvents.USE_BLOCK, (ServerPlayer player, ServerLevel world,
                                                    BlockPos pos, InteractionHand hand, BlockHitResult traceResult) -> {
@@ -100,15 +106,16 @@ public final class TriviaBehaviour implements IGameBehavior {
                         int zone = Integer.parseInt(inRegion.split("_")[1]);
                         Optional<TriviaZone> first = zones.stream().filter(triviaZone -> triviaZone.zone == zone).findFirst();
                         if (first.isPresent()) {
-                            //TODO: Prevent this selecting questions that are already in use.. maybe some kind of id?
                             TriviaZone triviaZone = first.get();
                             List<TriviaQuestion> filteredDifficultyList = triviaZone.questionPool.stream()
                                     .filter(question -> question.difficulty()
                                             .equalsIgnoreCase(hasTrivia.getTriviaType().difficulty()))
+                                    .filter(question -> !usedQuestions.contains(question))
                                     .toList();
                             //Bad...
                             if (!filteredDifficultyList.isEmpty()) {
                                 TriviaQuestion question = filteredDifficultyList.get(new Random().nextInt(filteredDifficultyList.size()));
+                                usedQuestions.add(question);
                                 hasTrivia.setQuestion(question);
                             } else {
                                 player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));

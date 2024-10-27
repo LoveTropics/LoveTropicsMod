@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMe
 import com.lovetropics.minigames.common.core.network.trivia.RequestTriviaStateUpdateMessage;
 import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
@@ -112,7 +113,7 @@ public class TriviaQuestionScreen extends Screen {
         helper.addChild(new AutoUpdatingTextWidget(() -> {
             if(triviaBlockState.lockedOut()) {
                 return Component.literal("LOCKED OUT!\n")
-                        .append(Component.literal("Unlocks in " + (triviaBlockState.unlocksAt() - System.currentTimeMillis()) / 1000 + "s"))
+                        .append(Component.literal("Unlocks in " + (triviaBlockState.unlocksAt() - Minecraft.getInstance().level.getGameTime()) / 20 + "s"))
                         .withStyle(ChatFormatting.RED);
             } else if(triviaBlockState.correctAnswer().isPresent()){
                 return Component.literal("Answered Correctly!").withStyle(ChatFormatting.GREEN);
@@ -147,7 +148,10 @@ public class TriviaQuestionScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if(triviaBlockState.lockedOut() && triviaBlockState.unlocksAt() <= System.currentTimeMillis()){
+        if(!Minecraft.getInstance().player.canInteractWithBlock(triviaBlockPos, 4.0)){
+            this.onClose();
+        }
+        if(triviaBlockState.lockedOut() && triviaBlockState.unlocksAt() <= Minecraft.getInstance().level.getGameTime()){
             PacketDistributor.sendToServer(new RequestTriviaStateUpdateMessage(triviaBlockPos));
         }
     }

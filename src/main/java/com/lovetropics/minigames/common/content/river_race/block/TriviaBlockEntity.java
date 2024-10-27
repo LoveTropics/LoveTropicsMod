@@ -140,7 +140,7 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     }
 
     public long lockout(int lockoutSeconds){
-        unlocksAt = System.currentTimeMillis() + (lockoutSeconds * 1000L);
+        unlocksAt = level.getGameTime() + (lockoutSeconds * 20L);
         markUpdated();
         return unlocksAt;
     }

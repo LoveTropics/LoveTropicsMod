@@ -10,7 +10,6 @@ import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBloc
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -29,7 +28,7 @@ public class RiverRace {
 
     public static final BlockEntry<TriviaBlock.GateTriviaBlock> TRIVIA_GATE = REGISTRATE
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
-            .initialProperties(() -> Blocks.STONE)
+            .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
@@ -38,7 +37,7 @@ public class RiverRace {
             .register();
     public static final BlockEntry<TriviaBlock.CollectableTriviaBlock> TRIVIA_COLLECTABLE = REGISTRATE
             .block("trivia_collectable", TriviaBlock.CollectableTriviaBlock::new)
-            .initialProperties(() -> Blocks.STONE)
+            .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
@@ -47,7 +46,7 @@ public class RiverRace {
             .register();
     public static final BlockEntry<TriviaBlock.VictoryTriviaBlock> TRIVIA_VICTORY = REGISTRATE
             .block("trivia_victory", TriviaBlock.VictoryTriviaBlock::new)
-            .initialProperties(() -> Blocks.STONE)
+            .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
             .blockstate((ctx, prox) -> {
                 prox.simpleBlock(ctx.get());
@@ -57,7 +56,7 @@ public class RiverRace {
 
     public static final BlockEntry<TriviaChestBlock> TRIVIA_CHEST = REGISTRATE
             .block("trivia_chest", TriviaChestBlock::new)
-            .initialProperties(() -> Blocks.STONE)
+            .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
             .blockstate((ctx, prov) -> prov.simpleBlock(ctx.get(), prov.models().getBuilder(ctx.getName()).texture("particle", prov.modLoc("block/trivia_victory"))))
             .blockEntity(TriviaChestBlockEntity::new)

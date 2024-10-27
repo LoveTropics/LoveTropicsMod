@@ -76,6 +76,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		if(clearEffects) {
 			player.removeAllEffects();
 		}
+		player.setDeltaMovement(0, 0, 0);
 
 		respawnAction.apply(game, GameActionContext.EMPTY, player);
 	}

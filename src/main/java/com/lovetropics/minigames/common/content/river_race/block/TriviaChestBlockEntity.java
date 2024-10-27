@@ -98,7 +98,7 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
 
     @Override
     public long lockout(int lockoutSeconds) {
-        unlocksAt = System.currentTimeMillis() + (lockoutSeconds * 1000L);
+        unlocksAt = level.getGameTime() + (lockoutSeconds * 20L);
         markUpdated();
         return unlocksAt;
     }
