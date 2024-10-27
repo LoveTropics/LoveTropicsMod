@@ -16,6 +16,9 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -26,6 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -42,6 +46,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class BlockPartyBehavior implements IGameBehavior {
 	public static final MapCodec<BlockPartyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -52,7 +59,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
 			Codec.INT.optionalFieldOf("time_decay_rounds", 5).forGetter(c -> c.timeDecayRounds),
 			Codec.LONG.optionalFieldOf("interval", 20L * 3).forGetter(c -> c.interval),
-			Codec.INT.optionalFieldOf("knockback_after_round", Integer.MAX_VALUE).forGetter(c -> c.knockbackAfterAround)
+			Codec.INT.optionalFieldOf("knockback_after_round", Integer.MAX_VALUE).forGetter(c -> c.knockbackAfterAround),
+			Codec.BOOL.optionalFieldOf("teams_support", false).forGetter(c -> c.teamsSupport)
 	).apply(i, BlockPartyBehavior::new));
 
 	private final String floorRegionKey;
@@ -64,6 +72,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	private final int timeDecayRounds;
 	private final long interval;
 	private final int knockbackAfterAround;
+	private final boolean teamsSupport;
 
 	private IGamePhase game;
 	private BlockBox floorRegion;
@@ -74,7 +83,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	@Nullable
 	private State state;
 
-	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround) {
+	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround, boolean teamsSupport) {
 		this.floorRegionKey = floorRegionKey;
 		this.blocks = blocks;
 		this.quadSize = quadSize;
@@ -83,6 +92,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		this.timeDecayRounds = timeDecayRounds;
 		this.interval = interval;
 		this.knockbackAfterAround = knockbackAfterAround;
+		this.teamsSupport = teamsSupport;
 	}
 
 	@Override
@@ -165,6 +175,34 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				game.setPlayerRole(player, PlayerRole.SPECTATOR);
 			}
 
+			if(teamsSupport) {
+				TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+				if(teams != null){
+					if(teams.getTeamKeys().size() > 1){
+						Map<GameTeamKey, List<ServerPlayer>> collect = participants.stream().collect(Collectors.groupingBy(teams::getTeamForPlayer));
+						List<GameTeamKey> teamsWithPlayers = collect.keySet().stream().filter(gameTeamKey -> !collect.get(gameTeamKey).isEmpty()).collect(Collectors.toList());
+						if(teamsWithPlayers.size() <= 1){
+							GameTeamKey winningTeamKey = teamsWithPlayers.getFirst();
+							GameTeam winningTeam = teams.getTeamByKey(winningTeamKey);
+							Component message;
+							if (winningTeam != null) {
+								MutableComponent styledTeamName = winningTeam.config().styledName();
+								message = MinigameTexts.PLAYER_WON.apply(styledTeamName).withStyle(ChatFormatting.GREEN);
+//								game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
+
+								game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningTeam.config().name());
+							} else {
+								message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
+							}
+
+							state = new Ending(game.ticks() + 20 * 5);
+
+							game.allPlayers().sendMessage(message);
+						}
+						return;
+					}
+				}
+			}
 			if (participants.size() <= 1) {
 				ServerPlayer winningPlayer = getWinningPlayer();
 
