@@ -22,6 +22,8 @@ public final class RiverRaceTexts {
 			.withStyle(ChatFormatting.GOLD);
 	public static final Component LOOT_GIVEN = KEYS.add("trivia.loot_given", "Loot has been unlocked!")
 			.withStyle(ChatFormatting.GOLD);
+	public static final TranslationCollector.Fun2 COLLECTABLE_PLACED = KEYS.add2("trivia.collectable_placed", "%s team have placed the %s collectable into the monument.")
+			.withStyle(ChatFormatting.GREEN);
 
 	static {
 
