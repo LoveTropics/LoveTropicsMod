@@ -18,16 +18,46 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 
 public class GameDataStorage extends SavedData {
     private static final String ID = LoveTropics.ID + "_gamedata";
 
-    public record NamespacedData(Map<UUID, CompoundTag> playerData) {
-        public static final Codec<NamespacedData> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.unboundedMap(UUIDUtil.CODEC, CompoundTag.CODEC).fieldOf("playerData").forGetter(NamespacedData::playerData)
-        ).apply(i, NamespacedData::new));
+    public static final class NamespacedData {
+            public static final Codec<NamespacedData> CODEC = RecordCodecBuilder.create(i -> i.group(
+                    Codec.unboundedMap(UUIDUtil.STRING_CODEC, CompoundTag.CODEC).fieldOf("playerData").forGetter(NamespacedData::playerData)
+            ).apply(i, NamespacedData::new));
+        private final Map<UUID, CompoundTag> playerData;
+
+        public NamespacedData(Map<UUID, CompoundTag> playerData) {
+            this.playerData = new HashMap<>(playerData);
+        }
+
+        public Map<UUID, CompoundTag> playerData() {
+            return playerData;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (NamespacedData) obj;
+            return Objects.equals(this.playerData, that.playerData);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(playerData);
+        }
+
+        @Override
+        public String toString() {
+            return "NamespacedData[" +
+                    "playerData=" + playerData + ']';
+        }
+
     }
 
     public static final Codec<GameDataStorage> CODEC = RecordCodecBuilder.create(i -> i.group(
