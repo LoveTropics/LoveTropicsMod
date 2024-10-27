@@ -147,7 +147,7 @@ public final class TriviaBehaviour implements IGameBehavior {
                                 }
                             }
                             if(inRegion != null) {
-                                CollectablesBehaviour collectables = game.state().getOrNull(CollectablesBehaviour.COLLECTABLES);
+                                CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
                                 if (collectables != null) {
                                     CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inRegion);
                                     if(collectable != null){

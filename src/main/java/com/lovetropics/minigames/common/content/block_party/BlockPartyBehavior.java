@@ -181,7 +181,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 					if(teams.getTeamKeys().size() > 1){
 						Map<GameTeamKey, List<ServerPlayer>> collect = participants.stream().collect(Collectors.groupingBy(teams::getTeamForPlayer));
 						List<GameTeamKey> teamsWithPlayers = collect.keySet().stream().filter(gameTeamKey -> !collect.get(gameTeamKey).isEmpty()).collect(Collectors.toList());
-						if(teamsWithPlayers.size() <= 1){
+						if(teamsWithPlayers.size() == 1){
 							GameTeamKey winningTeamKey = teamsWithPlayers.getFirst();
 							GameTeam winningTeam = teams.getTeamByKey(winningTeamKey);
 							Component message;
@@ -197,6 +197,11 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 							state = new Ending(game.ticks() + 20 * 5);
 
+							game.allPlayers().sendMessage(message);
+						} else if(teamsWithPlayers.isEmpty()){
+							Component message;
+							message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
+							state = new Ending(game.ticks() + 20 * 5);
 							game.allPlayers().sendMessage(message);
 						}
 						return;

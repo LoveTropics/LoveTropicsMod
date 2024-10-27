@@ -28,14 +28,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class MultiGamePhase extends GamePhase {
 
+    private static final Logger LOGGER = LogManager.getLogger(MultiGamePhase.class);
     @FunctionalInterface
     interface GameStateRegistration<L, M, R> {
         void registerState(L lobby, M phase, R id);
@@ -158,10 +162,14 @@ public class MultiGamePhase extends GamePhase {
                 activePhase.destroy();
                 activePhase = null;
                 activePhaseId = null;
-
-                if (!startNextQueuedMicrogame(false)) {
-                    returnHere();
-                }
+                startNextQueuedMicrogame(false).whenComplete((newGame, throwable) -> {
+                    if(!newGame){
+                        returnHere();
+                    }
+                    if(throwable != null){
+                        LOGGER.info("Failed to start next queued micro-game {}", throwable.getMessage());
+                    }
+                });
             }
         } else {
             return super.tick();
@@ -224,22 +232,25 @@ public class MultiGamePhase extends GamePhase {
         subPhaseGames.addAll(games);
     }
 
-    public boolean startNextQueuedMicrogame(final boolean saveInventory) {
+    public CompletableFuture<Boolean> startNextQueuedMicrogame(final boolean saveInventory) {
         // No queued games left
         if (subPhaseGames.isEmpty()) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
 
         final ResourceLocation gameKey = subPhaseGames.removeFirst();
         GameConfig gameConfig = GameConfigs.REGISTRY.get(gameKey);
-        GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.getId()).thenAccept((result) -> {
-            setActivePhase(result.getOk(), saveInventory, gameKey);
-            game.allPlayers().showTitle(Component.empty().append(gameConfig.name).withStyle(ChatFormatting.GREEN),
-                    gameConfig.subtitle, 10, 40, 10);
+        return GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.getId()).thenApply(gamePhaseGameResult -> {
+            if (gamePhaseGameResult.isOk()) {
+                setActivePhase(gamePhaseGameResult.getOk(), saveInventory, gameKey);
+                invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
+                game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(gameConfig.name).withStyle(ChatFormatting.GREEN));
+                game.allPlayers().showTitle(Component.empty().append(gameConfig.name).withStyle(ChatFormatting.GREEN),
+                        gameConfig.subtitle, 10, 40, 10);
+                return true;
+            }
+            LOGGER.error("Failed to start micro-game {} - {}", gameConfig.getId().toString(), gamePhaseGameResult.getError().getString());
+            return false;
         });
-
-        invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
-
-        return true;
     }
 }

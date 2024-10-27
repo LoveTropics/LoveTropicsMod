@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.SoundRegistry;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
@@ -19,11 +20,14 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
+import com.lovetropics.minigames.common.util.Util;
+import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -35,6 +39,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -73,7 +79,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
             final List<ResourceLocation> configs = new ArrayList<>(collectable.gamePool);
             Collections.shuffle(configs);
-            multiGamePhase.queueGames(configs.subList(0, collectable.gamesPerRound));
+            multiGamePhase.queueGames(configs.subList(0, Math.min(configs.size(), collectable.gamesPerRound)));
         }
     }
 
@@ -91,10 +97,10 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             COLLECTED_COLLECTABLES.put(collectable.zone, teamKey);
             // Message
             MutableComponent teamName = teamByKey.config().styledName();
-            game.allPlayers().showTitle(RiverRaceTexts.COLLECTABLE_COLLECTED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
+            game.allPlayers().showTitle(null, RiverRaceTexts.COLLECTABLE_COLLECTED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
             game.allPlayers().sendMessage(RiverRaceTexts.COLLECTABLE_COLLECTED.apply(teamName, collectable.zoneDisplayName(), COUNTDOWN_SECONDS));
             // Sound Effect
-            game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 0.5f, 1);
+            game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 1f, 1);
             queueMicrogames(game, collectable);
             // Start microgames countdown
             countdown = new Countdown(game.ticks() + (20 * COUNTDOWN_SECONDS), (unused) -> {
@@ -119,11 +125,11 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             for (Collectable collectable : collectables) {
                 for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
                     BlockBox region = game.mapRegions().getAny(monumentSlotRegion);
-                    Display.BlockDisplay blockDisplay = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, game.level());
-                    blockDisplay.
+                    Display.BlockDisplay blockDisplay = EntityType.BLOCK_DISPLAY.create(game.level());
+                    blockDisplay.setPos(region.center());
+                    blockDisplay.setBlockState(collectable.blockState());
+                    blockDisplay.setTransformation(new Transformation(new Vector3f(-0.1f, -0.1f, -0.1f), null, new Vector3f(0.2f, 0.2f, 0.2f), null));
                     game.level().addFreshEntity(blockDisplay);
-                    Display.BlockDisplay
-                    region.center()
                 }
             }
         });
@@ -141,6 +147,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                             PlayerSet playersForTeam = teams.getPlayersForTeam(teamKey);
                             playersForTeam.playSound(SoundRegistry.COINS.value(), SoundSource.NEUTRAL, 0.4f, 1);
                             playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(collectable.victoryPoints()), true);
+                            FireworkPalette.DYE_COLORS.spawn(region.centerBlock().above(), game.level());
                             return InteractionResult.PASS;
                         }
                     }
@@ -187,7 +194,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             long ticks = game.ticks();
             if(ticks >= endTicks){
                 end.accept(null);
-            } else if(ticks % 10 == 0) {
+            } else if(ticks % 20 == 0) {
                 long remainingTicks = endTicks - ticks;
                 if((remainingTicks / SharedConstants.TICKS_PER_SECOND) <= 5) {
                     game.allPlayers().showTitle(Component.literal(remainingTicks / SharedConstants.TICKS_PER_SECOND + "").withStyle(ChatFormatting.GREEN), 10, 20, 10);
@@ -198,6 +205,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions, BlockStatePredicate monumentPredicate,
+                              BlockState blockState,
                               int victoryPoints, List<ResourceLocation> gamePool, int gamesPerRound) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
@@ -205,6 +213,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
                 BlockStatePredicate.CODEC.fieldOf("monument_predicate").forGetter(Collectable::monumentPredicate),
+                MoreCodecs.BLOCK_STATE.fieldOf("monument_block_state").forGetter(Collectable::blockState),
                 Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
                 ExtraCodecs.nonEmptyList(ResourceLocation.CODEC.listOf()).fieldOf("game_pool").forGetter(Collectable::gamePool),
                 Codec.INT.optionalFieldOf("games_per_round", 1).forGetter(c -> c.gamesPerRound)
