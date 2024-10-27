@@ -34,12 +34,7 @@ import com.lovetropics.minigames.common.content.trash_dive.TrashDiveTexts;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRaceTexts;
 import com.lovetropics.minigames.common.core.chat.ChatChannelStore;
-import com.lovetropics.minigames.common.core.command.ChatCommand;
-import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
-import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
-import com.lovetropics.minigames.common.core.command.MapCommand;
-import com.lovetropics.minigames.common.core.command.ParticleLineCommand;
-import com.lovetropics.minigames.common.core.command.TemporaryDimensionCommand;
+import com.lovetropics.minigames.common.core.command.*;
 import com.lovetropics.minigames.common.core.command.game.CancelGameCommand;
 import com.lovetropics.minigames.common.core.command.game.FinishGameCommand;
 import com.lovetropics.minigames.common.core.command.game.GameControlCommand;
@@ -220,6 +215,7 @@ public class LoveTropics {
         GamePackageCommand.register(dispatcher);
         ManageGameLobbyCommand.register(dispatcher);
         ExtendedBossBarCommand.register(dispatcher);
+        GameDataCommand.register(dispatcher);
         ParticleLineCommand.register(event.getBuildContext(), dispatcher);
         ChatCommand.register(dispatcher);
     }
