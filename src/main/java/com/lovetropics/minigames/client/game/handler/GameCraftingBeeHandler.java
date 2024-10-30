@@ -28,6 +28,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -227,6 +228,11 @@ public class GameCraftingBeeHandler {
             float redTint, float greenTint, float blueTint, float alphaTint
     ) {
         if (!stack.isEmpty()) {
+            // Our tinting doesn't support foil since uses a combined vertex consumer
+            if (stack.hasFoil()) {
+                stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, false);
+            }
+
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -264,7 +270,12 @@ public class GameCraftingBeeHandler {
                     Lighting.setupFor3DItems();
                 }
             } catch (Throwable throwable) {
-                LoggerFactory.getLogger(GameCraftingBeeHandler.class).error("error", throwable);
+                CrashReport crashreport = CrashReport.forThrowable(throwable, "Rendering item");
+                CrashReportCategory crashreportcategory = crashreport.addCategory("Item being rendered");
+                crashreportcategory.setDetail("Item Type", () -> String.valueOf(stack.getItem()));
+                crashreportcategory.setDetail("Item Components", () -> String.valueOf(stack.getComponents()));
+                crashreportcategory.setDetail("Item Foil", () -> String.valueOf(stack.hasFoil()));
+                throw new ReportedException(crashreport);
             }
 
             graphics.pose().popPose();

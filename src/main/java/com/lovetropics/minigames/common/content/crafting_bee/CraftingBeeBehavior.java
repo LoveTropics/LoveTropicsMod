@@ -119,6 +119,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
         events.listen(GamePhaseEvents.START, this::start);
         events.listen(GamePhaseEvents.TICK, () -> tickRunning(game));
+        events.listen(GamePhaseEvents.DESTROY, () -> bars.values().forEach(b -> b.bar().close()));
         events.listen(GamePhaseEvents.STOP, reason -> bars.values().forEach(b -> b.bar().close()));
 
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
