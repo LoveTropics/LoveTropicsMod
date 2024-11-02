@@ -34,12 +34,7 @@ import com.lovetropics.minigames.common.content.trash_dive.TrashDiveTexts;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRaceTexts;
 import com.lovetropics.minigames.common.core.chat.ChatChannelStore;
-import com.lovetropics.minigames.common.core.command.ChatCommand;
-import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
-import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
-import com.lovetropics.minigames.common.core.command.MapCommand;
-import com.lovetropics.minigames.common.core.command.ParticleLineCommand;
-import com.lovetropics.minigames.common.core.command.TemporaryDimensionCommand;
+import com.lovetropics.minigames.common.core.command.*;
 import com.lovetropics.minigames.common.core.command.game.CancelGameCommand;
 import com.lovetropics.minigames.common.core.command.game.FinishGameCommand;
 import com.lovetropics.minigames.common.core.command.game.GameControlCommand;
@@ -66,6 +61,7 @@ import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.world.gamedata.GameDataAccessor;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
@@ -136,6 +132,7 @@ public class LoveTropics {
                     TurtleRaceTexts.KEYS.forEach(consumer);
                     QottottTexts.KEYS.forEach(consumer);
                     RiverRaceTexts.collectTranslations(consumer);
+                    GameDataAccessor.KEYS.forEach(consumer);
                 })
                 .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))
