@@ -144,7 +144,11 @@ public class TideFiller {
 		return state;
 	}
 
-	private static boolean is(BlockState state, Holder<Block> block) {
+	private static boolean is(BlockState state, DeferredHolder<Block, Block> block) {
+		// If the block doesn't exist, calling is() will throw
+		if (!block.isBound()) {
+			return false;
+		}
 		return state.is(block);
 	}
 
