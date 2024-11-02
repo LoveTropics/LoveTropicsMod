@@ -86,6 +86,11 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 	}
 
 	public boolean press(Player player) {
+		// No game is active, just allow instant trigger
+		if (IGameManager.get().getGamePhaseAt(level, getBlockPos()) == null) {
+			applyTriggerEffects();
+			return true;
+		}
 		if (playersPressed.add(player.getUUID())) {
 			playersPressedCount = playersPressed.size();
 			markUpdated();
