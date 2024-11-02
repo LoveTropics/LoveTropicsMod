@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
@@ -46,13 +47,13 @@ import java.util.function.Function;
 public final class BbMerchantBehavior implements IGameBehavior {
 	public static final MapCodec<BbMerchantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
-			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity").forGetter(c -> c.entity),
+			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			ComponentSerialization.CODEC.optionalFieldOf("name", CommonComponents.EMPTY).forGetter(c -> c.name),
 			Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
 	).apply(i, BbMerchantBehavior::new));
 
 	private final String plotRegion;
-	private final EntityType<?> entity;
+	private final EntityTemplate entity;
 	private final Component name;
 	private final List<Offer> offers;
 
@@ -60,7 +61,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 
-	public BbMerchantBehavior(String plotRegion, EntityType<?> entity, Component name, List<Offer> offers) {
+	public BbMerchantBehavior(String plotRegion, EntityTemplate entity, Component name, List<Offer> offers) {
 		this.plotRegion = plotRegion;
 		this.entity = entity;
 		this.name = name;
@@ -82,14 +83,12 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		if (region == null) return;
 
 		Vec3 center = region.center();
-
-		Entity merchant = createMerchant(world);
-		if (merchant == null) return;
-
 		Direction direction = Util.getDirectionBetween(region, plot.spawn);
 		float yaw = direction.toYRot();
 
-		merchant.moveTo(center.x(), center.y() - 0.5, center.z(), yaw, 0);
+		Entity merchant = createMerchant(world, center.x(), center.y() - 0.5, center.z(), yaw, 0.0f);
+		if (merchant == null) return;
+
 		merchant.setYHeadRot(yaw);
 
 		world.getChunk(region.centerBlock());
@@ -106,8 +105,8 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private Entity createMerchant(ServerLevel world) {
-		Entity merchant = entity.create(world);
+	private Entity createMerchant(ServerLevel level, double x, double y, double z, float yRot, float xRot) {
+		Entity merchant = entity.create(level, x, y, z, yRot, xRot);
 		if (merchant != null) {
 			if (name != CommonComponents.EMPTY) {
 				merchant.setCustomName(name);

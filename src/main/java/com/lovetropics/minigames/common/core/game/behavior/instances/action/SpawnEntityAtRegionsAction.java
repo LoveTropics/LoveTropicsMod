@@ -8,14 +8,12 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.util.Util;
+import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.List;
@@ -23,19 +21,19 @@ import java.util.List;
 public class SpawnEntityAtRegionsAction implements IGameBehavior {
 	public static final MapCodec<SpawnEntityAtRegionsAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
-			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)
 	).apply(i, SpawnEntityAtRegionsAction::new));
 
 	private final List<String> regionsToSpawnAtKeys;
-	private final EntityType<?> entityId;
+	private final EntityTemplate entity;
 	private final int entityCountPerRegion;
 
 	private final List<BlockBox> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntityAtRegionsAction(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCountPerRegion) {
+	public SpawnEntityAtRegionsAction(final List<String> regionsToSpawnAtKeys, final EntityTemplate entity, final int entityCountPerRegion) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
-		this.entityId = entityId;
+		this.entity = entity;
 		this.entityCountPerRegion = entityCountPerRegion;
 	}
 
@@ -57,7 +55,7 @@ public class SpawnEntityAtRegionsAction implements IGameBehavior {
 			for (final BlockBox region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
 					final BlockPos pos = world.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(world.getRandom()));
-					Util.spawnEntity(entityId, world, pos.getX(), pos.getY(), pos.getZ());
+					entity.spawn(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 				}
 			}
 
