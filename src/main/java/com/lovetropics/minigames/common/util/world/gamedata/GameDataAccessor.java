@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.util.world.gamedata;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -10,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.nbt.CompoundTag;
@@ -24,7 +26,9 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -43,8 +47,13 @@ public class GameDataAccessor implements DataAccessor {
     public static final Function<String, DataCommands.DataProvider> PROVIDER = (str) -> new DataCommands.DataProvider() {
         @Override
         public DataAccessor access(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            Collection<GameProfile> gameProfiles = GameProfileArgument.getGameProfiles(context, "player");
+            if(gameProfiles.size() != 1) {
+                throw EntityArgument.ERROR_NOT_SINGLE_PLAYER.create();
+            }
+            Optional<GameProfile> playerProfile = gameProfiles.stream().findFirst();
             return new GameDataAccessor(context.getSource().getLevel(), getGameDataStorage(context),
-                    ResourceLocationArgument.getId(context, str), EntityArgument.getPlayer(context, "player").getUUID());
+                    ResourceLocationArgument.getId(context, str), playerProfile.get());
         }
 
         @Override
@@ -52,7 +61,7 @@ public class GameDataAccessor implements DataAccessor {
             return builder.then(
                     Commands.literal("gamedata")
                             .then(Commands.argument(str, ResourceLocationArgument.id()).suggests(GameDataAccessor.SUGGEST_GAMEDATA)
-                                    .then(action.apply(Commands.argument("player", EntityArgument.player()))))
+                                    .then(action.apply(Commands.argument("player", GameProfileArgument.gameProfile()))))
             );
         }
     };
@@ -64,9 +73,9 @@ public class GameDataAccessor implements DataAccessor {
     private final Level level;
     private final GameDataStorage gameDataStorage;
     private final ResourceLocation id;
-    private final UUID player;
+    private final GameProfile player;
 
-    public GameDataAccessor(Level level, GameDataStorage gameDataStorage, ResourceLocation id, UUID player) {
+    public GameDataAccessor(Level level, GameDataStorage gameDataStorage, ResourceLocation id, GameProfile player) {
         this.level = level;
         this.gameDataStorage = gameDataStorage;
         this.id = id;
@@ -75,37 +84,27 @@ public class GameDataAccessor implements DataAccessor {
 
     @Override
     public void setData(CompoundTag other) throws CommandSyntaxException {
-        gameDataStorage.set(id, player, other);
+        gameDataStorage.set(id, player.getId(), other);
     }
 
     @Override
     public CompoundTag getData() throws CommandSyntaxException {
-        return gameDataStorage.get(id, player);
+        return gameDataStorage.get(id, player.getId());
     }
 
     @Override
     public Component getModifiedSuccess() {
-        String playerName = getPlayerName();
-        return STORAGE_MODIFIED.apply(playerName, Component.translationArg(this.id));
+        return STORAGE_MODIFIED.apply(player.getName(), Component.translationArg(this.id));
     }
 
     @Override
     public Component getPrintSuccess(Tag nbt) {
-        String playerName = getPlayerName();
-        return STORAGE_QUERY.apply(playerName, Component.translationArg(this.id), NbtUtils.toPrettyComponent(nbt));
+        return STORAGE_QUERY.apply(player.getName(), Component.translationArg(this.id), NbtUtils.toPrettyComponent(nbt));
     }
 
     @Override
     public Component getPrintSuccess(NbtPathArgument.NbtPath path, double scale, int value) {
-        String playerName = getPlayerName();
-        return STORAGE_GET.apply(path.asString(), Component.translationArg(this.id), playerName, String.format(Locale.ROOT, "%.2f", scale), value);
+        return STORAGE_GET.apply(path.asString(), Component.translationArg(this.id), player.getName(), String.format(Locale.ROOT, "%.2f", scale), value);
     }
 
-    private String getPlayerName() {
-        String playerName = player.toString();
-        if(level != null && level.getServer() != null && level.getServer().getProfileCache() != null) {
-            playerName = level.getServer().getProfileCache().get(player).map(gameProfile -> gameProfile.getName()).orElse(player.toString());
-        }
-        return playerName;
-    }
 }

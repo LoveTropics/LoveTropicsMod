@@ -1,13 +1,15 @@
 package com.lovetropics.minigames.mixin;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.util.world.gamedata.GameDataAccessor;
-import net.minecraft.server.commands.data.BlockDataAccessor;
+import net.minecraft.Util;
 import net.minecraft.server.commands.data.DataCommands;
-import net.minecraft.server.commands.data.EntityDataAccessor;
-import net.minecraft.server.commands.data.StorageDataAccessor;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.function.Function;
@@ -15,15 +17,11 @@ import java.util.function.Function;
 @Mixin(DataCommands.class)
 public class DataCommandsMixin {
     @Shadow
-    public static final List<Function<String, DataCommands.DataProvider>> ALL_PROVIDERS = ImmutableList.of(
-            EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER, StorageDataAccessor.PROVIDER, GameDataAccessor.PROVIDER
-    );
-    @Shadow
-    public static final List<DataCommands.DataProvider> TARGET_PROVIDERS = ALL_PROVIDERS.stream()
-            .map(func -> func.apply("target"))
-            .collect(ImmutableList.toImmutableList());
-    @Shadow
-    public static final List<DataCommands.DataProvider> SOURCE_PROVIDERS = ALL_PROVIDERS.stream()
-            .map(func -> func.apply("source"))
-            .collect(ImmutableList.toImmutableList());
+    @Final
+    @Mutable
+    public static List<Function<String, DataCommands.DataProvider>> ALL_PROVIDERS;
+    @Inject(method = "<clinit>", at = @At(value = "FIELD", target = "Lnet/minecraft/server/commands/data/DataCommands;ALL_PROVIDERS:Ljava/util/List;", shift = At.Shift.AFTER))
+    private static void initializeProviders(CallbackInfo ci) {
+        ALL_PROVIDERS = Util.copyAndAdd(ALL_PROVIDERS, GameDataAccessor.PROVIDER);
+    }
 }
