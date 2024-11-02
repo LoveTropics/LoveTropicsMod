@@ -32,8 +32,10 @@ import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
 public class LootDispenserBlockEntity extends BlockEntity {
 	private static final Logger LOGGER = LogUtils.getLogger();
@@ -50,6 +52,8 @@ public class LootDispenserBlockEntity extends BlockEntity {
 	private int dropsLeft;
 	private int ticksToNextDrop;
 
+	private final Queue<ItemStack> dropQueue = new ArrayDeque<>();
+
 	private int nearbyPlayerCount = -1;
 
 	public LootDispenserBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -60,6 +64,8 @@ public class LootDispenserBlockEntity extends BlockEntity {
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return;
 		}
+
+		entity.tickDropQueue(level);
 
 		LootConfig loot = entity.loot;
 		if (loot == null || entity.dropsLeft == 0 || state.getValue(LootDispenserBlock.STATE) != LootDispenserBlock.State.ACTIVE) {
@@ -94,22 +100,26 @@ public class LootDispenserBlockEntity extends BlockEntity {
 		return count;
 	}
 
+	private void tickDropQueue(Level level) {
+		ItemStack itemToDrop = dropQueue.poll();
+		if (itemToDrop != null) {
+			Vec3 dispensePos = getDispensePos(getBlockPos(), getBlockState());
+			level.addFreshEntity(new ItemEntity(level, dispensePos.x, dispensePos.y, dispensePos.z, itemToDrop));
+		}
+	}
+
 	private void dispenseDrops(ServerLevel level, BlockPos pos, BlockState state, LootConfig loot, int count) {
 		ResourceKey<LootTable> tableId = dropsLeft > 1 ? loot.lootTable() : loot.junkTable().orElse(loot.lootTable());
 		LootTable lootTable = level.getServer().reloadableRegistries().getLootTable(tableId);
 		LootParams params = new LootParams.Builder(level).create(LootContextParamSets.EMPTY);
 
-		Vec3 dispensePos = getDispensePos(pos, state);
 		for (int i = 0; i < count; i++) {
-			for (ItemStack item : lootTable.getRandomItems(params)) {
-				ItemEntity itemEntity = new ItemEntity(level, dispensePos.x, dispensePos.y, dispensePos.z, item);
-				level.addFreshEntity(itemEntity);
-			}
+			dropQueue.addAll(lootTable.getRandomItems(params));
 		}
 
 		ticksToNextDrop = loot.dropInterval.sample(level.random);
 		if (--dropsLeft == 0) {
-			addFailureEffects(level, dispensePos);
+			addFailureEffects(level, getDispensePos(pos, state));
 			level.setBlock(pos, state.setValue(LootDispenserBlock.STATE, LootDispenserBlock.State.CLOGGED), Block.UPDATE_ALL);
 		}
 	}
