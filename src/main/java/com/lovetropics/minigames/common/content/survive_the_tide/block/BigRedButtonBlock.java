@@ -93,7 +93,7 @@ public class BigRedButtonBlock extends ButtonBlock implements EntityBlock {
 		level.updateNeighborsAt(pos, this);
 		level.updateNeighborsAt(pos.relative(getConnectedDirection(state).getOpposite()), this);
 
-		level.playSound(player, pos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS);
+		level.playSound(null, pos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS);
 		level.gameEvent(player, GameEvent.BLOCK_ACTIVATE, pos);
 	}
 

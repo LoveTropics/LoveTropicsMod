@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.block;
 
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Set;
@@ -36,12 +38,16 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 
 	private static final String TAG_PLAYERS = "players";
 	private static final String TAG_REQUIREMENTS = "requirements";
+	private static final String TAG_TRIGGER_POS = "trigger_pos";
 
 	private final Set<UUID> playersPressed = new ObjectOpenHashSet<>();
 	private int playersPressedCount;
 
 	private Requirements requirements = new Requirements(0.0f, 1);
 	private int playersRequiredCount;
+
+	@Nullable
+	private BlockPos triggerPos;
 
 	public BigRedButtonBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -84,7 +90,20 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 			playersPressedCount = playersPressed.size();
 			markUpdated();
 		}
-		return playersPressedCount >= playersRequiredCount;
+		if (playersPressedCount >= playersRequiredCount) {
+			applyTriggerEffects();
+			return true;
+		}
+		return false;
+	}
+
+	private void applyTriggerEffects() {
+		if (triggerPos != null) {
+			BlockState state = level.getBlockState(triggerPos);
+			if (state.is(SurviveTheTide.LOOT_DISPENSER) && state.getValue(LootDispenserBlock.STATE) == LootDispenserBlock.State.INACTIVE) {
+				level.setBlockAndUpdate(triggerPos, state.setValue(LootDispenserBlock.STATE, LootDispenserBlock.State.ACTIVE));
+			}
+		}
 	}
 
 	@Override
@@ -96,6 +115,9 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 		}
 		tag.put(TAG_PLAYERS, playersList);
 		tag.put(TAG_REQUIREMENTS, Requirements.CODEC.encodeStart(NbtOps.INSTANCE, requirements).getOrThrow());
+		if (triggerPos != null) {
+			tag.put(TAG_TRIGGER_POS, NbtUtils.writeBlockPos(triggerPos));
+		}
 	}
 
 	@Override
@@ -109,6 +131,7 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 		Requirements.CODEC.parse(NbtOps.INSTANCE, tag.get(TAG_REQUIREMENTS))
 				.resultOrPartial(LOGGER::error)
 				.ifPresent(r -> requirements = r);
+		triggerPos = NbtUtils.readBlockPos(tag, TAG_TRIGGER_POS).orElse(null);
 	}
 
 	@Override
