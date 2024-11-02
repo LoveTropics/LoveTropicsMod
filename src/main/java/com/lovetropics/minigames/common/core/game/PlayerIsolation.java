@@ -148,6 +148,7 @@ public final class PlayerIsolation {
 		newLevel.addRespawnedPlayer(newPlayer);
 
 		playerList.sendPlayerPermissionLevel(newPlayer);
+		playerList.sendActivePlayerEffects(newPlayer);
 		playerList.sendLevelInfo(newPlayer, newLevel);
 		playerList.sendAllPlayerInfo(newPlayer);
 
