@@ -90,6 +90,9 @@ public class LootDispenserBlockEntity extends BlockEntity {
 	private static int getPlayerCountAround(ServerLevel level, BlockPos pos, LootConfig loot) {
 		int count = 0;
 		for (ServerPlayer player : level.players()) {
+			if (player.isSpectator()) {
+				continue;
+			}
 			if (!pos.closerToCenterThan(player.position(), loot.playerRange())) {
 				continue;
 			}

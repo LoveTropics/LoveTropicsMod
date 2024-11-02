@@ -28,9 +28,9 @@ public class BigRedButtonBlockEntityRenderer implements BlockEntityRenderer<BigR
 
 	@Override
 	public void render(BigRedButtonBlockEntity entity, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		int pressedCount = entity.getPlayersPressedCount();
+		int presentCount = entity.getPlayersPresentCount();
 		int requiredCount = entity.getPlayersRequiredCount();
-		String text = pressedCount + "/" + requiredCount;
+		String text = presentCount + "/" + requiredCount;
 
 		poseStack.pushPose();
 		poseStack.translate(0.5f, 0.5f, 0.5f);
@@ -47,7 +47,7 @@ public class BigRedButtonBlockEntityRenderer implements BlockEntityRenderer<BigR
 		float scale = 1.0f / (textWidth + TEXT_PADDING);
 		poseStack.scale(scale, scale, -scale);
 
-		int color = FastColor.ARGB32.lerp((float) pressedCount / requiredCount, START_COLOR, TRIGGERED_COLOR);
+		int color = FastColor.ARGB32.lerp((float) presentCount / requiredCount, START_COLOR, TRIGGERED_COLOR);
 		font.drawInBatch(text, -textWidth / 2.0f, -font.lineHeight, color, true, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packedLight);
 
 		poseStack.popPose();

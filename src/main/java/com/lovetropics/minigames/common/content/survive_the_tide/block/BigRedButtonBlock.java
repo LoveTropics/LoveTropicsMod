@@ -80,21 +80,21 @@ public class BigRedButtonBlock extends ButtonBlock implements EntityBlock {
 	@Override
 	public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof BigRedButtonBlockEntity entity) {
-			if (!state.getValue(TRIGGERED) && entity.press(player)) {
-				trigger(state, level, pos, player);
+			if (!state.getValue(TRIGGERED)) {
+				entity.press();
 				return InteractionResult.SUCCESS;
 			}
 		}
 		return super.useWithoutItem(state, level, pos, player, hit);
 	}
 
-	private void trigger(BlockState state, Level level, BlockPos pos, Player player) {
+	public static void trigger(BlockState state, Level level, BlockPos pos) {
 		level.setBlock(pos, state.setValue(POWERED, true).setValue(TRIGGERED, true), Block.UPDATE_ALL);
-		level.updateNeighborsAt(pos, this);
-		level.updateNeighborsAt(pos.relative(getConnectedDirection(state).getOpposite()), this);
+		level.updateNeighborsAt(pos, state.getBlock());
+		level.updateNeighborsAt(pos.relative(getConnectedDirection(state).getOpposite()), state.getBlock());
 
 		level.playSound(null, pos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS);
-		level.gameEvent(player, GameEvent.BLOCK_ACTIVATE, pos);
+		level.gameEvent(null, GameEvent.BLOCK_ACTIVATE, pos);
 	}
 
 	@Override
