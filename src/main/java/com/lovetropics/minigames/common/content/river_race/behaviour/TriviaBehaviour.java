@@ -84,7 +84,7 @@ public final class TriviaBehaviour implements IGameBehavior {
             if (hand == InteractionHand.OFF_HAND) {
                 return InteractionResult.PASS;
             }
-            if (world.getBlockEntity(pos) instanceof HasTrivia hasTrivia && !hasTrivia.getState().isAnswered()) {
+            if (world.getBlockEntity(pos) instanceof HasTrivia hasTrivia) {
                 if (!hasTrivia.hasQuestion()) {
                     String inRegion = null;
                     for (String region : game.mapRegions().keySet()) {
@@ -116,8 +116,12 @@ public final class TriviaBehaviour implements IGameBehavior {
                         }
                     }
                 }
-                if (hasTrivia.getQuestion() != null) {
+                if (hasTrivia.getQuestion() != null && !hasTrivia.getState().isAnswered()) {
                     PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, hasTrivia.getQuestion(), hasTrivia.getState()));
+                } else {
+                    if(hasTrivia.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
+                        giveCollectableToPlayer(game, player, pos);
+                    }
                 }
                 return InteractionResult.SUCCESS_NO_ITEM_USED;
             }
@@ -137,24 +141,7 @@ public final class TriviaBehaviour implements IGameBehavior {
                             Block blockType = null;
                             findNeighboursOfTypeAndDestroy(scheduler, world, pos, blockType);
                         } else if(triviaBlockEntity.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
-                            String inRegion = null;
-                            for (String region : game.mapRegions().keySet()) {
-                                if (region.startsWith("zone_")) {
-                                    if (game.mapRegions().getOrThrow(region).contains(pos)) {
-                                        inRegion = region;
-                                        break;
-                                    }
-                                }
-                            }
-                            if(inRegion != null) {
-                                CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
-                                if (collectables != null) {
-                                    CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inRegion);
-                                    if(collectable != null){
-                                        collectables.givePlayerCollectable(game, collectable, player);
-                                    }
-                                }
-                            }
+                            giveCollectableToPlayer(game, player, pos);
                         }
                         triviaBlockEntity.markAsCorrect();
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
@@ -171,6 +158,27 @@ public final class TriviaBehaviour implements IGameBehavior {
             }
             return false;
         });
+    }
+
+    private static void giveCollectableToPlayer(IGamePhase game, ServerPlayer player, BlockPos pos) {
+        String inRegion = null;
+        for (String region : game.mapRegions().keySet()) {
+            if (region.startsWith("zone_")) {
+                if (game.mapRegions().getOrThrow(region).contains(pos)) {
+                    inRegion = region;
+                    break;
+                }
+            }
+        }
+        if(inRegion != null) {
+            CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
+            if (collectables != null) {
+                CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inRegion);
+                if(collectable != null){
+                    collectables.givePlayerCollectable(game, collectable, player);
+                }
+            }
+        }
     }
 
     private static void findNeighboursOfTypeAndDestroy(GameScheduler scheduler, ServerLevel world, BlockPos pos, Block blockType) {

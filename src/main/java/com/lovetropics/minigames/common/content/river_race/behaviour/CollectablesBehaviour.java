@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
-import com.lovetropics.minigames.SoundRegistry;
+import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -13,21 +13,18 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +42,6 @@ import org.joml.Vector3f;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     public static final MapCodec<CollectablesBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -53,7 +49,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     ).apply(i, CollectablesBehaviour::new));
 
     public static final GameStateKey<CollectablesBehaviour> COLLECTABLES = GameStateKey.create("collectables");
-    public static final int COUNTDOWN_SECONDS = 10;
+    public static final int COUNTDOWN_SECONDS = 45;
     private final List<Collectable> collectables;
 
     public CollectablesBehaviour(List<Collectable> collectables) {
@@ -92,22 +88,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     public void givePlayerCollectable(IGamePhase game, Collectable collectable, ServerPlayer player) {
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
         GameTeamKey teamKey = teams.getTeamForPlayer(player);
-        GameTeam teamByKey = teams.getTeamByKey(teamKey);
-        if(!COLLECTED_COLLECTABLES.containsKey(collectable.zone)) {
-            COLLECTED_COLLECTABLES.put(collectable.zone, teamKey);
-            // Message
-            MutableComponent teamName = teamByKey.config().styledName();
-            game.allPlayers().showTitle(null, RiverRaceTexts.COLLECTABLE_COLLECTED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
-            game.allPlayers().sendMessage(RiverRaceTexts.COLLECTABLE_COLLECTED.apply(teamName, collectable.zoneDisplayName(), COUNTDOWN_SECONDS));
-            // Sound Effect
-            game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 1f, 1);
-            queueMicrogames(game, collectable);
-            // Start microgames countdown
-            countdown = new Countdown(game.ticks() + (20 * COUNTDOWN_SECONDS), (unused) -> {
-                startQueuedMicrogame(game);
-                countdown = null;
-            });
-        }
+
         player.addItem(collectable.collectable().copy());
     }
 
@@ -143,10 +124,23 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                         } else {
                             // Victory Points
                             GameTeamKey teamKey = teams.getTeamForPlayer(player);
+                            GameTeam teamByKey = teams.getTeamByKey(teamKey);
+                            if(!COLLECTED_COLLECTABLES.containsKey(collectable.zone)) {
+                                COLLECTED_COLLECTABLES.put(collectable.zone, teamKey);
+                                // Message
+                                MutableComponent teamName = teamByKey.config().styledName();
+                                game.allPlayers().showTitle(null, RiverRaceTexts.COLLECTABLE_PLACED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
+                                game.allPlayers().sendMessage(RiverRaceTexts.COLLECTABLE_PLACED.apply(teamName, collectable.zoneDisplayName(), COUNTDOWN_SECONDS));
+                                // Sound Effect
+                                game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 1f, 1);
+                                queueMicrogames(game, collectable);
+                                // Start microgames countdown
+                                countdown = new Countdown(game.ticks() + (20 * COUNTDOWN_SECONDS), (unused) -> {
+                                    startQueuedMicrogame(game);
+                                    countdown = null;
+                                });
+                            }
                             riverRaceState.addPointsToTeam(teamKey, collectable.victoryPoints);
-                            PlayerSet playersForTeam = teams.getPlayersForTeam(teamKey);
-                            playersForTeam.playSound(SoundRegistry.COINS.value(), SoundSource.NEUTRAL, 0.4f, 1);
-                            playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(collectable.victoryPoints()), true);
                             FireworkPalette.DYE_COLORS.spawn(region.centerBlock().above(), game.level());
                             return InteractionResult.PASS;
                         }
@@ -196,7 +190,11 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 end.accept(null);
             } else if(ticks % 20 == 0) {
                 long remainingTicks = endTicks - ticks;
-                if((remainingTicks / SharedConstants.TICKS_PER_SECOND) <= 5) {
+                long remainingSeconds = (remainingTicks / SharedConstants.TICKS_PER_SECOND);
+                if(remainingSeconds == 30 || remainingSeconds == 15 || remainingSeconds == 10) {
+                    game.allPlayers().sendMessage(RiverRaceTexts.GAMES_START_IN.apply(remainingSeconds).withStyle(ChatFormatting.GREEN));
+                } else if((remainingTicks / SharedConstants.TICKS_PER_SECOND) <= 5) {
+                    game.allPlayers().playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.NEUTRAL, 0.2f, 1f);
                     game.allPlayers().showTitle(Component.literal(remainingTicks / SharedConstants.TICKS_PER_SECOND + "").withStyle(ChatFormatting.GREEN), 10, 20, 10);
                 }
             }
