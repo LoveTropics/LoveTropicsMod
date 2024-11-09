@@ -4,8 +4,10 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.render.block.BigRedButtonBlockEntityRenderer;
 import com.lovetropics.minigames.client.render.entity.DriftwoodRenderer;
 import com.lovetropics.minigames.client.render.entity.LightningArrowRenderer;
+import com.lovetropics.minigames.client.render.entity.PlatformRenderer;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.PhasedWeatherControlBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RevealPlayersBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingPlatformBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingTidesGameBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttChatBroadcastBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttPetsBehavior;
@@ -21,6 +23,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.block.LootDispe
 import com.lovetropics.minigames.common.content.survive_the_tide.block.LootDispenserBlockEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.LightningArrowEntity;
+import com.lovetropics.minigames.common.content.survive_the_tide.entity.PlatformEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.AcidRepellentUmbrellaItem;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.LightningArrowItem;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.PaddleItem;
@@ -33,6 +36,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -123,6 +127,12 @@ public final class SurviveTheTide {
 			.renderer(() -> LightningArrowRenderer::new)
 			.register();
 
+	public static final RegistryEntry<EntityType<?>, EntityType<PlatformEntity>> PLATFORM = REGISTRATE.entity("platform", PlatformEntity::new, MobCategory.MISC)
+			.properties(properties -> properties.sized(0.0f, 0.0f).updateInterval(3).clientTrackingRange(1).noSave())
+			.defaultLang()
+			.renderer(() -> PlatformRenderer::new)
+			.register();
+
 	public static final GameBehaviorEntry<RisingTidesGameBehavior> RISING_TIDES = REGISTRATE.object("rising_tides")
 			.behavior(RisingTidesGameBehavior.CODEC)
 			.register();
@@ -155,6 +165,9 @@ public final class SurviveTheTide {
 			.register();
 	public static final GameBehaviorEntry<SttPetsBehavior> PETS = REGISTRATE.object("survive_the_tide_pets")
 			.behavior(SttPetsBehavior.CODEC)
+			.register();
+	public static final GameBehaviorEntry<RisingPlatformBehavior> RISING_PLATFORM = REGISTRATE.object("rising_platform")
+			.behavior(RisingPlatformBehavior.CODEC)
 			.register();
 
 	public static void init() {
