@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -56,73 +57,73 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 
 	@Override
 	protected void generateChunk(IGamePhase game, ServerLevel world, LevelChunk chunk) {
-		ObjectArrayList<BlockPos> chestPositions = collectChestPositions(chunk);
-		if (chestPositions.isEmpty()) {
+		ObjectArrayList<Chest> chests = collectChests(chunk);
+		if (chests.isEmpty()) {
 			return;
 		}
 
 		RandomSource random = world.random;
-		Util.shuffle(chestPositions, random);
+		Util.shuffle(chests, random);
 
 		if (percentage < 1.0f) {
-			int index = Mth.ceil(chestPositions.size() * percentage);
-			trimChests(world, chestPositions, index);
+			int index = Mth.ceil(chests.size() * percentage);
+			trimChests(world, chests, index);
 		}
 
-		trimChests(world, chestPositions, maxPerChunk);
+		trimChests(world, chests, maxPerChunk);
 
-		for (ObjectList<BlockPos> sectionChests : partitionBySection(chestPositions)) {
+		for (ObjectList<Chest> sectionChests : partitionBySection(chests)) {
 			trimChests(world, sectionChests, maxPerSection);
 
-			for (BlockPos pos : sectionChests) {
-				BlockPos belowPos = pos.below();
-				BlockState belowState = world.getBlockState(belowPos);
-				Direction facing = belowState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-				world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+			for (Chest chest : sectionChests) {
+				world.setBlockAndUpdate(chest.pos, Blocks.AIR.defaultBlockState());
 				lootTables.getRandomValue(random).ifPresent(lootTable -> {
-					setChest(world, belowPos, lootTable, facing);
+					setChest(world, chest.pos.below(), chest, lootTable);
 				});
 			}
 		}
 	}
 
-	private static Collection<ObjectList<BlockPos>> partitionBySection(ObjectList<BlockPos> chestPositions) {
-		if (chestPositions.isEmpty()) {
+	private static Collection<ObjectList<Chest>> partitionBySection(ObjectList<Chest> chests) {
+		if (chests.isEmpty()) {
 			return List.of();
 		}
-		Int2ObjectMap<ObjectList<BlockPos>> partitioned = new Int2ObjectArrayMap<>();
-		for (BlockPos pos : chestPositions) {
-			int sectionY = SectionPos.blockToSectionCoord(pos.getY());
-			partitioned.computeIfAbsent(sectionY, i -> new ObjectArrayList<>()).add(pos);
+		Int2ObjectMap<ObjectList<Chest>> partitioned = new Int2ObjectArrayMap<>();
+		for (Chest chest : chests) {
+			int sectionY = SectionPos.blockToSectionCoord(chest.pos.getY());
+			partitioned.computeIfAbsent(sectionY, i -> new ObjectArrayList<>()).add(chest);
 		}
 		return partitioned.values();
 	}
 
-	private static void trimChests(ServerLevel level, ObjectList<BlockPos> positions, int count) {
+	private static void trimChests(ServerLevel level, ObjectList<Chest> positions, int count) {
 		for (int i = positions.size() - 1; i >= count; i--) {
-			BlockPos pos = positions.remove(i);
+			BlockPos pos = positions.remove(i).pos();
 			level.removeBlock(pos, false);
 			level.removeBlock(pos.below(), false);
 		}
 	}
 
-	private ObjectArrayList<BlockPos> collectChestPositions(LevelChunk chunk) {
-		ObjectArrayList<BlockPos> chestPositions = new ObjectArrayList<>();
+	private ObjectArrayList<Chest> collectChests(LevelChunk chunk) {
+		ObjectArrayList<Chest> chestPositions = new ObjectArrayList<>();
 		for (BlockPos pos : chunk.getBlockEntitiesPos()) {
-			if (chunk.getBlockEntity(pos) instanceof ChestBlockEntity) {
+			if (chunk.getBlockEntity(pos) instanceof ChestBlockEntity blockEntity) {
 				if (chunk.getBlockState(pos.below()).is(marker)) {
-					chestPositions.add(pos);
+					chestPositions.add(new Chest(pos, blockEntity.getBlockState()));
 				}
 			}
 		}
 		return chestPositions;
 	}
 
-	private void setChest(ServerLevel world, BlockPos pos, ResourceKey<LootTable> lootTable, Direction facing) {
-		world.setBlockAndUpdate(pos, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, facing));
-		if (world.getBlockEntity(pos) instanceof ChestBlockEntity chest) {
-			chest.setLootTable(lootTable, world.random.nextLong());
+	private void setChest(ServerLevel world, BlockPos pos, Chest chest, ResourceKey<LootTable> lootTable) {
+		world.setBlockAndUpdate(pos, chest.blockState);
+		if (world.getBlockEntity(pos) instanceof RandomizableContainer blockEntity) {
+			blockEntity.setLootTable(lootTable, world.random.nextLong());
 		}
 		world.getChunkSource().getLightEngine().checkBlock(pos);
+	}
+
+	private record Chest(BlockPos pos, BlockState blockState) {
 	}
 }
