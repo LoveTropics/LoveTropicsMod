@@ -18,14 +18,15 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -36,10 +37,15 @@ import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public final class CollectablesBehaviour implements IGameBehavior, IGameState {
@@ -55,7 +61,8 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         this.collectables = collectables;
     }
 
-    private final Map<String, GameTeamKey> COLLECTED_COLLECTABLES = new HashMap<>();
+    private final Map<String, GameTeamKey> firstTeamToCollect = new HashMap<>();
+    @Nullable
     private Countdown countdown;
 
     @Nullable
@@ -94,83 +101,81 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         game.instanceState().register(COLLECTABLES, this);
-        RiverRaceState riverRaceState = game.state().getOrNull(RiverRaceState.KEY);
-        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        RiverRaceState riverRaceState = game.state().getOrThrow(RiverRaceState.KEY);
+        TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
         events.listen(GamePhaseEvents.TICK, () -> {
-            if(countdown != null){
+            if (countdown != null){
                 countdown.tick(game);
             }
         });
         events.listen(GamePhaseEvents.CREATE, () -> {
             for (Collectable collectable : collectables) {
                 for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
-                    BlockBox region = game.mapRegions().getAny(monumentSlotRegion);
-                    Display.BlockDisplay blockDisplay = EntityType.BLOCK_DISPLAY.create(game.level());
-                    blockDisplay.setPos(region.center());
-                    blockDisplay.setBlockState(collectable.blockState());
-                    blockDisplay.setTransformation(new Transformation(new Vector3f(-0.1f, -0.1f, -0.1f), null, new Vector3f(0.2f, 0.2f, 0.2f), null));
-                    game.level().addFreshEntity(blockDisplay);
+                    BlockBox region = game.mapRegions().getOrThrow(monumentSlotRegion);
+                    spawnCollectableDisplay(game, collectable, region.center());
                 }
             }
         });
-        events.listen(GamePlayerEvents.PLACE_BLOCK, ((player, pos, placed, placedOn, placedItemStack) -> {
-            for (Collectable collectable : collectables) {
-                for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
-                    BlockBox region = game.mapRegions().getAny(monumentSlotRegion);
-                    if (region != null && region.contains(pos)) {
-                        if (!collectable.monumentPredicate.test(placed)) {
-                            return InteractionResult.FAIL;
-                        } else {
-                            // Victory Points
-                            GameTeamKey teamKey = teams.getTeamForPlayer(player);
-                            GameTeam teamByKey = teams.getTeamByKey(teamKey);
-                            if(!COLLECTED_COLLECTABLES.containsKey(collectable.zone)) {
-                                COLLECTED_COLLECTABLES.put(collectable.zone, teamKey);
-                                // Message
-                                MutableComponent teamName = teamByKey.config().styledName();
-                                game.allPlayers().showTitle(null, RiverRaceTexts.COLLECTABLE_PLACED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
-                                game.allPlayers().sendMessage(RiverRaceTexts.COLLECTABLE_PLACED.apply(teamName, collectable.zoneDisplayName(), COUNTDOWN_SECONDS));
-                                // Sound Effect
-                                game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 1f, 1);
-                                queueMicrogames(game, collectable);
-                                // Start microgames countdown
-                                countdown = new Countdown(game.ticks() + (20 * COUNTDOWN_SECONDS), (unused) -> {
-									startQueuedMicrogame(game);
-									countdown = null;
-								});
-                            }
-                            riverRaceState.addPointsToTeam(teamKey, collectable.victoryPoints);
-                            FireworkPalette.DYE_COLORS.spawn(region.centerBlock().above(), game.level());
-                            return InteractionResult.PASS;
-                        }
-                    }
+        events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn, placedItemStack) -> {
+            Pair<Collectable, BlockPos> slot = getMonumentSlotAt(game, pos);
+            if (slot == null) {
+                return InteractionResult.PASS;
+            }
+            return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, player, placed, slot.getFirst(), slot.getSecond());
+        });
+    }
+
+    private void spawnCollectableDisplay(IGamePhase game, Collectable collectable, Vec3 position) {
+        Display.BlockDisplay blockDisplay = EntityType.BLOCK_DISPLAY.create(game.level());
+        blockDisplay.setPos(position);
+        blockDisplay.setBlockState(collectable.blockState());
+        blockDisplay.setTransformation(new Transformation(new Vector3f(-0.1f, -0.1f, -0.1f), null, new Vector3f(0.2f, 0.2f, 0.2f), null));
+        game.level().addFreshEntity(blockDisplay);
+    }
+
+    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ServerPlayer player, BlockState placed, Collectable collectable, BlockPos slotCenterPos) {
+        if (!collectable.monumentPredicate.test(placed)) {
+            return InteractionResult.FAIL;
+        }
+        GameTeamKey teamKey = teams.getTeamForPlayer(player);
+        GameTeam team = teams.getTeamByKey(teamKey);
+        if (firstTeamToCollect.putIfAbsent(collectable.zone, teamKey) == null) {
+            addEffectsForPlacedCollectable(game, collectable, team);
+            queueMicrogames(game, collectable);
+            // Start microgames countdown
+            countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
+                startQueuedMicrogame(game);
+                countdown = null;
+            });
+        }
+        riverRaceState.addPointsToTeam(teamKey, collectable.victoryPoints);
+        FireworkPalette.DYE_COLORS.spawn(slotCenterPos.above(), game.level());
+        return InteractionResult.PASS;
+    }
+
+    private static void addEffectsForPlacedCollectable(IGamePhase game, Collectable collectable, GameTeam team) {
+        Component teamName = team.config().styledName();
+        game.allPlayers().showTitle(null, RiverRaceTexts.COLLECTABLE_PLACED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
+        game.allPlayers().sendMessage(RiverRaceTexts.COLLECTABLE_PLACED.apply(teamName, collectable.zoneDisplayName(), COUNTDOWN_SECONDS));
+
+        game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 1f, 1);
+    }
+
+    @Nullable
+    private Pair<Collectable, BlockPos> getMonumentSlotAt(IGamePhase game, BlockPos pos) {
+        for (Collectable collectable : collectables) {
+            for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
+                BlockBox region = game.mapRegions().getAny(monumentSlotRegion);
+                if (region != null && region.contains(pos)) {
+                    return Pair.of(collectable, region.centerBlock());
                 }
             }
-            return InteractionResult.PASS;
-        }));
+        }
+        return null;
     }
 
     public List<Collectable> collectables() {
         return collectables;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (CollectablesBehaviour) obj;
-        return Objects.equals(this.collectables, that.collectables);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(collectables);
-    }
-
-    @Override
-    public String toString() {
-        return "CollectablesBehaviour[" +
-                "collectables=" + collectables + ']';
     }
 
     private static class Countdown {
