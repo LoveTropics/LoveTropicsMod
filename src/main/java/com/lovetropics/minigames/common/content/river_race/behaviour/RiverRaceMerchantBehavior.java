@@ -40,25 +40,29 @@ import java.util.UUID;
 
 // TODO Merge with BbMerchantBehavior?
 public class RiverRaceMerchantBehavior implements IGameBehavior {
+	private static final Codec<MerchantOffer> OFFER_CODEC = RecordCodecBuilder.create(i -> i.group(
+			ItemCost.CODEC.fieldOf("input").forGetter(MerchantOffer::getItemCostA),
+			MoreCodecs.ITEM_STACK.fieldOf("output").forGetter(MerchantOffer::getResult)
+	).apply(i, (input, output) -> new MerchantOffer(input, output, Integer.MAX_VALUE, 0, 0)));
 
     public static final MapCodec<RiverRaceMerchantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            Codec.STRING.fieldOf("zone").forGetter(c -> c.zone),
+            Codec.STRING.fieldOf("zone").forGetter(c -> c.region),
             BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity").forGetter(c -> c.entity),
             ComponentSerialization.CODEC.optionalFieldOf("name", CommonComponents.EMPTY).forGetter(c -> c.name),
-            Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
+			OFFER_CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
     ).apply(i, RiverRaceMerchantBehavior::new));
 
-    private final String zone;
+    private final String region;
     private final EntityType<?> entity;
     private final Component name;
-    private final List<Offer> offers;
+    private final List<MerchantOffer> offers;
 
     private final Set<UUID> merchants = new ObjectOpenHashSet<>();
 
     private IGamePhase game;
 
-    public RiverRaceMerchantBehavior(String zone, EntityType<?> entity, Component name, List<Offer> offers) {
-        this.zone = zone;
+    public RiverRaceMerchantBehavior(String region, EntityType<?> entity, Component name, List<MerchantOffer> offers) {
+        this.region = region;
         this.entity = entity;
         this.name = name;
         this.offers = offers;
@@ -76,40 +80,36 @@ public class RiverRaceMerchantBehavior implements IGameBehavior {
      * When the game loads, load this merchant into its proper section
      */
     private void onGameStarted() {
-        ServerLevel world = game.level();
+        ServerLevel level = game.level();
+        List<BlockBox> regions = game.mapRegions().getAll(region);
+        for (BlockBox region : regions) {
+            Vec3 center = region.center();
 
-        BlockBox region = game.mapRegions().getOrThrow(zone);
-       // if (region == null) return;
+            Entity merchant = createMerchant(level);
+            if (merchant == null) {
+                return;
+            }
+            merchant.moveTo(center.x(), center.y() - 0.5, center.z(), 0, 0);
 
-        Vec3 center = region.center();
+            level.getChunk(region.centerBlock());
+            level.addFreshEntity(merchant);
 
-        Entity merchant = createMerchant(world);
-        if (merchant == null) return;
+            if (merchant instanceof Mob mob) {
+                mob.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(center)), MobSpawnType.MOB_SUMMONED, null);
+                mob.setNoAi(true);
+                mob.setBaby(false);
+                mob.setInvulnerable(true);
+            }
 
-//        Direction direction = Util.getDirectionBetween(region, plot.spawn);
-//        float yaw = direction.toYRot();
-//
-        merchant.moveTo(center.x(), center.y() - 0.5, center.z(), 0 /*yaw*/, 0);
-//        merchant.setYHeadRot(yaw);
-
-        world.getChunk(region.centerBlock());
-        world.addFreshEntity(merchant);
-
-        if (merchant instanceof Mob mob) {
-            mob.finalizeSpawn(world, world.getCurrentDifficultyAt(BlockPos.containing(center)), MobSpawnType.MOB_SUMMONED, null);
-            mob.setNoAi(true);
-            mob.setBaby(false);
-            mob.setInvulnerable(true);
+            merchants.add(merchant.getUUID());
         }
-
-        merchants.add(merchant.getUUID());
     }
 
     private InteractionResult interactWithEntity(ServerPlayer player, Entity target, InteractionHand hand) {
         if (merchants.contains(target.getUUID())) {
             MerchantOffers builtOffers = new MerchantOffers();
-            for (Offer offer : offers) {
-                builtOffers.add(offer.build(game));
+            for (MerchantOffer offer : offers) {
+                builtOffers.add(offer.copy());
             }
 
             // TODO need a different screen?
@@ -137,51 +137,5 @@ public class RiverRaceMerchantBehavior implements IGameBehavior {
         }
 
         return null;
-    }
-
-    public static final class Offer {
-        public static final Codec<Offer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                ItemCost.CODEC.fieldOf("input").forGetter(c -> c.input),
-                Output.CODEC.fieldOf("output").forGetter(c -> c.output)
-        ).apply(instance, Offer::new));
-
-        private final ItemCost input;
-        private final Output output;
-
-        public Offer(ItemCost input, Output output) {
-            this.input = input;
-            this.output = output;
-        }
-
-        public MerchantOffer build(IGamePhase game) {
-            return new MerchantOffer(
-                    input, output.build(game),
-                    Integer.MAX_VALUE,
-                    0,
-                    0
-            );
-        }
-    }
-
-    public static final class Output {
-        private static final Codec<Output> CODEC = MoreCodecs.ITEM_STACK.xmap(Output::item, output -> output.item);
-
-        @Nullable
-        private final ItemStack item;
-
-        private Output(@Nullable ItemStack item) {
-            this.item = item;
-        }
-
-        private static Output item(ItemStack item) {
-            return new Output(item);
-        }
-
-        private ItemStack build(IGamePhase game) {
-            if (item != null) {
-                return item;
-            }
-            throw new IllegalStateException();
-        }
     }
 }
