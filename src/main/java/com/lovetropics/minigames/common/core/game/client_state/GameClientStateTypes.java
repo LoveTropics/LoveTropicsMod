@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.client_state;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.CollidersClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.FogClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.GlowTeamMembersState;
@@ -21,6 +22,8 @@ import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -51,10 +54,17 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<CraftingBeeCraftsClientState> CRAFTING_BEE_CRAFTS = register("crafting_bee_crafts", CraftingBeeCraftsClientState.CODEC);
 	public static final GameClientTweakEntry<InvertControlsClientState> INVERT_CONTROLS = register("invert_controls", InvertControlsClientState.CODEC);
 	public static final GameClientTweakEntry<SwapMovementClientState> SWAP_MOVEMENT = register("swap_movement", SwapMovementClientState.CODEC);
+	public static final GameClientTweakEntry<CollidersClientState> COLLIDERS = register("colliders", CollidersClientState.CODEC, CollidersClientState.STREAM_CODEC);
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final MapCodec<T> codec) {
 		return REGISTRATE.object(name)
 				.clientState(codec)
+				.register();
+	}
+
+	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final MapCodec<T> codec, final StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
+		return REGISTRATE.object(name)
+				.clientState(codec).streamCodec(streamCodec)
 				.register();
 	}
 

@@ -5,9 +5,11 @@
   "plugin": "com.lovetropics.minigames.mixin.LTMixinPlugin",
   "mixins": [
     "ChunkStorageMixin",
-    "EntityTypeMixin",
     "CommonHooksMixin",
     "DataCommandsMixin",
+    "EntityMixin",
+    "EntityTypeMixin",
+    "FallingBlockEntityMixin",
     "ItemStackMixin",
     "MinecraftServerMixin",
     "PlayerListMixin",
@@ -15,7 +17,6 @@
     "SimpleRegistryMixin",
     "TagManagerAccessor",
     "WorldGenSettingsMixin",
-    "FallingBlockEntityMixin",
     "chat.ServerGamePacketListenerImplMixin",
     "disguise.LivingEntityMixin",
     "gametest.GameTestHelperAccess",
@@ -27,14 +28,14 @@
   ],
   "client": [
     "client.BiomeColorsMixin",
+    "client.HiddenRecipeBookMixin",
     "client.HotbarOverride",
     "client.IntegratedPlayerListMixin",
+    "client.KeyboardInputMixin",
     "client.MinecraftMixin",
-    "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor",
-    "client.HiddenRecipeBookMixin",
     "client.MouseHandlerMixin",
-    "client.KeyboardInputMixin"
+    "client.PlayerTabOverlayGuiMixin",
+    "client.PoseStackAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
+import com.lovetropics.minigames.common.core.game.state.ColliderState;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -98,9 +99,18 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        ColliderState colliders = ColliderState.getOrAdd(game, events);
         game.instanceState().register(COLLECTABLES, this);
         RiverRaceState riverRaceState = game.state().getOrThrow(RiverRaceState.KEY);
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
+
+        for (Collectable collectable : collectables) {
+            for (String key : collectable.unlocksColliders) {
+                BlockBox collider = game.mapRegions().getOrThrow(key);
+                colliders.addCollider(key, collider);
+            }
+        }
+
         events.listen(GamePhaseEvents.TICK, () -> {
             if (countdown != null){
                 countdown.tick(game);
@@ -119,7 +129,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             if (slot == null) {
                 return InteractionResult.PASS;
             }
-            return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, player, placedItemStack, slot.getFirst(), slot.getSecond());
+            return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, colliders, player, placedItemStack, slot.getFirst(), slot.getSecond());
         });
     }
 
@@ -131,7 +141,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         game.level().addFreshEntity(itemDisplay);
     }
 
-    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ServerPlayer player, ItemStack placedItemStack, Collectable collectable, BlockPos slotCenterPos) {
+    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ColliderState colliders, ServerPlayer player, ItemStack placedItemStack, Collectable collectable, BlockPos slotCenterPos) {
         if (!ItemStack.isSameItemSameComponents(collectable.collectable, placedItemStack)) {
             return InteractionResult.FAIL;
         }
@@ -145,6 +155,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             queueMicrogames(game, collectable);
             // Start microgames countdown
             countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
+				clearCollidersForCollectable(colliders, collectable);
                 startQueuedMicrogame(game);
                 countdown = null;
             });
@@ -153,6 +164,12 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         FireworkPalette.DYE_COLORS.spawn(slotCenterPos.above(), game.level());
         return InteractionResult.PASS;
     }
+
+    private static void clearCollidersForCollectable(ColliderState colliders, Collectable collectable) {
+		for (String key : collectable.unlocksColliders) {
+			colliders.removeCollider(key);
+		}
+	}
 
     private static void addEffectsForPlacedCollectable(IGamePhase game, Collectable collectable, GameTeam team) {
         Component teamName = team.config().styledName();
@@ -208,7 +225,8 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions,
-                              int victoryPoints, List<ResourceLocation> gamePool, int gamesPerRound) {
+                              int victoryPoints, List<ResourceLocation> gamePool, int gamesPerRound,
+                              List<String> unlocksColliders) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
                 Codec.STRING.fieldOf("zone_display_name").forGetter(Collectable::zoneDisplayName),
@@ -216,7 +234,8 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
                 Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
                 ExtraCodecs.nonEmptyList(ResourceLocation.CODEC.listOf()).fieldOf("game_pool").forGetter(Collectable::gamePool),
-                Codec.INT.optionalFieldOf("games_per_round", 1).forGetter(c -> c.gamesPerRound)
+                Codec.INT.optionalFieldOf("games_per_round", 1).forGetter(Collectable::gamesPerRound),
+                Codec.STRING.listOf().fieldOf("unlocks_colliders").forGetter(Collectable::unlocksColliders)
         ).apply(i, Collectable::new));
     }
 }

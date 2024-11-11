@@ -27,20 +27,7 @@ public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) impleme
 	}
 
 	private static BlockBox computeGlobalBounds(final List<BlockBox> plots) {
-		if (plots.isEmpty()) {
-			return BlockBox.of(BlockPos.ZERO);
-		}
-
-		BlockBox global = plots.getFirst();
-		for (int i = 1; i < plots.size(); i++) {
-			final BlockBox plot = plots.get(i);
-			global = BlockBox.of(
-					BlockPos.min(global.min(), plot.min()),
-					BlockPos.max(global.max(), plot.max())
-			);
-		}
-
-		return global;
+		return plots.stream().reduce(BlockBox::encompassing).orElseGet(() -> BlockBox.of(BlockPos.ZERO));
 	}
 
 	@Override
