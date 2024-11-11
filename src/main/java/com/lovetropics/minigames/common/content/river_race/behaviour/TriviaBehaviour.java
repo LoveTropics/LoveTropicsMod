@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.network.trivia.ShowTriviaMessage;
 import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponseMessage;
@@ -20,8 +19,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -44,20 +41,24 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public final class TriviaBehaviour implements IGameBehavior {
 
     public static final MapCodec<TriviaBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExtraCodecs.nonEmptyList(TriviaZone.CODEC.listOf()).fieldOf("zones").forGetter(b -> List.copyOf(b.zonesById.values())),
+            ExtraCodecs.nonEmptyList(TriviaZone.CODEC.listOf()).fieldOf("zones").forGetter(b -> b.zones),
             Codec.INT.optionalFieldOf("question_lockout", 30).forGetter(b -> b.questionLockout)
     ).apply(i, TriviaBehaviour::new));
 
     private static final TagKey<Block> STAINED_GLASS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("lt", "all_stained_glass"));
 
-    private final Int2ObjectMap<TriviaZone> zonesById = new Int2ObjectOpenHashMap<>();
+    private final List<TriviaZone> zones;
     private final int questionLockout;
     private final GameScheduler scheduler = new GameScheduler();
     private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
@@ -66,9 +67,7 @@ public final class TriviaBehaviour implements IGameBehavior {
     private final List<ZoneRegion> zoneRegions = new ArrayList<>();
 
     public TriviaBehaviour(List<TriviaZone> zones, int questionLockout) {
-        for (TriviaZone zone : zones) {
-            zonesById.put(zone.id, zone);
-        }
+        this.zones = zones;
         this.questionLockout = questionLockout;
     }
 
@@ -84,7 +83,7 @@ public final class TriviaBehaviour implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        for (TriviaZone zone : zonesById.values()) {
+        for (TriviaZone zone : zones) {
             Collection<BlockBox> regions = game.mapRegions().get(zone.regionKey());
             for (BlockBox region : regions) {
                 zoneRegions.add(new ZoneRegion(region, zone));
@@ -95,10 +94,10 @@ public final class TriviaBehaviour implements IGameBehavior {
             scheduler.tick();
             Set<Long> longs = lockedOutTriviaBlocks.keySet();
             for (Long l : longs) {
-                if(game.level().getGameTime() >= l){
+                if (game.level().getGameTime() >= l) {
                     BlockPos blockPos = lockedOutTriviaBlocks.get(l);
                     BlockEntity blockEntity = game.level().getBlockEntity(blockPos);
-                    if(blockEntity instanceof HasTrivia triviaBlockEntity){
+                    if (blockEntity instanceof HasTrivia triviaBlockEntity) {
                         triviaBlockEntity.unlock();
                         lockedOutTriviaBlocks.remove(l);
                     }
@@ -159,7 +158,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         if (hasTrivia.getQuestion() != null && !hasTrivia.getState().isAnswered()) {
             PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, hasTrivia.getQuestion(), hasTrivia.getState()));
         } else {
-            if (hasTrivia.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
+            if (hasTrivia.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE) {
                 giveCollectableToPlayer(game, player, pos);
             }
         }
@@ -194,11 +193,11 @@ public final class TriviaBehaviour implements IGameBehavior {
         for (Direction direction : Direction.values()) {
             BlockPos relative = pos.relative(direction);
             BlockState blockState = world.getBlockState(relative);
-            if(!blockState.isAir()){
-                if(blockType == null){
+            if (!blockState.isAir()) {
+                if (blockType == null) {
                     blockType = blockState.getBlock();
                 }
-                if(blockState.is(blockType)){
+                if (blockState.is(blockType)) {
                     world.destroyBlock(relative, false);
                     Block finalBlockType = blockType;
                     scheduler.delayedTickEvent("gateDestroy" + relative, () -> {
@@ -209,19 +208,15 @@ public final class TriviaBehaviour implements IGameBehavior {
         }
     }
 
-    public record TriviaZone(int id, List<TriviaQuestion> questionPool) {
+    public record TriviaZone(String regionKey, List<TriviaQuestion> questionPool) {
         public static final Codec<TriviaZone> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.INT.fieldOf("zone_id").forGetter(TriviaZone::id),
+                Codec.STRING.fieldOf("zone_region").forGetter(TriviaZone::regionKey),
                 ExtraCodecs.nonEmptyList(TriviaQuestion.CODEC.listOf()).fieldOf("questions").forGetter(TriviaZone::questionPool)
         ).apply(i, TriviaZone::new));
 
         private Stream<TriviaQuestion> questionsByDifficulty(String difficulty) {
             return questionPool.stream()
                     .filter(question -> question.difficulty().equalsIgnoreCase(difficulty));
-        }
-
-        public String regionKey() {
-            return "zone_" + id;
         }
     }
 
@@ -250,7 +245,6 @@ public final class TriviaBehaviour implements IGameBehavior {
                     Codec.BOOL.fieldOf("correct").forGetter(TriviaQuestionAnswer::correct)
             ).apply(i, TriviaQuestionAnswer::new));
         }
-
 
         @Nullable
         public TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer getAnswer(String text) {
