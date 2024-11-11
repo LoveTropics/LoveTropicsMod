@@ -15,8 +15,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -39,6 +42,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 	}
 
 	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player, DamageSource source) {
+		destroyVanishingCursedItems(player.getInventory());
 		if (dropInventory) {
 			player.getInventory().dropAll();
 		}
@@ -78,6 +82,14 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		if (deathMessage.isPresent()) {
 			Component message = deathMessage.get().apply(Map.of("message", player.getCombatTracker().getDeathMessage()));
 			game.allPlayers().sendMessage(message);
+		}
+	}
+
+	public static void destroyVanishingCursedItems(Container inventory) {
+		for (int i = 0; i < inventory.getContainerSize(); ++i) {
+			if (EnchantmentHelper.has(inventory.getItem(i), EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+				inventory.removeItemNoUpdate(i);
+			}
 		}
 	}
 }

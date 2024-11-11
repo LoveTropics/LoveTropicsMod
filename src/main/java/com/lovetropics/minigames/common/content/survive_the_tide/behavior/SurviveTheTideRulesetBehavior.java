@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
@@ -53,7 +54,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		if (forceDropItemsOnDeath && player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
-			destroyVanishingCursedItems(player.getInventory());
+			ImmediateRespawnBehavior.destroyVanishingCursedItems(player.getInventory());
 			player.getInventory().dropAll();
 		}
 		return InteractionResult.PASS;
@@ -73,12 +74,5 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		return InteractionResult.PASS;
 	}
 
-	private void destroyVanishingCursedItems(Container inventory) {
-		for (int i = 0; i < inventory.getContainerSize(); ++i) {
-			ItemStack itemstack = inventory.getItem(i);
-			if (!itemstack.isEmpty() && EnchantmentHelper.has(itemstack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-				inventory.removeItemNoUpdate(i);
-			}
-		}
-	}
+
 }
