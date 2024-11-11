@@ -240,7 +240,7 @@ public final class BiodiversityBlitz {
 	// Client State
 
 	public static final GameClientTweakEntry<CheckeredPlotsState> CHECKERED_PLOTS_STATE = REGISTRATE.object("checkered_plots")
-			.clientState(CheckeredPlotsState.CODEC)
+			.clientState(CheckeredPlotsState.CODEC).streamCodec(CheckeredPlotsState.STREAM_CODEC)
 			.register();
 
 	public static final GameClientTweakEntry<CurrencyTargetState> CURRENCY_TARGET = REGISTRATE.object("currency_target")

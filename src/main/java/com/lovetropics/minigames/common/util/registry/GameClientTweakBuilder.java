@@ -6,19 +6,30 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.neoforge.registries.DeferredHolder;
+
+import javax.annotation.Nullable;
 
 public final class GameClientTweakBuilder<T extends GameClientState, P> extends AbstractBuilder<GameClientStateType<?>, GameClientStateType<T>, P, GameClientTweakBuilder<T, P>> {
 	private final MapCodec<T> codec;
+	@Nullable
+	private StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec;
 
 	public GameClientTweakBuilder(LoveTropicsRegistrate owner, P parent, String name, BuilderCallback callback, MapCodec<T> codec) {
 		super(owner, parent, name, callback, GameClientStateTypes.REGISTRY_KEY);
 		this.codec = codec;
 	}
 
+	public GameClientTweakBuilder<T, P> streamCodec(StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
+		this.streamCodec = streamCodec;
+		return this;
+	}
+
 	@Override
 	protected GameClientStateType<T> createEntry() {
-		return new GameClientStateType<>(codec);
+		return streamCodec != null ? new GameClientStateType<>(codec, streamCodec) : new GameClientStateType<>(codec);
 	}
 
 	@Override

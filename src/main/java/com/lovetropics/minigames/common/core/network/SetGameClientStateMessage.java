@@ -38,8 +38,8 @@ public record SetGameClientStateMessage(GameClientStateType<?> stateType, Option
 			valueCodec(type).encode(output, state.map(s -> (T) s));
 		}
 
-		private static <T extends GameClientState> StreamCodec<ByteBuf, Optional<T>> valueCodec(GameClientStateType<T> type) {
-			return ByteBufCodecs.fromCodec(type.codec().codec()).apply(ByteBufCodecs::optional);
+		private static <T extends GameClientState> StreamCodec<RegistryFriendlyByteBuf, Optional<T>> valueCodec(GameClientStateType<T> type) {
+			return type.streamCodec().<RegistryFriendlyByteBuf>cast().apply(ByteBufCodecs::optional);
 		}
 	};
 

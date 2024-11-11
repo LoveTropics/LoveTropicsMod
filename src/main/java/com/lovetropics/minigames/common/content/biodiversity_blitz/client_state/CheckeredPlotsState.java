@@ -6,7 +6,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.List;
 
@@ -14,6 +17,10 @@ public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) impleme
 	public static final MapCodec<CheckeredPlotsState> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			BlockBox.CODEC.listOf().fieldOf("plots").forGetter(CheckeredPlotsState::plots)
 	).apply(i, CheckeredPlotsState::new));
+	public static final StreamCodec<ByteBuf, CheckeredPlotsState> STREAM_CODEC = StreamCodec.composite(
+			BlockBox.STREAM_CODEC.apply(ByteBufCodecs.list()), CheckeredPlotsState::plots,
+			CheckeredPlotsState::new
+	);
 
 	public CheckeredPlotsState(final List<BlockBox> plots) {
 		this(plots, computeGlobalBounds(plots));
