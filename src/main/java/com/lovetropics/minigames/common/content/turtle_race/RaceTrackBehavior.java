@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.turtle_race;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
@@ -209,14 +210,21 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private void triggerWin(IGamePhase game) {
-		Component winnerName = TurtleRaceTexts.UNKNOWN_PLAYER;
+		GameWinner winner;
 		if (!finishedPlayers.isEmpty()) {
-			FinishEntry winner = finishedPlayers.getFirst();
-			game.statistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
-			winnerName = Component.literal(winner.name());
+			FinishEntry entry = finishedPlayers.getFirst();
+			game.statistics().global().set(StatisticKey.WINNING_PLAYER, entry.player());
+			ServerPlayer onlinePlayer = game.allPlayers().getPlayerBy(entry.player);
+			if (onlinePlayer != null) {
+				winner = new GameWinner.Player(onlinePlayer);
+			} else {
+				winner = new GameWinner.OfflinePlayer(entry.player.id(), Component.literal(entry.name));
+			}
+		} else {
+			winner = new GameWinner.Nobody();
 		}
 
-		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
+		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winner);
 		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
 		for (ServerPlayer player : game.participants()) {

@@ -85,7 +85,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 	private void triggerWin(IGamePhase game, GameTeamKey teamKey, @Nullable GameTeam team) {
 		game.statistics().global().set(StatisticKey.WINNING_TEAM, teamKey);
 		if (team != null) {
-			game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(team.config().name());
+			game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(team);
 		}
 		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 

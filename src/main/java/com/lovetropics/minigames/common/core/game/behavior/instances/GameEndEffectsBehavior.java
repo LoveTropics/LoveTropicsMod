@@ -26,6 +26,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
@@ -72,13 +74,9 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GameLogicEvents.WIN_TRIGGERED, winner -> {
-			if (winner.getStyle().getColor() != null) {
-				this.winner = winner;
-			} else {
-				this.winner = winner.copy().withStyle(ChatFormatting.AQUA);
-			}
-		});
+		events.listen(GameLogicEvents.WIN_TRIGGERED, winner ->
+				this.winner = ComponentUtils.mergeStyles(winner.name().copy(), Style.EMPTY.withColor(ChatFormatting.AQUA))
+		);
 
 		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			if (!ended) {

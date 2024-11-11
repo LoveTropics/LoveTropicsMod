@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.crafting_bee.ingredient.IngredientDecomposer;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -210,13 +211,14 @@ public class CraftingBeeBehavior implements IGameBehavior {
         sync(team);
 
         var completed = teamTasks.stream().filter(t -> t.done).count();
-        var teamConfig = teams.getTeamByKey(team).config();
+        var gameTeam = teams.getTeamByKey(team);
+        var teamConfig = gameTeam.config();
 
         game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), completed, teamTasks.size()));
 
         if (completed == teamTasks.size()) {
             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
-            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamConfig.name());
+            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(gameTeam);
             game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
             done = true;
@@ -251,14 +253,14 @@ public class CraftingBeeBehavior implements IGameBehavior {
                         var withMax = tasks.asMap().entrySet().stream().filter(e -> e.getValue().stream().filter(c -> c.done).count() == mx)
                                         .toList();
                         if (withMax.size() != 1) {
-                            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(MinigameTexts.NOBODY_WON);
-
+                            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(new GameWinner.Nobody());
 
                             game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
                         } else {
-                            var teamConfig = teams.getTeamByKey(withMax.getFirst().getKey()).config();
+                            var gameTeam = teams.getTeamByKey(withMax.getFirst().getKey());
+                            var teamConfig = gameTeam.config();
                             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
-                            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamConfig.name());
+                            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(gameTeam);
 
                             game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
                         }

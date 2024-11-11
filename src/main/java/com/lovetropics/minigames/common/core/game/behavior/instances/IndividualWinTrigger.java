@@ -29,7 +29,7 @@ public class IndividualWinTrigger implements IGameBehavior {
 
 				game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 
-				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer.getDisplayName());
+				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer);
 				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 			}
 		});

@@ -49,9 +49,7 @@ public class TeamWinTrigger implements IGameBehavior {
 
 				winTriggered = true;
 
-				Component winnerName = finalTeam.config().name().copy()
-						.withStyle(finalTeam.config().formatting());
-				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
+				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(finalTeam);
 				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
 				game.statistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());

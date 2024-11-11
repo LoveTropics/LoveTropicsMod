@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class RiverRaceState implements VictoryPointsGameState {
     public static final GameStateKey<RiverRaceState> KEY = GameStateKey.create("RiverRace");
@@ -29,8 +30,11 @@ public class RiverRaceState implements VictoryPointsGameState {
     }
 
     @Override
-    public void addPointsToTeam(final ServerPlayer player, final int points) {
-        addPointsToTeam(getTeamForPlayer(player), points);
+    public void addPointsToTeam(final UUID playerId, final int points) {
+        GameTeamKey team = getTeamForPlayer(playerId);
+		if (team != null) {
+            addPointsToTeam(team, points);
+        }
     }
 
     @Override
@@ -60,8 +64,13 @@ public class RiverRaceState implements VictoryPointsGameState {
 
     @Nullable
     private GameTeamKey getTeamForPlayer(ServerPlayer player) {
+        return getTeamForPlayer(player.getUUID());
+    }
+
+    @Nullable
+    private GameTeamKey getTeamForPlayer(UUID playerId) {
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
-        return teams.getTeamForPlayer(player);
+        return teams.getTeamForPlayer(playerId);
     }
 
     private void addToTeam(final Trackers type, final GameTeamKey team, final int amount) {

@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.SequentialList;
@@ -165,13 +166,13 @@ public class ConnectFourBehavior implements IGameBehavior {
 
         if (checkWin(x, y, team)) {
             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
-            var teamConfig = teams.getTeamByKey(team).config();
-            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamConfig.styledName());
+            GameTeam gameTeam = teams.getTeamByKey(team);
+            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(gameTeam);
             game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
             game.allPlayers().forEach(ServerPlayer::closeContainer);
 
-            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
+            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(gameTeam.config().styledName()).withStyle(ChatFormatting.GREEN), true));
             game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
         } else {
             if (placedPieces == width * height) {

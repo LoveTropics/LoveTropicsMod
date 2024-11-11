@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents
 import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsGameState;
 import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -28,7 +29,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
+import java.util.UUID;
 
 public class VictoryPointsBehavior implements IGameBehavior {
 
@@ -74,27 +75,26 @@ public class VictoryPointsBehavior implements IGameBehavior {
         });
     }
 
-    private void onWinTriggered(Component component) {
-        for (final ServerPlayer player : game.participants()) {
-            if (Objects.equals(player.getDisplayName(), component)) {
-                tryAddPoints(player, pointsPerGameWon);
-                return;
-            }
-        }
-
-        var teams = game.instanceState().getOrNull(TeamState.KEY);
-        if (teams == null) return;
-        for (final GameTeam team : teams) {
-            if (Objects.equals(team.config().name(), component)) {
+    private void onWinTriggered(GameWinner winner) {
+		switch (winner) {
+            case GameWinner.Player(ServerPlayer player) -> tryAddPoints(player.getUUID(), pointsPerGameWon);
+            case GameWinner.Team(GameTeam team) -> {
+                var teams = game.instanceState().getOrNull(TeamState.KEY);
+                if (teams == null) {
+                    return;
+                }
                 tryAddPoints(team.key(), pointsPerGameWon);
             }
-        }
+            case GameWinner.OfflinePlayer(UUID playerId, Component ignored) -> tryAddPoints(playerId, pointsPerGameWon);
+            case GameWinner.Nobody ignored -> {
+            }
+		}
     }
 
-    private void tryAddPoints(final ServerPlayer player, final int points) {
+    private void tryAddPoints(final UUID playerId, final int points) {
         final VictoryPointsGameState pointState = state();
         if (pointState != null) {
-            pointState.addPointsToTeam(player, points);
+            pointState.addPointsToTeam(playerId, points);
         }
     }
 
@@ -125,18 +125,22 @@ public class VictoryPointsBehavior implements IGameBehavior {
 
     private void onQuestionAnswered(ServerPlayer player, TriviaBlock.TriviaType triviaType, boolean correct) {
         if (correct) {
-            if(triviaType == TriviaBlock.TriviaType.COLLECTABLE) {
-                tryAddPoints(player, collectibleCollectedPoints);
-                player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
-            } else if(triviaType == TriviaBlock.TriviaType.VICTORY){
-                tryAddPoints(player, triviaChallengePoints);
-                player.displayClientMessage(RiverRaceTexts.VICTORY_POINT_GIVEN, false);
-            } else if(triviaType == TriviaBlock.TriviaType.REWARD){
-                tryAddPoints(player, triviaChestPoints);
-                player.displayClientMessage(RiverRaceTexts.LOOT_GIVEN, false);
-            } else if(triviaType == TriviaBlock.TriviaType.GATE){
-                tryAddPoints(player, triviaGatePoints);
-            }
+            UUID playerId = player.getUUID();
+			switch (triviaType) {
+				case COLLECTABLE -> {
+					tryAddPoints(playerId, collectibleCollectedPoints);
+					player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
+				}
+				case VICTORY -> {
+					tryAddPoints(playerId, triviaChallengePoints);
+					player.displayClientMessage(RiverRaceTexts.VICTORY_POINT_GIVEN, false);
+				}
+				case REWARD -> {
+					tryAddPoints(playerId, triviaChestPoints);
+					player.displayClientMessage(RiverRaceTexts.LOOT_GIVEN, false);
+				}
+				case GATE -> tryAddPoints(playerId, triviaGatePoints);
+			}
         }
     }
 }
