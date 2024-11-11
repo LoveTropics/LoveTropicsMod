@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
@@ -18,6 +19,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -45,26 +48,46 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TriviaBehaviour implements IGameBehavior {
 
     public static final MapCodec<TriviaBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExtraCodecs.nonEmptyList(TriviaZone.CODEC.listOf()).fieldOf("zones").forGetter(TriviaBehaviour::zones),
-            Codec.INT.optionalFieldOf("question_lockout", 30).forGetter(TriviaBehaviour::questionLockout)
+            ExtraCodecs.nonEmptyList(TriviaZone.CODEC.listOf()).fieldOf("zones").forGetter(b -> List.copyOf(b.zonesById.values())),
+            Codec.INT.optionalFieldOf("question_lockout", 30).forGetter(b -> b.questionLockout)
     ).apply(i, TriviaBehaviour::new));
 
     private static final TagKey<Block> STAINED_GLASS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("lt", "all_stained_glass"));
 
-    private final List<TriviaZone> zones;
+    private final Int2ObjectMap<TriviaZone> zonesById = new Int2ObjectOpenHashMap<>();
     private final int questionLockout;
     private final GameScheduler scheduler = new GameScheduler();
     private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
     private final List<TriviaQuestion> usedQuestions = new ArrayList<>();
 
+    private final List<ZoneRegion> zoneRegions = new ArrayList<>();
+
     public TriviaBehaviour(List<TriviaZone> zones, int questionLockout) {
-        this.zones = zones;
+        for (TriviaZone zone : zones) {
+            zonesById.put(zone.id, zone);
+        }
         this.questionLockout = questionLockout;
     }
 
+    @Nullable
+    private TriviaZone getZoneByPos(BlockPos pos) {
+        for (ZoneRegion region : zoneRegions) {
+            if (region.box.contains(pos)) {
+                return region.zone;
+            }
+        }
+        return null;
+    }
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        for (TriviaZone zone : zonesById.values()) {
+            Collection<BlockBox> regions = game.mapRegions().get(zone.regionKey());
+            for (BlockBox region : regions) {
+                zoneRegions.add(new ZoneRegion(region, zone));
+            }
+        }
+
         events.listen(GamePhaseEvents.TICK, () -> {
             scheduler.tick();
             Set<Long> longs = lockedOutTriviaBlocks.keySet();
@@ -86,33 +109,20 @@ public final class TriviaBehaviour implements IGameBehavior {
             }
             if (world.getBlockEntity(pos) instanceof HasTrivia hasTrivia) {
                 if (!hasTrivia.hasQuestion()) {
-                    String inRegion = null;
-                    for (String region : game.mapRegions().keySet()) {
-                        if (region.startsWith("zone_")) {
-                            if (game.mapRegions().getOrThrow(region).contains(pos)) {
-                                inRegion = region;
-                                break;
-                            }
-                        }
-                    }
-                    if (inRegion != null) {
-                        int zone = Integer.parseInt(inRegion.split("_")[1]);
-                        Optional<TriviaZone> first = zones.stream().filter(triviaZone -> triviaZone.zone == zone).findFirst();
-                        if (first.isPresent()) {
-                            TriviaZone triviaZone = first.get();
-                            List<TriviaQuestion> filteredDifficultyList = triviaZone.questionPool.stream()
-                                    .filter(question -> question.difficulty()
-                                            .equalsIgnoreCase(hasTrivia.getTriviaType().difficulty()))
-                                    .filter(question -> !usedQuestions.contains(question))
-                                    .toList();
-                            //Bad...
-                            if (!filteredDifficultyList.isEmpty()) {
-                                TriviaQuestion question = filteredDifficultyList.get(new Random().nextInt(filteredDifficultyList.size()));
-                                usedQuestions.add(question);
-                                hasTrivia.setQuestion(question);
-                            } else {
-                                player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));
-                            }
+                    TriviaZone triviaZone = getZoneByPos(pos);
+                    if (triviaZone != null) {
+                        List<TriviaQuestion> filteredDifficultyList = triviaZone.questionPool.stream()
+                                .filter(question -> question.difficulty()
+                                        .equalsIgnoreCase(hasTrivia.getTriviaType().difficulty()))
+                                .filter(question -> !usedQuestions.contains(question))
+                                .toList();
+                        //Bad...
+                        if (!filteredDifficultyList.isEmpty()) {
+                            TriviaQuestion question = filteredDifficultyList.get(new Random().nextInt(filteredDifficultyList.size()));
+                            usedQuestions.add(question);
+                            hasTrivia.setQuestion(question);
+                        } else {
+                            player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));
                         }
                     }
                 }
@@ -146,8 +156,8 @@ public final class TriviaBehaviour implements IGameBehavior {
                         triviaBlockEntity.markAsCorrect();
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     } else {
-                        player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout()));
-                        lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout()), pos);
+                        player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
+                        lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
                         PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                     }
                     if (player instanceof final ServerPlayer serverPlayer) {
@@ -160,24 +170,15 @@ public final class TriviaBehaviour implements IGameBehavior {
         });
     }
 
-    private static void giveCollectableToPlayer(IGamePhase game, ServerPlayer player, BlockPos pos) {
-        String inRegion = null;
-        for (String region : game.mapRegions().keySet()) {
-            if (region.startsWith("zone_")) {
-                if (game.mapRegions().getOrThrow(region).contains(pos)) {
-                    inRegion = region;
-                    break;
-                }
-            }
+    private void giveCollectableToPlayer(IGamePhase game, ServerPlayer player, BlockPos pos) {
+        TriviaZone inZone = getZoneByPos(pos);
+        CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
+        if (inZone == null || collectables == null) {
+            return;
         }
-        if(inRegion != null) {
-            CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
-            if (collectables != null) {
-                CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inRegion);
-                if(collectable != null){
-                    collectables.givePlayerCollectable(game, collectable, player);
-                }
-            }
+        CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inZone.regionKey());
+        if (collectable != null) {
+            collectables.givePlayerCollectable(game, collectable, player);
         }
     }
 
@@ -200,41 +201,15 @@ public final class TriviaBehaviour implements IGameBehavior {
         }
     }
 
-    public List<TriviaZone> zones() {
-        return zones;
-    }
-
-    public int questionLockout() {
-        return questionLockout;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (TriviaBehaviour) obj;
-        return Objects.equals(this.zones, that.zones) &&
-                this.questionLockout == that.questionLockout;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(zones, questionLockout);
-    }
-
-    @Override
-    public String toString() {
-        return "TriviaBehaviour[" +
-                "zones=" + zones + ", " +
-                "questionLockout=" + questionLockout + ']';
-    }
-
-
-    public record TriviaZone(int zone, List<TriviaQuestion> questionPool) {
+    public record TriviaZone(int id, List<TriviaQuestion> questionPool) {
         public static final Codec<TriviaZone> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.INT.fieldOf("zone_id").forGetter(TriviaZone::zone),
+                Codec.INT.fieldOf("zone_id").forGetter(TriviaZone::id),
                 ExtraCodecs.nonEmptyList(TriviaQuestion.CODEC.listOf()).fieldOf("questions").forGetter(TriviaZone::questionPool)
         ).apply(i, TriviaZone::new));
+
+        public String regionKey() {
+            return "zone_" + id;
+        }
     }
 
     public record TriviaQuestion(String question, List<TriviaQuestionAnswer> answers, String difficulty) {
@@ -273,5 +248,8 @@ public final class TriviaBehaviour implements IGameBehavior {
             }
             return null;
         }
+    }
+
+    private record ZoneRegion(BlockBox box, TriviaZone zone) {
     }
 }
