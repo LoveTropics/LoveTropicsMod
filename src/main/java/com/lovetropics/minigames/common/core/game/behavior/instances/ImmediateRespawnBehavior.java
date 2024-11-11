@@ -69,6 +69,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 
 		player.setHealth(20.0F);
 		player.setDeltaMovement(0, 0, 0);
+		player.fallDistance = 0.0f;
 
 		respawnAction.apply(game, GameActionContext.EMPTY, player);
 	}
