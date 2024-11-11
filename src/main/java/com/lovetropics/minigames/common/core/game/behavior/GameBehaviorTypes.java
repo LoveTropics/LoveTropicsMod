@@ -106,6 +106,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.Sch
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.SetRoleTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.TopPlayerTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WeatherChangeTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInInventoryTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInRegionTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameReadyTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameTickTrigger;
@@ -271,6 +272,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GiveItemsToKillerBehavior> GIVE_ITEMS_TO_KILLER = register("give_items_to_killer", GiveItemsToKillerBehavior.CODEC);
 	public static final GameBehaviorEntry<CountdownEffectsBehavior> COUNTDOWN_EFFECTS = register("countdown_effects", CountdownEffectsBehavior.CODEC);
 	public static final GameBehaviorEntry<TriggerEveryPackageBehavior> TRIGGER_EVERY_PACKAGE = register("trigger_every_package", TriggerEveryPackageBehavior.CODEC);
+	public static final GameBehaviorEntry<WhileInInventoryTrigger> WHILE_IN_INVENTORY = register("while_in_inventory", WhileInInventoryTrigger.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

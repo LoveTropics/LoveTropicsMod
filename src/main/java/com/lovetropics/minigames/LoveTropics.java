@@ -170,6 +170,7 @@ public class LoveTropics {
         SoundRegistry.REGISTER.register(modBus);
         MinigameDataComponents.REGISTER.register(modBus);
         BiodiversityBlitz.DATA_COMPONENTS.register(modBus);
+        RiverRace.DATA_COMPONENTS.register(modBus);
         VoidChunkGenerator.REGISTER.register(modBus);
 
         LoveTropicsEntityOptions.register();
