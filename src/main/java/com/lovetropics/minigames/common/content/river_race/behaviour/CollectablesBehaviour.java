@@ -113,7 +113,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 }
             }
         });
-        events.listen(GamePlayerEvents.PLACE_BLOCK, ((player, pos, placed, placedOn) -> {
+        events.listen(GamePlayerEvents.PLACE_BLOCK, ((player, pos, placed, placedOn, placedItemStack) -> {
             for (Collectable collectable : collectables) {
                 for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
                     BlockBox region = game.mapRegions().getAny(monumentSlotRegion);

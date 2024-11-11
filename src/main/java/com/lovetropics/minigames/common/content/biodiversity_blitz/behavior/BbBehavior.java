@@ -226,7 +226,7 @@ public final class BbBehavior implements IGameBehavior {
 		return InteractionResult.FAIL;
 	}
 
-	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn) {
+	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn, ItemStack placedItemStack) {
 		if (!tutorial.isTutorialFinished()) {
 			return InteractionResult.FAIL;
 		}

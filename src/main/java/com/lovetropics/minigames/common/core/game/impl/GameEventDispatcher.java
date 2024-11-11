@@ -43,6 +43,8 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.ExplosionKnockbackEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
+import java.util.Objects;
+
 public final class GameEventDispatcher {
 	public static GameEventDispatcher instance;
 
@@ -334,7 +336,7 @@ public final class GameEventDispatcher {
 				if (result != InteractionResult.PASS) {
 					event.setCancellationResult(result);
 					event.setCanceled(true);
-					resendPlayerHeldItem(player);
+					resendPlayerHeldItem(player, event.getHand());
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player item use event", e);
@@ -359,18 +361,32 @@ public final class GameEventDispatcher {
 		}
 	}
 
+	private static final ThreadLocal<ItemStack> placedItemStack = new ThreadLocal<>();
+
+	public static void capturePlacedItemStack(ItemStack itemStack) {
+		placedItemStack.set(itemStack);
+	}
+
+	public static void clearPlacedItemStack() {
+		placedItemStack.remove();
+	}
+
 	@SubscribeEvent
 	public void onEntityPlaceBlock(BlockEvent.EntityPlaceEvent event) {
+		ItemStack placedItemStack = Objects.requireNonNullElse(GameEventDispatcher.placedItemStack.get(), ItemStack.EMPTY);
+		clearPlacedItemStack();
+
 		if (event.getEntity() instanceof ServerPlayer player) {
 			IGamePhase game = gameLookup.getGamePhaseFor(player);
 			if (game == null) {
 				return;
 			}
 			try {
-				InteractionResult result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
+				InteractionResult result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst(), placedItemStack);
 				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
-					resendPlayerHeldItem(player);
+					resendPlayerHeldItem(player, InteractionHand.MAIN_HAND);
+					resendPlayerHeldItem(player, InteractionHand.OFF_HAND);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player place block event", e);
@@ -378,8 +394,7 @@ public final class GameEventDispatcher {
 		}
 	}
 
-	private void resendPlayerHeldItem(ServerPlayer player) {
-		InteractionHand hand = player.getUsedItemHand();
+	private void resendPlayerHeldItem(ServerPlayer player, InteractionHand hand) {
 		int handSlot = hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
 		ItemStack handItem = player.getItemInHand(hand);
 		player.connection.send(new ClientboundContainerSetSlotPacket(ClientboundContainerSetSlotPacket.PLAYER_INVENTORY, 0, handSlot, handItem));

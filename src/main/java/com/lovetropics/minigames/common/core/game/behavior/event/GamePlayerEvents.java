@@ -147,9 +147,9 @@ public final class GamePlayerEvents {
 		return InteractionResult.PASS;
 	});
 
-	public static final GameEventType<PlaceBlock> PLACE_BLOCK = GameEventType.create(PlaceBlock.class, listeners -> (player, pos, placed, placedOn) -> {
+	public static final GameEventType<PlaceBlock> PLACE_BLOCK = GameEventType.create(PlaceBlock.class, listeners -> (player, pos, placed, placedOn, placedItemStack) -> {
 		for (PlaceBlock listener : listeners) {
-			InteractionResult result = listener.onPlaceBlock(player, pos, placed, placedOn);
+			InteractionResult result = listener.onPlaceBlock(player, pos, placed, placedOn, placedItemStack);
 			if (result != InteractionResult.PASS) {
 				return result;
 			}
@@ -276,7 +276,7 @@ public final class GamePlayerEvents {
 	}
 
 	public interface PlaceBlock {
-		InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn);
+		InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn, ItemStack placedItemStack);
 	}
 
 	public interface ThrowItem {

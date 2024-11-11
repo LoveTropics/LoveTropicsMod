@@ -57,7 +57,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 		events.listen(BbEvents.CREATE_PLANT_ITEM, this::createPlantDrop);
 	}
 
-	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn) {
+	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn, ItemStack placedItemStack) {
 		if (!tutorial.isTutorialFinished()) {
 			return InteractionResult.PASS;
 		}
