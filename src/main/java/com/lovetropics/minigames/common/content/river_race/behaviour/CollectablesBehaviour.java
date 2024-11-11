@@ -17,7 +17,6 @@ import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.lovetropics.minigames.common.util.BlockStatePredicate;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
@@ -36,7 +35,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -121,23 +119,26 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             if (slot == null) {
                 return InteractionResult.PASS;
             }
-            return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, player, placed, slot.getFirst(), slot.getSecond());
+            return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, player, placedItemStack, slot.getFirst(), slot.getSecond());
         });
     }
 
     private void spawnCollectableDisplay(IGamePhase game, Collectable collectable, Vec3 position) {
-        Display.BlockDisplay blockDisplay = EntityType.BLOCK_DISPLAY.create(game.level());
-        blockDisplay.setPos(position);
-        blockDisplay.setBlockState(collectable.blockState());
-        blockDisplay.setTransformation(new Transformation(new Vector3f(-0.1f, -0.1f, -0.1f), null, new Vector3f(0.2f, 0.2f, 0.2f), null));
-        game.level().addFreshEntity(blockDisplay);
+        Display.ItemDisplay itemDisplay = EntityType.ITEM_DISPLAY.create(game.level());
+        itemDisplay.setPos(position);
+        itemDisplay.setItemStack(collectable.collectable().copy());
+        itemDisplay.setTransformation(new Transformation(null, null, new Vector3f(0.2f, 0.2f, 0.2f), null));
+        game.level().addFreshEntity(itemDisplay);
     }
 
-    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ServerPlayer player, BlockState placed, Collectable collectable, BlockPos slotCenterPos) {
-        if (!collectable.monumentPredicate.test(placed)) {
+    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ServerPlayer player, ItemStack placedItemStack, Collectable collectable, BlockPos slotCenterPos) {
+        if (!ItemStack.isSameItemSameComponents(collectable.collectable, placedItemStack)) {
             return InteractionResult.FAIL;
         }
         GameTeamKey teamKey = teams.getTeamForPlayer(player);
+        if (teamKey == null) {
+            return InteractionResult.FAIL;
+        }
         GameTeam team = teams.getTeamByKey(teamKey);
         if (firstTeamToCollect.putIfAbsent(collectable.zone, teamKey) == null) {
             addEffectsForPlacedCollectable(game, collectable, team);
@@ -206,16 +207,13 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     }
 
     public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
-                              List<String> monumentSlotRegions, BlockStatePredicate monumentPredicate,
-                              BlockState blockState,
+                              List<String> monumentSlotRegions,
                               int victoryPoints, List<ResourceLocation> gamePool, int gamesPerRound) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
                 Codec.STRING.fieldOf("zone_display_name").forGetter(Collectable::zoneDisplayName),
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
-                BlockStatePredicate.CODEC.fieldOf("monument_predicate").forGetter(Collectable::monumentPredicate),
-                MoreCodecs.BLOCK_STATE.fieldOf("monument_block_state").forGetter(Collectable::blockState),
                 Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
                 ExtraCodecs.nonEmptyList(ResourceLocation.CODEC.listOf()).fieldOf("game_pool").forGetter(Collectable::gamePool),
                 Codec.INT.optionalFieldOf("games_per_round", 1).forGetter(c -> c.gamesPerRound)
