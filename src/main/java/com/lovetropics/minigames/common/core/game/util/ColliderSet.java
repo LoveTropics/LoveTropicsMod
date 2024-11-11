@@ -8,10 +8,12 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 public record ColliderSet(
 		List<BlockBox> boxes,
@@ -51,5 +53,16 @@ public record ColliderSet(
 				output.add(shapes.get(i));
 			}
 		}
+	}
+
+	@Nullable
+	public Vec3 clip(Vec3 start, Vec3 end) {
+		for (BlockBox box : boxes) {
+			Optional<Vec3> clip = box.asAabb().clip(start, end);
+			if (clip.isPresent()) {
+				return clip.get();
+			}
+		}
+		return null;
 	}
 }

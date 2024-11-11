@@ -28,6 +28,7 @@
   ],
   "client": [
     "client.BiomeColorsMixin",
+    "client.GameRendererMixin",
     "client.HiddenRecipeBookMixin",
     "client.HotbarOverride",
     "client.IntegratedPlayerListMixin",

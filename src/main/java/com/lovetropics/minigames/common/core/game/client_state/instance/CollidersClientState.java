@@ -9,7 +9,10 @@ import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import javax.annotation.Nullable;
 
 public record CollidersClientState(ColliderSet colliders) implements GameClientState {
 	public static final MapCodec<CollidersClientState> CODEC = ColliderSet.CODEC.xmap(CollidersClientState::new, CollidersClientState::colliders);
@@ -22,5 +25,10 @@ public record CollidersClientState(ColliderSet colliders) implements GameClientS
 
 	public void addTo(AABB boundingBox, ImmutableList.Builder<VoxelShape> output) {
 		colliders.addTo(boundingBox, output);
+	}
+
+	@Nullable
+	public Vec3 clip(Vec3 start, Vec3 end) {
+		return colliders.clip(start, end);
 	}
 }
