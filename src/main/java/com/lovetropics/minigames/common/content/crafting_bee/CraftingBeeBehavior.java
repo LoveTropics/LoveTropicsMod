@@ -223,8 +223,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
             game.allPlayers().forEach(ServerPlayer::closeContainer);
 
-            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
-            game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
+            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
+            game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
         }
     }
 
@@ -254,18 +254,18 @@ public class CraftingBeeBehavior implements IGameBehavior {
                             game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(MinigameTexts.NOBODY_WON);
 
 
-                            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
+                            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
                         } else {
                             var teamConfig = teams.getTeamByKey(withMax.getFirst().getKey()).config();
                             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
                             game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(teamConfig.name());
 
-                            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
+                            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
                         }
 
                         game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
                         done = true;
-                        game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
+                        game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
                     }
                 }
             }

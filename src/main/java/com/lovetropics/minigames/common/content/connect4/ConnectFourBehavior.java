@@ -171,14 +171,14 @@ public class ConnectFourBehavior implements IGameBehavior {
 
             game.allPlayers().forEach(ServerPlayer::closeContainer);
 
-            game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
-            game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
+            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
+            game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
         } else {
             if (placedPieces == width * height) {
                 game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
-                game.schedule(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
-                game.schedule(5, () -> game.requestStop(GameStopReason.finished()));
+                game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
+                game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
             } else {
                 nextPlayer();
             }

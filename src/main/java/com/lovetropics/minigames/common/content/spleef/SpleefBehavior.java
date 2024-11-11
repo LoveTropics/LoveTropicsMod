@@ -13,7 +13,6 @@ import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
-import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.util.world.BlockPlacer;
 import com.mojang.serialization.Codec;
@@ -77,8 +76,6 @@ public class SpleefBehavior implements IGameBehavior {
     private int currentFloor = 0;
 
     private int progressionTimer = 0;
-
-    private final GameScheduler scheduler = new GameScheduler();
 
     private final Style DARK_YELLOW = Style.EMPTY.withColor(TextColor.fromRgb(0x77A12F));
 
@@ -148,10 +145,9 @@ public class SpleefBehavior implements IGameBehavior {
             countdownMessage(1, 0x77A12F, 1.5f, tickDelay);
 
             tickDelay += 20;
-            scheduler.delayedTickEvent("start_game", this::startGame, tickDelay);
+            game.scheduler().runAfterTicks(tickDelay, this::startGame);
         });
 
-        events.listen(GamePhaseEvents.TICK, scheduler::tick);
         events.listen(GamePhaseEvents.TICK, this::checkPlayerDeath);
         events.listen(GamePhaseEvents.TICK, this::checkForWinner);
 
@@ -170,7 +166,7 @@ public class SpleefBehavior implements IGameBehavior {
      */
     private void startGame() {
         progressionTimer = forcedProgressionSeconds;
-        scheduler.intervalTickEvent("forced_progression", this::updateForcedProgression, 0, 20);
+        game.scheduler().runPeriodic(0, 20, this::updateForcedProgression);
 
         game.allPlayers().playSound(SoundEvents.ANVIL_PLACE, SoundSource.MASTER, Integer.MAX_VALUE, 1);
         game.allPlayers().playSound(SoundEvents.BASALT_BREAK, SoundSource.MASTER, Integer.MAX_VALUE, 1);
@@ -243,16 +239,16 @@ public class SpleefBehavior implements IGameBehavior {
     private void announceWinner(MutableComponent winner) {
         gameOver = true;
 
-        scheduler.clearAllEvents();
+        game.scheduler().clearAllEvents();
 
         specialMessage(Component.literal("★").withStyle(ChatFormatting.GOLD),
                 winner.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F))));
 
         bossBar.close();
 
-        scheduler.delayedTickEvent("end_game", () -> {
+        game.scheduler().runAfterSeconds(8, () -> {
             game.requestStop(GameStopReason.finished());
-        }, 20 * 8);
+        });
     }
 
     private void killPlayer(ServerPlayer player) {
@@ -287,13 +283,13 @@ public class SpleefBehavior implements IGameBehavior {
         if(progressionTimer <= 0) {
             progressionTimer = forcedProgressionSeconds;
             spleefMessage(Component.translatable(getFlavourTextKey("forced_progression"), Component.translatable("ltminigames.minigame.position." + (currentFloor + 1))).withStyle(ChatFormatting.YELLOW));
-            BlockPlacer.replace(game.level(), floorRegions[currentFloor], floorBreakingMaterial, BlockPlacer.Mode.REPLACE, floorMaterial, scheduler,
+            BlockPlacer.replace(game.level(), floorRegions[currentFloor], floorBreakingMaterial, BlockPlacer.Mode.REPLACE, floorMaterial, game.scheduler(),
                     (pos) -> (game.level().random.nextInt(breakCount) * breakInterval),
                     (pos) -> {
-                        scheduler.delayedTickEvent("delayed_break", () -> {
+                        game.scheduler().runAfterTicks(15 + game.level().random.nextInt(10), () -> {
                             game.level().destroyBlock(pos, false);
-                            scheduler.notifyBlockChange(pos, game.level(), Blocks.AIR);
-                        }, 15 + game.level().random.nextInt(10));
+                            game.scheduler().notifyBlockChange(pos, game.level(), Blocks.AIR);
+                        });
                     });
             currentFloor++;
         }
@@ -317,14 +313,14 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void countdownMessage(int seconds, int color, float soundPitch, int delayTicks) {
-        scheduler.delayedTickEvent("countdown", () -> {
+        game.scheduler().runAfterTicks(delayTicks, () -> {
             title(MinigameTexts.SPLEEF_COUNTDOWN_TITLE.apply(
                                     Component.literal(Integer.toString(seconds)).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(color))))
                             .withStyle(ChatFormatting.GRAY),
                     MinigameTexts.SPLEEF_COUNTDOWN_SUBTITLE.copy().withStyle(ChatFormatting.YELLOW),
                     5, 20, seconds == 1 ? 0 : 5);
             game.allPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
-        }, delayTicks);
+        });
     }
 
     private void spleefMessage(Component message) {

@@ -1,11 +1,12 @@
 package com.lovetropics.minigames.common.core.game.util;
 
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Schedule events for within a game
@@ -15,24 +16,15 @@ public final class GameScheduler {
 	/**
 	 * This is to avoid concurrent modification exceptions
 	 */
-	private final ArrayList<DelayedGameTickEvent> newTickEvents = new ArrayList<>();
-	private final ArrayList<DelayedGameTickEvent> delayedTickEvents = new ArrayList<>();
+	private final ArrayList<Task> newTasks = new ArrayList<>();
+	private final ArrayList<Task> delayedTasks = new ArrayList<>();
 
 	private final ArrayList<BlockChangeNotify> blockChangeNotifies = new ArrayList<>();
 
 	public void tick() {
-		delayedTickEvents.addAll(newTickEvents);
-		newTickEvents.clear();
-		Iterator<DelayedGameTickEvent> tickEventIterator = delayedTickEvents.iterator();
-		while (tickEventIterator.hasNext()) {
-			DelayedGameTickEvent event = tickEventIterator.next();
-			event.tick();
-			if (event.shouldRun()) {
-				event.run();
-				if(!(event instanceof DelayedGameIntervalEvent))
-					tickEventIterator.remove();
-			}
-		}
+		delayedTasks.addAll(newTasks);
+		newTasks.clear();
+		delayedTasks.removeIf(Task::tick);
 		for (BlockChangeNotify blockChangeNotify : blockChangeNotifies) {
 			blockChangeNotify.level.blockUpdated(blockChangeNotify.pos, blockChangeNotify.block);
 		}
@@ -54,59 +46,91 @@ public final class GameScheduler {
 		blockChangeNotifies.add(new BlockChangeNotify(level, pos, block));
 	}
 
-	public void delayedTickEvent(String name, Runnable consumer, int tickDelay) {
-		newTickEvents.add(new DelayedGameTickEvent(name, consumer, tickDelay));
+	public Handle runAfterTicks(int ticks, Runnable task) {
+		return schedule(new DelayedTask(task, ticks));
 	}
 
-	public void intervalTickEvent(String name, Runnable consumer, int tickDelay, int interval) {
-		newTickEvents.add(new DelayedGameIntervalEvent(name, consumer, tickDelay, interval));
+	public Handle runAfterSeconds(float seconds, Runnable task) {
+		return runAfterTicks(Mth.floor(seconds * SharedConstants.TICKS_PER_SECOND), task);
+	}
+
+	public Handle runPeriodic(int tickDelay, int interval, Runnable task) {
+		return schedule(new PeriodicTask(task, tickDelay, interval));
+	}
+
+	private Handle schedule(Task task) {
+		newTasks.add(task);
+		return task;
 	}
 
 	public void clearAllEvents() {
-		newTickEvents.clear();
-		delayedTickEvents.clear();
+		newTasks.clear();
+		delayedTasks.clear();
 	}
 
-	public static class DelayedGameTickEvent {
-
-		// So we can find it later and remove it if needed
-		public final String name;
+	private static class DelayedTask implements Task {
 		public final Runnable consumer;
 		public int ticks;
+		private boolean canceled;
 
-		public DelayedGameTickEvent(String name, Runnable consumer, int ticks) {
-			this.name = name;
+		public DelayedTask(Runnable consumer, int ticks) {
 			this.consumer = consumer;
 			this.ticks = ticks;
 		}
 
-		public void tick() {
-			ticks--;
+		@Override
+		public boolean tick() {
+			if (canceled) {
+				return true;
+			}
+			if (--ticks <= 0) {
+				consumer.run();
+				return true;
+			}
+			return false;
 		}
 
-		public boolean shouldRun() {
-			return ticks <= 0;
-		}
-
-		public void run() {
-			consumer.run();
+		@Override
+		public void cancel() {
+			canceled = true;
 		}
 	}
 
-	public static class DelayedGameIntervalEvent extends DelayedGameTickEvent {
+	private static class PeriodicTask implements Task {
+		private final Runnable task;
+		private final int interval;
+		private int ticks;
+		private boolean canceled;
 
-		public final int interval;
-
-		public DelayedGameIntervalEvent(String name, Runnable consumer, int ticks, int interval) {
-			super(name, consumer, ticks);
+		public PeriodicTask(Runnable task, int ticks, int interval) {
+			this.task = task;
+			this.ticks = ticks;
 			this.interval = interval;
 		}
 
 		@Override
-        public void run() {
-			ticks = interval;
-			super.run();
+        public boolean tick() {
+			if (canceled) {
+				return true;
+			}
+			if (--ticks <= 0) {
+				ticks = interval;
+				task.run();
+			}
+			return false;
 		}
 
+		@Override
+		public void cancel() {
+			canceled = true;
+		}
+	}
+
+	public interface Handle {
+		void cancel();
+	}
+
+	private interface Task extends Handle {
+		boolean tick();
 	}
 }

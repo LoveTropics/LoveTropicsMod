@@ -88,7 +88,7 @@ public class BlockPlacer {
                 if (scheduler != null) {
                     var delay = tickDelay != null ? tickDelay.apply(blockpos) : 0;
                     var blockPosCopy = blockpos.mutable();
-                    scheduler.delayedTickEvent("placeBlocks", () -> {
+                    scheduler.runAfterTicks(delay, () -> {
                         BlockInput blockinput = mode.filter.filter(boundingBox, blockPosCopy, newBlock, level);
                         if (blockinput != null) {
                             BlockEntity blockentity = level.getBlockEntity(blockPosCopy);
@@ -101,7 +101,7 @@ public class BlockPlacer {
                         if (doneCallback != null) {
                             doneCallback.accept(blockPosCopy);
                         }
-                    }, delay);
+                    });
                 } else {
                     BlockInput blockinput = mode.filter.filter(boundingBox, blockpos, newBlock, level);
                     if (blockinput != null) {

@@ -60,7 +60,6 @@ public final class TriviaBehaviour implements IGameBehavior {
 
     private final List<TriviaZone> zones;
     private final int questionLockout;
-    private final GameScheduler scheduler = new GameScheduler();
     private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
     private final Set<TriviaQuestion> usedQuestions = new ObjectOpenHashSet<>();
 
@@ -91,7 +90,6 @@ public final class TriviaBehaviour implements IGameBehavior {
         }
 
         events.listen(GamePhaseEvents.TICK, () -> {
-            scheduler.tick();
             Set<Long> longs = lockedOutTriviaBlocks.keySet();
             for (Long l : longs) {
                 if (game.level().getGameTime() >= l) {
@@ -124,7 +122,7 @@ public final class TriviaBehaviour implements IGameBehavior {
 					switch (triviaBlockEntity.getTriviaType()) {
 						case GATE -> {
 							level.destroyBlock(pos, false);
-							findNeighboursOfTypeAndDestroy(scheduler, level, pos, null);
+							findNeighboursOfTypeAndDestroy(game.scheduler(), level, pos, null);
 						}
 						case COLLECTABLE -> giveCollectableToPlayer(game, player, pos);
 					}
@@ -200,9 +198,9 @@ public final class TriviaBehaviour implements IGameBehavior {
                 if (blockState.is(blockType)) {
                     world.destroyBlock(relative, false);
                     Block finalBlockType = blockType;
-                    scheduler.delayedTickEvent("gateDestroy" + relative, () -> {
+                    scheduler.runAfterSeconds(0.5f, () -> {
                         findNeighboursOfTypeAndDestroy(scheduler, world, relative, finalBlockType);
-                    }, 10);
+                    });
                 }
             }
         }
