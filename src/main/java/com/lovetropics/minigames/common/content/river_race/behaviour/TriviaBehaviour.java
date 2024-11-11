@@ -21,7 +21,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -38,12 +40,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public final class TriviaBehaviour implements IGameBehavior {
 
@@ -58,7 +60,7 @@ public final class TriviaBehaviour implements IGameBehavior {
     private final int questionLockout;
     private final GameScheduler scheduler = new GameScheduler();
     private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
-    private final List<TriviaQuestion> usedQuestions = new ArrayList<>();
+    private final Set<TriviaQuestion> usedQuestions = new ObjectOpenHashSet<>();
 
     private final List<ZoneRegion> zoneRegions = new ArrayList<>();
 
@@ -102,72 +104,74 @@ public final class TriviaBehaviour implements IGameBehavior {
                 }
             }
         });
-        events.listen(GamePlayerEvents.USE_BLOCK, (ServerPlayer player, ServerLevel world,
-                                                   BlockPos pos, InteractionHand hand, BlockHitResult traceResult) -> {
+        events.listen(GamePlayerEvents.USE_BLOCK, (player, world, pos, hand, traceResult) -> {
             if (hand == InteractionHand.OFF_HAND) {
                 return InteractionResult.PASS;
             }
             if (world.getBlockEntity(pos) instanceof HasTrivia hasTrivia) {
-                if (!hasTrivia.hasQuestion()) {
-                    TriviaZone triviaZone = getZoneByPos(pos);
-                    if (triviaZone != null) {
-                        List<TriviaQuestion> filteredDifficultyList = triviaZone.questionPool.stream()
-                                .filter(question -> question.difficulty()
-                                        .equalsIgnoreCase(hasTrivia.getTriviaType().difficulty()))
-                                .filter(question -> !usedQuestions.contains(question))
-                                .toList();
-                        //Bad...
-                        if (!filteredDifficultyList.isEmpty()) {
-                            TriviaQuestion question = filteredDifficultyList.get(new Random().nextInt(filteredDifficultyList.size()));
-                            usedQuestions.add(question);
-                            hasTrivia.setQuestion(question);
-                        } else {
-                            player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));
-                        }
-                    }
-                }
-                if (hasTrivia.getQuestion() != null && !hasTrivia.getState().isAnswered()) {
-                    PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, hasTrivia.getQuestion(), hasTrivia.getState()));
-                } else {
-                    if(hasTrivia.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
-                        giveCollectableToPlayer(game, player, pos);
-                    }
-                }
-                return InteractionResult.SUCCESS_NO_ITEM_USED;
+                return useTriviaBlock(game, player, pos, hasTrivia);
             }
             return InteractionResult.PASS;
         });
-        events.listen(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION, (ServerPlayer player, ServerLevel world,
-                                                                  BlockPos pos,
-                                                                  HasTrivia triviaBlockEntity,
-                                                                  TriviaQuestion question, String answer) -> {
-            if (question != null && !triviaBlockEntity.getState().lockedOut()) {
-                TriviaQuestion.TriviaQuestionAnswer answerObj = question.getAnswer(answer);
-                if (answerObj != null) {
-                    if (answerObj.correct()) {
-                        player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
-                        if(triviaBlockEntity.getTriviaType() == TriviaBlock.TriviaType.GATE){
-                            world.destroyBlock(pos, false);
-                            Block blockType = null;
-                            findNeighboursOfTypeAndDestroy(scheduler, world, pos, blockType);
-                        } else if(triviaBlockEntity.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
-                            giveCollectableToPlayer(game, player, pos);
-                        }
-                        triviaBlockEntity.markAsCorrect();
-                        PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
-                    } else {
-                        player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
-                        lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
-                        PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
-                    }
-                    if (player instanceof final ServerPlayer serverPlayer) {
-                        game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(serverPlayer, triviaBlockEntity.getTriviaType(), answerObj.correct());
-                    }
-                    return answerObj.correct();
+        events.listen(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION, (player, level, pos, triviaBlockEntity, question, answer) -> {
+            if (question == null || triviaBlockEntity.getState().lockedOut()) {
+                return false;
+            }
+            TriviaQuestion.TriviaQuestionAnswer answerObj = question.getAnswer(answer);
+            if (answerObj != null) {
+                if (answerObj.correct()) {
+                    player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
+					switch (triviaBlockEntity.getTriviaType()) {
+						case GATE -> {
+							level.destroyBlock(pos, false);
+							findNeighboursOfTypeAndDestroy(scheduler, level, pos, null);
+						}
+						case COLLECTABLE -> giveCollectableToPlayer(game, player, pos);
+					}
+                    triviaBlockEntity.markAsCorrect();
+                    PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
+                } else {
+                    player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
+                    lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
+                    PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
                 }
+                game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(player, triviaBlockEntity.getTriviaType(), answerObj.correct());
+                return answerObj.correct();
             }
             return false;
         });
+    }
+
+    private InteractionResult useTriviaBlock(IGamePhase game, ServerPlayer player, BlockPos pos, HasTrivia hasTrivia) {
+        if (!hasTrivia.hasQuestion()) {
+            TriviaQuestion pickedQuestion = pickTriviaForPos(game, pos, hasTrivia.getTriviaType());
+            if (pickedQuestion != null) {
+                usedQuestions.add(pickedQuestion);
+                hasTrivia.setQuestion(pickedQuestion);
+            } else {
+                player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));
+            }
+        }
+        if (hasTrivia.getQuestion() != null && !hasTrivia.getState().isAnswered()) {
+            PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, hasTrivia.getQuestion(), hasTrivia.getState()));
+        } else {
+            if (hasTrivia.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE){
+                giveCollectableToPlayer(game, player, pos);
+            }
+        }
+        return InteractionResult.SUCCESS_NO_ITEM_USED;
+    }
+
+    @Nullable
+    private TriviaQuestion pickTriviaForPos(IGamePhase game, BlockPos pos, TriviaBlock.TriviaType triviaType) {
+        TriviaZone triviaZone = getZoneByPos(pos);
+        if (triviaZone != null) {
+            List<TriviaQuestion> questionPool = triviaZone.questionsByDifficulty(triviaType.difficulty())
+                    .filter(question -> !usedQuestions.contains(question))
+                    .toList();
+            return Util.getRandomSafe(questionPool, game.random()).orElse(null);
+        }
+        return null;
     }
 
     private void giveCollectableToPlayer(IGamePhase game, ServerPlayer player, BlockPos pos) {
@@ -182,7 +186,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         }
     }
 
-    private static void findNeighboursOfTypeAndDestroy(GameScheduler scheduler, ServerLevel world, BlockPos pos, Block blockType) {
+    private static void findNeighboursOfTypeAndDestroy(GameScheduler scheduler, ServerLevel world, BlockPos pos, @Nullable Block blockType) {
         for (Direction direction : Direction.values()) {
             BlockPos relative = pos.relative(direction);
             BlockState blockState = world.getBlockState(relative);
@@ -206,6 +210,11 @@ public final class TriviaBehaviour implements IGameBehavior {
                 Codec.INT.fieldOf("zone_id").forGetter(TriviaZone::id),
                 ExtraCodecs.nonEmptyList(TriviaQuestion.CODEC.listOf()).fieldOf("questions").forGetter(TriviaZone::questionPool)
         ).apply(i, TriviaZone::new));
+
+        private Stream<TriviaQuestion> questionsByDifficulty(String difficulty) {
+            return questionPool.stream()
+                    .filter(question -> question.difficulty().equalsIgnoreCase(difficulty));
+        }
 
         public String regionKey() {
             return "zone_" + id;
