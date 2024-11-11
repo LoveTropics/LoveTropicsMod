@@ -2,7 +2,6 @@ package com.lovetropics.minigames.common.content.river_race;
 
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
-import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

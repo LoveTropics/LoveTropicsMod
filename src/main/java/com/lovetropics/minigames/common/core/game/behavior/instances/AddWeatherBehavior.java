@@ -165,12 +165,10 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	}
 
 	public static final class Damage {
-		public static final Codec<Damage> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					Codec.INT.fieldOf("rate").forGetter(c -> c.rate),
-					Codec.FLOAT.fieldOf("amount").forGetter(c -> c.amount)
-			).apply(instance, Damage::new);
-		});
+		public static final Codec<Damage> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				Codec.INT.fieldOf("rate").forGetter(c -> c.rate),
+				Codec.FLOAT.fieldOf("amount").forGetter(c -> c.amount)
+		).apply(instance, Damage::new));
 
 		private final int rate;
 		private final float amount;
@@ -182,12 +180,10 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	}
 
 	public static final class Potion {
-		public static final Codec<Potion> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					MoreCodecs.EFFECT_INSTANCE.fieldOf("effect").forGetter(c -> c.effect),
-					Codec.INT.fieldOf("rate").forGetter(c -> c.rate)
-			).apply(instance, Potion::new);
-		});
+		public static final Codec<Potion> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				MoreCodecs.EFFECT_INSTANCE.fieldOf("effect").forGetter(c -> c.effect),
+				Codec.INT.fieldOf("rate").forGetter(c -> c.rate)
+		).apply(instance, Potion::new));
 
 		private final MobEffectInstance effect;
 		private final int rate;

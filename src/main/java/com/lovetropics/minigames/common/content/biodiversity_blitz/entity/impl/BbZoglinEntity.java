@@ -73,7 +73,7 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     @Override
     public boolean hurt(DamageSource pSource, float pAmount) {
         if (pSource.is(DamageTypes.PLAYER_ATTACK)) {
-            pAmount /= 2.5;
+            pAmount /= 2.5f;
         }
 
         return super.hurt(pSource, pAmount);

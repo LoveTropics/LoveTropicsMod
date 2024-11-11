@@ -127,21 +127,11 @@ public final class SttPetsBehavior implements IGameBehavior {
 		}
 	}
 
-	static final class PetConfig {
-		public static final Codec<PetConfig> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					Codec.FLOAT.fieldOf("attack_damage").forGetter(c -> c.attackDamage),
-					Codec.FLOAT.optionalFieldOf("speed", 1.0F).forGetter(c -> c.speed)
-			).apply(instance, PetConfig::new);
-		});
-
-		final float attackDamage;
-		final float speed;
-
-		PetConfig(float attackDamage, float speed) {
-			this.attackDamage = attackDamage;
-			this.speed = speed;
-		}
+	record PetConfig(float attackDamage, float speed) {
+		public static final Codec<PetConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
+				Codec.FLOAT.fieldOf("attack_damage").forGetter(c -> c.attackDamage),
+				Codec.FLOAT.optionalFieldOf("speed", 1.0F).forGetter(c -> c.speed)
+		).apply(i, PetConfig::new));
 	}
 
 	static final class Pet {

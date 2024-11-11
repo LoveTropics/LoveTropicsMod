@@ -276,7 +276,7 @@ public final class SpectatingUi {
 	}
 
 	void updateEventsMap(List<UUID> players) {
-		Object2ObjectMap<UUID, PlayerEvent> events = new Object2ObjectOpenHashMap();
+		Object2ObjectMap<UUID, PlayerEvent> events = new Object2ObjectOpenHashMap<>();
 		for (var entry : this.events.entrySet()) {
 			if (players.contains(entry.getKey())) {
 				events.put(entry.getKey(), entry.getValue());

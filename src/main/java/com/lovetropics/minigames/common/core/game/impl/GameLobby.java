@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * This is what is created when the command /game create is run - it is not the 'waiting room' lobby, it is a game lobby, as in
  * basically a 'party' of players that will play games together.
- *
+ * <p>
  * A game lobby can have many games in its queue, each will be given a GameInstance.
  */
 final class GameLobby implements IGameLobby {
@@ -178,7 +178,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	public IGameState createOrGetMultiPhaseState(final MultiGamePhase gamePhase) {
-		final ResourceLocation gameID = gamePhase.game.definition().getId();
+		final ResourceLocation gameID = gamePhase.game.definition().id();
 		if (!multiPhaseDataMap.containsKey(gameID)) {
 			gamePhase.registerState(this);
 		}

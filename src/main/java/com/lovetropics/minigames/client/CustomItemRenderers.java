@@ -2,7 +2,6 @@ package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
-import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.item.MinigameDataComponents;

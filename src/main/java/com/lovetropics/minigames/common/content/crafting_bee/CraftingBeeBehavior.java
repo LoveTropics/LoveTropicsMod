@@ -246,7 +246,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
                     teams.getPlayersForTeam(team).forEach(ServerPlayer::closeContainer);
 
                     if (teamsWithoutTime.size() == tasks.asMap().size()) {
-                        int mx = tasks.asMap().entrySet().stream().mapToInt(e -> (int)e.getValue().stream().filter(c -> c.done).count())
+                        int mx = tasks.asMap().values().stream().mapToInt(craftingTasks -> (int) craftingTasks.stream().filter(c -> c.done).count())
                                         .max().orElse(0);
                         var withMax = tasks.asMap().entrySet().stream().filter(e -> e.getValue().stream().filter(c -> c.done).count() == mx)
                                         .toList();
@@ -276,7 +276,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         long secondsRemaining = ticksRemaining / (long)game.level().tickRateManager().tickrate();
 
         Component timeText = Component.literal(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
-        Component gameNameText = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
+        Component gameNameText = game.definition().name().copy().withStyle(ChatFormatting.AQUA);
 
         return timerBarText.apply(Map.of("time", timeText, "game", gameNameText));
     }

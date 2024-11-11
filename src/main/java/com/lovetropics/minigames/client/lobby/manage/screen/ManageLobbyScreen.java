@@ -176,21 +176,19 @@ public final class ManageLobbyScreen extends Screen {
 
 	public void updatePublishState() {
 		ClientLobbyManageState lobby = session.lobby();
-		LobbyVisibility visibility = lobby.getVisibility();
-		switch (visibility) {
-			case PRIVATE:
-			default:
+		switch (lobby.getVisibility()) {
+			case PRIVATE -> {
 				publishButton.setMessage(GameTexts.Ui.PUBLISH);
 				publishButton.active = true;
-				break;
-			case PUBLIC:
+			}
+			case PUBLIC -> {
 				publishButton.setMessage(GameTexts.Ui.FOCUS_LIVE);
 				publishButton.active = lobby.canFocusLive();
-				break;
-			case PUBLIC_LIVE:
+			}
+			case PUBLIC_LIVE -> {
 				publishButton.setMessage(GameTexts.Ui.FOCUS_LIVE);
 				publishButton.active = false;
-				break;
+			}
 		}
 	}
 

@@ -25,12 +25,12 @@ public interface IntegrationSender {
 
 	static IntegrationSender open() {
 		ConfigLT.CategoryIntegrations integrations = ConfigLT.INTEGRATIONS;
-		return new Http(integrations.baseUrl::get, integrations.authToken::get);
+		return new Http(integrations.baseUrl, integrations.authToken);
 	}
 
 	static IntegrationSender openPoll() {
 		ConfigLT.CategoryIntegrations integrations = ConfigLT.INTEGRATIONS;
-		return new IntegrationSender.Http(() -> "https://polling.lovetropics.com", integrations.authToken::get);
+		return new IntegrationSender.Http(() -> "https://polling.lovetropics.com", integrations.authToken);
 	}
 
 	default boolean post(final String endpoint, final JsonElement body) {

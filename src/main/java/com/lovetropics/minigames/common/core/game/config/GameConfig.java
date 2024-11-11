@@ -14,49 +14,19 @@ import java.util.Optional;
 /**
  * Stores data-driven info about a minigame
  */
-public final class GameConfig implements IGameDefinition {
-	public final ResourceLocation id;
-	public final ResourceLocation backendId;
-	public final String statisticsKey;
-	public final Component name;
-	@Nullable
-	public final Component subtitle;
-	@Nullable
-	public final ResourceLocation icon;
-	public final int minimumParticipants;
-	public final int maximumParticipants;
-	@Nullable
-	public final GamePhaseConfig waiting;
-	public final GamePhaseConfig playing;
-
-	public final boolean isMultiGame;
-
-	public GameConfig(
-			ResourceLocation id,
-			ResourceLocation backendId,
-			String statisticsKey,
-			Component name,
-			@Nullable Component subtitle,
-			@Nullable ResourceLocation icon,
-			int minimumParticipants,
-			int maximumParticipants,
-			@Nullable GamePhaseConfig waiting,
-			GamePhaseConfig playing,
-			boolean isMultiGame
-	) {
-		this.id = id;
-		this.backendId = backendId;
-		this.statisticsKey = statisticsKey;
-		this.name = name;
-		this.subtitle = subtitle;
-		this.icon = icon;
-		this.minimumParticipants = minimumParticipants;
-		this.maximumParticipants = maximumParticipants;
-		this.waiting = waiting;
-		this.playing = playing;
-		this.isMultiGame = isMultiGame;
-	}
-
+public record GameConfig(
+		ResourceLocation id,
+		ResourceLocation backendId,
+		String statisticsKey,
+		Component name,
+		@Nullable Component subtitle,
+		@Nullable ResourceLocation icon,
+		int minimumParticipants,
+		int maximumParticipants,
+		@Nullable GamePhaseConfig waiting,
+		GamePhaseConfig playing,
+		boolean isMultiGame
+) implements IGameDefinition {
 	public static Codec<GameConfig> codec(ResourceLocation id) {
 		return RecordCodecBuilder.create(i -> i.group(
 				ResourceLocation.CODEC.optionalFieldOf("backend_id").forGetter(c -> Optional.of(c.backendId)),
@@ -78,38 +48,6 @@ public final class GameConfig implements IGameDefinition {
 			GamePhaseConfig waiting = waitingOpt.orElse(null);
 			return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active, isMultiGame);
 		}));
-	}
-
-	@Override
-	public ResourceLocation getId() {
-		return id;
-	}
-
-	@Override
-	public ResourceLocation getBackendId() {
-		return backendId;
-	}
-
-	@Override
-	public String getStatisticsKey() {
-		return statisticsKey;
-	}
-
-	@Override
-	public Component getName() {
-		return name;
-	}
-
-	@Nullable
-	@Override
-	public Component getSubtitle() {
-		return subtitle;
-	}
-
-	@Nullable
-	@Override
-	public ResourceLocation getIcon() {
-		return icon;
 	}
 
 	@Override

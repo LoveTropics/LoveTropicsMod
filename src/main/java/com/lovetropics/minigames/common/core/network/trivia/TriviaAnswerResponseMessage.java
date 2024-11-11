@@ -5,7 +5,6 @@ import com.lovetropics.minigames.client.game.trivia.ClientTriviaHandler;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.neoforge.network.handling.IPayloadContext;

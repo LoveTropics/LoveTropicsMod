@@ -62,7 +62,7 @@ public class MultiGamePhase extends GamePhase {
             this.registration = registration;
         }
     }
-    private ResourceLocation gameId;
+    private final ResourceLocation gameId;
     @Nullable
     private GamePhase activePhase = null;
     @Nullable
@@ -81,7 +81,7 @@ public class MultiGamePhase extends GamePhase {
     }
 
     public void registerState(final GameLobby lobby) {
-        final ResourceLocation id = game.definition.getId();
+        final ResourceLocation id = game.definition.id();
         gameStateMap.get(id).registration.registerState(lobby, this, id);
     }
 
@@ -98,7 +98,7 @@ public class MultiGamePhase extends GamePhase {
         if(activePhaseId != null){
             return activePhaseId;
         }
-        return definition().getId();
+        return definition().id();
     }
 
     public void returnHere(){
@@ -240,7 +240,7 @@ public class MultiGamePhase extends GamePhase {
 
         final ResourceLocation gameKey = subPhaseGames.removeFirst();
         GameConfig gameConfig = GameConfigs.REGISTRY.get(gameKey);
-        return GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.getId()).thenApply(gamePhaseGameResult -> {
+        return GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.id()).thenApply(gamePhaseGameResult -> {
             if (gamePhaseGameResult.isOk()) {
                 setActivePhase(gamePhaseGameResult.getOk(), saveInventory, gameKey);
                 invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
@@ -249,7 +249,7 @@ public class MultiGamePhase extends GamePhase {
                         gameConfig.subtitle, 10, 40, 10);
                 return true;
             }
-            LOGGER.error("Failed to start micro-game {} - {}", gameConfig.getId().toString(), gamePhaseGameResult.getError().getString());
+            LOGGER.error("Failed to start micro-game {} - {}", gameConfig.id().toString(), gamePhaseGameResult.getError().getString());
             return false;
         });
     }

@@ -1,16 +1,10 @@
 package com.lovetropics.minigames.common.util.registry;
 
-import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicate;
-import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicates;
-import com.lovetropics.minigames.common.core.game.predicate.loot.LootItemConditions;
-import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 

@@ -41,7 +41,7 @@ public final class GameScheduler {
 
 	/**
 	 * Just to make sure that the clients are notified of block changes happening from the scheduler
-	 *
+	 * <p>
 	 * Should be slightly more efficient than firing this on each change during delayed events.
 	 *
 	 * @param pos

@@ -47,7 +47,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class BlockPartyBehavior implements IGameBehavior {
@@ -180,7 +179,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				if(teams != null){
 					if(teams.getTeamKeys().size() > 1){
 						Map<GameTeamKey, List<ServerPlayer>> collect = participants.stream().collect(Collectors.groupingBy(teams::getTeamForPlayer));
-						List<GameTeamKey> teamsWithPlayers = collect.keySet().stream().filter(gameTeamKey -> !collect.get(gameTeamKey).isEmpty()).collect(Collectors.toList());
+						List<GameTeamKey> teamsWithPlayers = collect.keySet().stream().filter(gameTeamKey -> !collect.get(gameTeamKey).isEmpty()).toList();
 						if(teamsWithPlayers.size() == 1){
 							GameTeamKey winningTeamKey = teamsWithPlayers.getFirst();
 							GameTeam winningTeam = teams.getTeamByKey(winningTeamKey);

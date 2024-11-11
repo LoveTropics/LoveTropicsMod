@@ -2,7 +2,6 @@ package com.lovetropics.minigames.client.game.trivia;
 
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
-import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
 import com.lovetropics.minigames.common.core.network.trivia.RequestTriviaStateUpdateMessage;
 import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
 import net.minecraft.ChatFormatting;
@@ -15,12 +14,8 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -29,14 +24,15 @@ public class TriviaQuestionScreen extends Screen {
 
     public static class AutoUpdatingTextWidget extends AbstractStringWidget {
         private float alignX;
-        private Supplier<Component> messageSupplier;
+        private final Supplier<Component> messageSupplier;
 
         public AutoUpdatingTextWidget(Supplier<Component> message, Font font) {
             super(0, 0, 0, 0, Component.empty(), font);
             this.messageSupplier = message;
         }
 
-        public AutoUpdatingTextWidget setColor(int pColor) {
+        @Override
+		public AutoUpdatingTextWidget setColor(int pColor) {
             super.setColor(pColor);
             return this;
         }
@@ -91,12 +87,12 @@ public class TriviaQuestionScreen extends Screen {
         }
     }
 
-    private TriviaBehaviour.TriviaQuestion question;
+    private final TriviaBehaviour.TriviaQuestion question;
     private final BlockPos triviaBlockPos;
     private TriviaBlockEntity.TriviaBlockState triviaBlockState;
     private final GridLayout layout = new GridLayout().spacing(25);
     private String selected = null;
-    private Set<AnswerButton> buttons = new HashSet<>();
+    private final Set<AnswerButton> buttons = new HashSet<>();
 
     public TriviaQuestionScreen(BlockPos triviaBlockPos, TriviaBehaviour.TriviaQuestion question, TriviaBlockEntity.TriviaBlockState blockState) {
         super(Component.literal("Answer Trivia Question"));

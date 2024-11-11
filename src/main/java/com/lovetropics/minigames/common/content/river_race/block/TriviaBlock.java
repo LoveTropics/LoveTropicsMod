@@ -39,7 +39,7 @@ public class TriviaBlock extends Block implements EntityBlock {
         COLLECTABLE("hard"),
         VICTORY("hard");
 
-        private String difficulty;
+        private final String difficulty;
         TriviaType(String difficulty){
             this.difficulty = difficulty;
         }

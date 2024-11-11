@@ -41,7 +41,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,20 +56,22 @@ import java.util.function.Predicate;
 @EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public class GameCraftingBeeHandler {
     private static int hintsRemaining;
+    @Nullable
     private static UUID lastKnownGame;
+    @Nullable
     private static Map<ResourceLocation, RecipeHint> hintGrids;
 
-    static final ClientGameStateHandler<CraftingBeeCraftsClientState> HANDLER = new ClientGameStateHandler<CraftingBeeCraftsClientState>() {
-        @Override
-        public void accept(CraftingBeeCraftsClientState state) {
-            lastKnownGame = null;
-        }
+    static final ClientGameStateHandler<CraftingBeeCraftsClientState> HANDLER = new ClientGameStateHandler<>() {
+		@Override
+		public void accept(CraftingBeeCraftsClientState state) {
+			lastKnownGame = null;
+		}
 
-        @Override
-        public void disable(CraftingBeeCraftsClientState state) {
+		@Override
+		public void disable(CraftingBeeCraftsClientState state) {
 
-        }
-    };
+		}
+	};
 
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("ltminigames", "textures/gui/minigames/crafting_bee/items_bar.png");
     private static final ResourceLocation GRID_TEXTURE = ResourceLocation.fromNamespaceAndPath("ltminigames", "textures/gui/minigames/crafting_bee/crafting_grid.png");
@@ -136,7 +137,7 @@ public class GameCraftingBeeHandler {
 
                         var tooltipLines = new ArrayList<>(Screen.getTooltipFromItem(Minecraft.getInstance(), craft.output()));
                         if (craft.done()) {
-                            tooltipLines.set(0, tooltipLines.get(0).copy().withStyle(ChatFormatting.GREEN));
+                            tooltipLines.set(0, tooltipLines.getFirst().copy().withStyle(ChatFormatting.GREEN));
                         } else if (hint == null || hint.expectedIngredientCount() != hint.grid().stream().filter(Predicate.not(Ingredient::isEmpty)).count()) {
                             tooltipLines.add(CraftingBeeTexts.HINT);
                             tooltipLines.add(CraftingBeeTexts.HINTS_LEFT.apply(Component.literal(String.valueOf(hintsRemaining)).withStyle(ChatFormatting.AQUA)));

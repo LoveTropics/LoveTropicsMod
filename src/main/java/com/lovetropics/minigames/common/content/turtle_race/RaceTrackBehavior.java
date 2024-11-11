@@ -101,7 +101,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		registerCheckpoints(game, events);
 
-		Component sidebarTitle = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
+		Component sidebarTitle = game.definition().name().copy().withStyle(ChatFormatting.AQUA);
 
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
@@ -245,7 +245,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		if (lapCount > 1) {
 			title = TurtleRaceTexts.LAP_COUNT.apply(state.lap + 1, lapCount);
 		} else {
-			title = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
+			title = game.definition().name().copy().withStyle(ChatFormatting.AQUA);
 		}
 		state.updateBar(player, title, path.length());
 

@@ -234,27 +234,13 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		}
 	}
 
-	static final class SizeCurve {
-		public static final MapCodec<SizeCurve> CODEC = RecordCodecBuilder.mapCodec(instance -> {
-			return instance.group(
-					Codec.DOUBLE.fieldOf("lower").forGetter(c -> c.lower),
-					Codec.DOUBLE.fieldOf("upper").forGetter(c -> c.upper),
-					Codec.DOUBLE.fieldOf("base").forGetter(c -> c.base),
-					Codec.DOUBLE.fieldOf("scale").forGetter(c -> c.scale)
-			).apply(instance, SizeCurve::new);
-		});
-
-		final double lower;
-		final double upper;
-		final double base;
-		final double scale;
-
-		SizeCurve(double lower, double upper, double base, double scale) {
-			this.lower = lower;
-			this.upper = upper;
-			this.base = base;
-			this.scale = scale;
-		}
+	record SizeCurve(double lower, double upper, double base, double scale) {
+		public static final MapCodec<SizeCurve> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				Codec.DOUBLE.fieldOf("lower").forGetter(c -> c.lower),
+				Codec.DOUBLE.fieldOf("upper").forGetter(c -> c.upper),
+				Codec.DOUBLE.fieldOf("base").forGetter(c -> c.base),
+				Codec.DOUBLE.fieldOf("scale").forGetter(c -> c.scale)
+		).apply(i, SizeCurve::new));
 
 		// Desmos: https://www.desmos.com/calculator/ya880ablya
 		double apply(int index, float difficulty) {

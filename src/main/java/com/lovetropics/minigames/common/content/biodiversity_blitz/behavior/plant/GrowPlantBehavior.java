@@ -100,14 +100,8 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 		}
 	}
 
-	static final class GrowTime {
+	record GrowTime(long next) {
 		static final PlantState.Key<GrowTime> KEY = PlantState.Key.create();
-
-		final long next;
-
-		GrowTime(long next) {
-			this.next = next;
-		}
 	}
 
 	record PlantSnapshot(Plant plant, Long2ObjectMap<BlockState> blocks) {

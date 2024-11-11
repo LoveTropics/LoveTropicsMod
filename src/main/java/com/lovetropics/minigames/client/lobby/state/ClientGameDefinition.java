@@ -12,31 +12,15 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class ClientGameDefinition {
+public record ClientGameDefinition(
+		ResourceLocation id,
+		Component name,
+		@Nullable Component subtitle,
+		@Nullable ResourceLocation icon,
+		int minimumParticipants,
+		int maximumParticipants
+) {
 	public static final StreamCodec<RegistryFriendlyByteBuf, ClientGameDefinition> STREAM_CODEC = StreamCodec.of((output, definition) -> definition.encode(output), ClientGameDefinition::decode);
-
-	public final ResourceLocation id;
-	public final Component name;
-	@Nullable
-	public final Component subtitle;
-	@Nullable
-	public final ResourceLocation icon;
-	public final int minimumParticipants;
-	public final int maximumParticipants;
-
-	public ClientGameDefinition(
-			ResourceLocation id,
-			Component name, @Nullable Component subtitle,
-			@Nullable ResourceLocation icon,
-			int minimumParticipants, int maximumParticipants
-	) {
-		this.id = id;
-		this.name = name;
-		this.subtitle = subtitle;
-		this.icon = icon;
-		this.minimumParticipants = minimumParticipants;
-		this.maximumParticipants = maximumParticipants;
-	}
 
 	public static List<ClientGameDefinition> collectInstalled() {
 		return GameConfigs.REGISTRY.stream()
@@ -46,10 +30,10 @@ public final class ClientGameDefinition {
 
 	public static ClientGameDefinition from(IGameDefinition definition) {
 		return new ClientGameDefinition(
-				definition.getId(),
-				definition.getName(),
-				definition.getSubtitle(),
-				definition.getIcon(),
+				definition.id(),
+				definition.name(),
+				definition.subtitle(),
+				definition.icon(),
 				definition.getMinimumParticipantCount(),
 				definition.getMaximumParticipantCount()
 		);

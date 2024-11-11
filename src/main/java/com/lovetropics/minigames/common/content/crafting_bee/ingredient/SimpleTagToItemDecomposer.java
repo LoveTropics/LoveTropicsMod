@@ -2,7 +2,6 @@ package com.lovetropics.minigames.common.content.crafting_bee.ingredient;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.DifferenceIngredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

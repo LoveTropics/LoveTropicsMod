@@ -21,15 +21,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 
 public class GameDataAccessor implements DataAccessor {

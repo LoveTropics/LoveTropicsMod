@@ -19,7 +19,7 @@ public final class TeamAllocator<T, V> {
 	private final Object2IntMap<T> teamSizes = new Object2IntOpenHashMap<>();
 	@Nullable
 	private T overflowTeam;
-	private List<T> lockedTeams = new ArrayList<>();
+	private final List<T> lockedTeams = new ArrayList<>();
 
 	public TeamAllocator(Collection<T> teams) {
 		Preconditions.checkArgument(!teams.isEmpty(), "cannot allocate with no teams");

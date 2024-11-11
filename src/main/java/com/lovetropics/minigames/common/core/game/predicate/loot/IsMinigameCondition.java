@@ -9,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 
 public class IsMinigameCondition implements LootItemCondition {
     public static final MapCodec<IsMinigameCondition> CODEC = RecordCodecBuilder.mapCodec(
@@ -33,7 +32,7 @@ public class IsMinigameCondition implements LootItemCondition {
         if(gamePhaseInDimension == null){
             return false;
         }
-        ResourceLocation gameId = gamePhaseInDimension.definition().getId();
+        ResourceLocation gameId = gamePhaseInDimension.definition().id();
         if(gamePhaseInDimension.definition().isMultiGamePhase()){
             gameId = ((MultiGamePhase)gamePhaseInDimension).getGameId();
         }

@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
-import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -136,9 +135,9 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                                 queueMicrogames(game, collectable);
                                 // Start microgames countdown
                                 countdown = new Countdown(game.ticks() + (20 * COUNTDOWN_SECONDS), (unused) -> {
-                                    startQueuedMicrogame(game);
-                                    countdown = null;
-                                });
+									startQueuedMicrogame(game);
+									countdown = null;
+								});
                             }
                             riverRaceState.addPointsToTeam(teamKey, collectable.victoryPoints);
                             FireworkPalette.DYE_COLORS.spawn(region.centerBlock().above(), game.level());
@@ -174,10 +173,10 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 "collectables=" + collectables + ']';
     }
 
-    private class Countdown {
+    private static class Countdown {
 
-        private long endTicks;
-        private Consumer<Void> end;
+        private final long endTicks;
+        private final Consumer<Void> end;
 
         public Countdown(long endTicks, Consumer<Void> end) {
             this.endTicks = endTicks;

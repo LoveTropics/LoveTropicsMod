@@ -1,7 +1,5 @@
 package com.lovetropics.minigames.common.util;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 
 public class SequentialList<T> {

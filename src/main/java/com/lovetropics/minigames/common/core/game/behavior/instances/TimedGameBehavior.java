@@ -105,7 +105,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 		long secondsRemaining = ticksRemaining / SharedConstants.TICKS_PER_SECOND;
 
 		Component timeText = Component.literal(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
-		Component gameNameText = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
+		Component gameNameText = game.definition().name().copy().withStyle(ChatFormatting.AQUA);
 
 		return timerBarText.apply(Map.of("time", timeText, "game", gameNameText));
 	}

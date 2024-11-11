@@ -105,7 +105,7 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
     @Override
     public boolean hurt(DamageSource pSource, float pAmount) {
         if (pSource.is(DamageTypes.PLAYER_ATTACK)) {
-            pAmount /= 1.5;
+            pAmount /= 1.5f;
         }
 
         return super.hurt(pSource, pAmount);

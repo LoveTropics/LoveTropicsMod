@@ -63,7 +63,7 @@ public final class GameTexts {
 	}
 
 	public static MutableComponent gameName(IGameDefinition game) {
-		return formatName(game.getName().copy());
+		return formatName(game.name().copy());
 	}
 
 	public static MutableComponent playerName(ServerPlayer player) {

@@ -3,7 +3,6 @@ package com.lovetropics.minigames.client.render.block;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.resources.model.Material;
@@ -30,7 +29,8 @@ public class TriviaChestRenderer extends ChestRenderer<TriviaChestBlockEntity> {
         super(context);
     }
 
-    protected Material getMaterial(TriviaChestBlockEntity tileEntity, ChestType chestType) {
+    @Override
+	protected Material getMaterial(TriviaChestBlockEntity tileEntity, ChestType chestType) {
         return getChestMaterial(chestType);
     }
 }

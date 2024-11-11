@@ -6,12 +6,9 @@ import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehav
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
-import java.util.Optional;
 
 public record ShowTriviaMessage(BlockPos triviaBlock, TriviaBehaviour.TriviaQuestion question, TriviaBlockEntity.TriviaBlockState triviaBlockState) implements CustomPacketPayload {
 

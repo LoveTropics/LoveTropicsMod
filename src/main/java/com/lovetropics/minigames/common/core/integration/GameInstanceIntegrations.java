@@ -75,8 +75,8 @@ public final class GameInstanceIntegrations implements IGameState {
 
 	private void addGameDefinitionData(JsonObject payload) {
 		IGameDefinition definition = game.definition();
-		payload.add("name", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, definition.getName()).getOrThrow());
-		Component subtitle = definition.getSubtitle();
+		payload.add("name", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, definition.name()).getOrThrow());
+		Component subtitle = definition.subtitle();
 		if (subtitle != null) {
 			payload.add("subtitle", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, subtitle).getOrThrow());
 		}
@@ -164,9 +164,9 @@ public final class GameInstanceIntegrations implements IGameState {
 
 		IGameDefinition definition = game.definition();
 		JsonObject game = new JsonObject();
-		game.addProperty("id", definition.getBackendId().toString());
-		game.addProperty("telemetry_key", definition.getStatisticsKey());
-		game.addProperty("name", definition.getName().getString());
+		game.addProperty("id", definition.backendId().toString());
+		game.addProperty("telemetry_key", definition.statisticsKey());
+		game.addProperty("name", definition.name().getString());
 		payload.add("minigame", game);
 
 		if (important) {

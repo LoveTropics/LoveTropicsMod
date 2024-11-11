@@ -121,16 +121,19 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
         level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
     }
 
-    public boolean hasQuestion(){
+    @Override
+	public boolean hasQuestion(){
         return question != null;
     }
 
-    public void setQuestion(TriviaBehaviour.TriviaQuestion question) {
+    @Override
+	public void setQuestion(TriviaBehaviour.TriviaQuestion question) {
         this.question = question;
         markUpdated();
     }
 
-    public TriviaBehaviour.TriviaQuestion getQuestion() {
+    @Override
+	public TriviaBehaviour.TriviaQuestion getQuestion() {
         return question;
     }
 
@@ -139,22 +142,26 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
         return triviaType;
     }
 
-    public long lockout(int lockoutSeconds){
+    @Override
+	public long lockout(int lockoutSeconds){
         unlocksAt = level.getGameTime() + (lockoutSeconds * 20L);
         markUpdated();
         return unlocksAt;
     }
-    public void unlock() {
+    @Override
+	public void unlock() {
         unlocksAt = 0;
         markUpdated();
     }
 
-    public void markAsCorrect(){
+    @Override
+	public void markAsCorrect(){
         answered = true;
         markUpdated();
     }
 
-    public TriviaBlockState getState(){
+    @Override
+	public TriviaBlockState getState(){
         Optional<String> correctAnswer = Optional.empty();
         if(answered){
             correctAnswer = Optional.of(question.answers().stream().filter(TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer::correct).findFirst().get().text());

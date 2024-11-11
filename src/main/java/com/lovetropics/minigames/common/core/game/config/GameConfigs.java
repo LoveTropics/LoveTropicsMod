@@ -62,7 +62,7 @@ public final class GameConfigs {
 						.thenAcceptAsync(configs -> {
 							REGISTRY.clear();
 							configs.stream()
-									.sorted(Comparator.comparing(config -> config.getName().getString()))
+									.sorted(Comparator.comparing(config -> config.name().getString()))
 									.forEach(config -> REGISTRY.register(config.id, config));
 						}, gameExecutor)
 		);

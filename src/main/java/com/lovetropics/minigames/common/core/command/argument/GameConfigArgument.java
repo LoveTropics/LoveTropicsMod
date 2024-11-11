@@ -22,7 +22,7 @@ public final class GameConfigArgument {
     public static RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> argument(String name) {
         return Commands.argument(name, ResourceLocationArgument.id())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(
-						GameConfigs.REGISTRY.stream().map(IGameDefinition::getId),
+						GameConfigs.REGISTRY.stream().map(IGameDefinition::id),
 						builder
 				));
     }

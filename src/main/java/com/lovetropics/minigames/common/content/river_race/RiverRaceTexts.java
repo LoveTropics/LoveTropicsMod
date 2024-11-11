@@ -32,10 +32,6 @@ public final class RiverRaceTexts {
 	public static final TranslationCollector.Fun1 GAMES_START_IN = KEYS.add1("trivia.games_start_in", "Microgames start in %s second(s)")
 			.withStyle(ChatFormatting.GREEN);
 
-	static {
-
-	}
-
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.forEach(consumer);
 

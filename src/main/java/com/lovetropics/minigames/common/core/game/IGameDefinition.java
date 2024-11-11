@@ -19,10 +19,10 @@ public interface IGameDefinition {
 	 *
 	 * @return The identifier for this minigame definition.
 	 */
-	ResourceLocation getId();
+	ResourceLocation id();
 
-	default ResourceLocation getBackendId() {
-		return getId();
+	default ResourceLocation backendId() {
+		return id();
 	}
 
 	/**
@@ -31,19 +31,19 @@ public interface IGameDefinition {
 	 *
 	 * @return The statistics key for this minigame.
 	 */
-	default String getStatisticsKey() {
-		return getId().getPath();
+	default String statisticsKey() {
+		return id().getPath();
 	}
 
-	Component getName();
+	Component name();
 
 	@Nullable
-	default Component getSubtitle() {
+	default Component subtitle() {
 		return null;
 	}
 
 	@Nullable
-	default ResourceLocation getIcon() {
+	default ResourceLocation icon() {
 		return null;
 	}
 

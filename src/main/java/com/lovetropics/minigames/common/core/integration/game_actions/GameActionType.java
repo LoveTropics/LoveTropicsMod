@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum GameActionType {
-	DONATION("donation", "payment_time", DonationGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay::get, false),
-	DONATION_PACKAGE("donation_package", "trigger_time", DonationPackageGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay::get, true),
-	CHAT_EVENT("chat_event", "trigger_time", ChatEventGameAction.CODEC, ConfigLT.GENERAL.chatEventDelay::get, true);
+	DONATION("donation", "payment_time", DonationGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay, false),
+	DONATION_PACKAGE("donation_package", "trigger_time", DonationPackageGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay, true),
+	CHAT_EVENT("chat_event", "trigger_time", ChatEventGameAction.CODEC, ConfigLT.GENERAL.chatEventDelay, true);
 
 	public static final GameActionType[] VALUES = values();
 
