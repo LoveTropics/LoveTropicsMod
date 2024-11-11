@@ -36,6 +36,7 @@ import com.lovetropics.minigames.common.content.turtle_race.TurtleRaceTexts;
 import com.lovetropics.minigames.common.core.chat.ChatChannelStore;
 import com.lovetropics.minigames.common.core.command.*;
 import com.lovetropics.minigames.common.core.command.game.CancelGameCommand;
+import com.lovetropics.minigames.common.core.command.game.ExecuteAtRegionCommand;
 import com.lovetropics.minigames.common.core.command.game.FinishGameCommand;
 import com.lovetropics.minigames.common.core.command.game.GameControlCommand;
 import com.lovetropics.minigames.common.core.command.game.GamePackageCommand;
@@ -219,6 +220,7 @@ public class LoveTropics {
         ExtendedBossBarCommand.register(dispatcher);
         ParticleLineCommand.register(event.getBuildContext(), dispatcher);
         ChatCommand.register(dispatcher);
+        ExecuteAtRegionCommand.register(dispatcher);
     }
 
     private void onServerAboutToStart(final ServerAboutToStartEvent event) {
