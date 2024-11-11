@@ -167,7 +167,7 @@ public class LobbyStateGui {
 	private static String getLobbyName(ClientLobbyState lobby) {
 		ClientCurrentGame currentGame = lobby.getCurrentGame();
 		if (currentGame != null) {
-			String gameName = currentGame.definition().name.getString();
+			String gameName = currentGame.definition().name().getString();
 			return ChatFormatting.YELLOW.toString() + ChatFormatting.BOLD + gameName;
 		} else {
 			return ChatFormatting.YELLOW.toString() + ChatFormatting.BOLD + lobby.getName();
@@ -179,8 +179,8 @@ public class LobbyStateGui {
 		ClientCurrentGame currentGame = lobby.getCurrentGame();
 		if (currentGame != null) {
 			ClientGameDefinition definition = currentGame.definition();
-			if (definition.icon != null) {
-				return definition.icon;
+			if (definition.icon() != null) {
+				return definition.icon();
 			}
 		}
 
@@ -208,7 +208,7 @@ public class LobbyStateGui {
 
 	private static String formatPlayerCount(ClientLobbyState lobby, @Nullable ClientCurrentGame currentGame) {
 		if (currentGame != null) {
-			return lobby.getPlayerCount() + "/" + currentGame.definition().maximumParticipants;
+			return lobby.getPlayerCount() + "/" + currentGame.definition().maximumParticipants();
 		} else {
 			return String.valueOf(lobby.getPlayerCount());
 		}

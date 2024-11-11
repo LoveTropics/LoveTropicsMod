@@ -63,17 +63,17 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		}
 
 		public static Entry game(AbstractLTList<Entry> list, int id, ClientGameDefinition game) {
-			Component playerRange = GameTexts.Ui.playerRange(game.minimumParticipants, game.maximumParticipants);
+			Component playerRange = GameTexts.Ui.playerRange(game.minimumParticipants(), game.maximumParticipants());
 
 			Component subtitle;
-			if (game.subtitle != null) {
-				subtitle = game.subtitle.copy().append(" | ").append(playerRange);
+			if (game.subtitle() != null) {
+				subtitle = game.subtitle().copy().append(" | ").append(playerRange);
 			} else {
 				subtitle = playerRange;
 			}
 
 			return new Entry(list, id)
-					.setTitle(game.name)
+					.setTitle(game.name())
 					.setSubtitle(subtitle);
 		}
 		

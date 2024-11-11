@@ -244,9 +244,9 @@ public class MultiGamePhase extends GamePhase {
             if (gamePhaseGameResult.isOk()) {
                 setActivePhase(gamePhaseGameResult.getOk(), saveInventory, gameKey);
                 invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
-                game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(gameConfig.name).withStyle(ChatFormatting.GREEN));
-                game.allPlayers().showTitle(Component.empty().append(gameConfig.name).withStyle(ChatFormatting.GREEN),
-                        gameConfig.subtitle, 10, 40, 10);
+                game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(gameConfig.name()).withStyle(ChatFormatting.GREEN));
+                game.allPlayers().showTitle(Component.empty().append(gameConfig.name()).withStyle(ChatFormatting.GREEN),
+                        gameConfig.subtitle(), 10, 40, 10);
                 return true;
             }
             LOGGER.error("Failed to start micro-game {} - {}", gameConfig.id().toString(), gamePhaseGameResult.getError().getString());

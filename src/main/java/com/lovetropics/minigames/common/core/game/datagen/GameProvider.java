@@ -42,8 +42,8 @@ public abstract class GameProvider implements DataProvider {
             return CompletableFuture.allOf(builders.stream()
                     .map(builder -> {
                         final var built = builder.build();
-                        final var path = gamesProv.json(built.id);
-                        return DataProvider.saveStable(pOutput, regs, GameConfig.codec(built.id), built, path);
+                        final var path = gamesProv.json(built.id());
+                        return DataProvider.saveStable(pOutput, regs, GameConfig.codec(built.id()), built, path);
                     })
                     .toArray(CompletableFuture[]::new));
         });

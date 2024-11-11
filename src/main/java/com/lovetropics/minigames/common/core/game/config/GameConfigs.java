@@ -63,7 +63,7 @@ public final class GameConfigs {
 							REGISTRY.clear();
 							configs.stream()
 									.sorted(Comparator.comparing(config -> config.name().getString()))
-									.forEach(config -> REGISTRY.register(config.id, config));
+									.forEach(config -> REGISTRY.register(config.id(), config));
 						}, gameExecutor)
 		);
 	}

@@ -34,7 +34,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		public Set enqueue(ClientGameDefinition definition) {
-			add(new Enqueue(definition.id));
+			add(new Enqueue(definition.id()));
 			return this;
 		}
 

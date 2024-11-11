@@ -223,7 +223,7 @@ public final class GameTexts {
 		public static final Component LOBBY_PRIVATE = KEYS.add("visibility.private", "Private");
 
 		public static MutableComponent managingGame(ClientGameDefinition game) {
-			Component name = game.name.copy().withStyle(ChatFormatting.RESET);
+			Component name = game.name().copy().withStyle(ChatFormatting.RESET);
 			return MANAGING_GAME.apply(name).withStyle(ChatFormatting.BOLD);
 		}
 

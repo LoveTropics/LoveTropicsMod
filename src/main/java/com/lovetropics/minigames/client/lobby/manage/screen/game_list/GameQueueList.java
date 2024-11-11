@@ -77,7 +77,7 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void applyRunningGame(ClientCurrentGame game, Entry entry) {
-		MutableComponent gameName = game.definition().name.copy().withStyle(ChatFormatting.UNDERLINE);
+		MutableComponent gameName = game.definition().name().copy().withStyle(ChatFormatting.UNDERLINE);
 		entry.setTitle(Component.literal("▶ ").append(gameName));
 
 		if (game.error().isPresent()) {
