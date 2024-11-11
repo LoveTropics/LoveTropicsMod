@@ -30,7 +30,7 @@ public record ItemPickupPriorityBehavior(Optional<ItemPredicate> itemPredicate, 
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		events.listen(GamePlayerEvents.PICK_UP_ITEM, (player, item) -> {
 			final ItemStack stack = item.getItem();
-			if (itemPredicate.isPresent() && itemPredicate.get().test(stack)) {
+			if (itemPredicate.isEmpty() || itemPredicate.get().test(stack)) {
 				final float minSeconds = Math.max(maxSeconds - getPickupPriority(player), 0.0f);
 				final int minAge = Mth.floor(minSeconds * SharedConstants.TICKS_PER_SECOND);
 				if (item.getAge() <= minAge) {

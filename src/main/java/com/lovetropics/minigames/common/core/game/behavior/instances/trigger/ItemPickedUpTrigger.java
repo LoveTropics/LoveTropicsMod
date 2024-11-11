@@ -33,7 +33,7 @@ public record ItemPickedUpTrigger(Optional<ItemPredicate> itemPredicate, GameAct
 
 		events.listen(GamePlayerEvents.PICK_UP_ITEM, (player, item) -> {
 			final ItemStack stack = item.getItem();
-			if (itemPredicate.isPresent() && itemPredicate.get().test(stack)) {
+			if (itemPredicate.isEmpty() || itemPredicate.get().test(stack)) {
 				final GameActionContext context = GameActionContext.builder()
 						.set(GameActionParameter.ITEM, stack)
 						.set(GameActionParameter.COUNT, stack.getCount())
