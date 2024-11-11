@@ -47,6 +47,7 @@ import com.lovetropics.minigames.common.core.command.game.StartGameCommand;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.entity.MinigameEntities;
+import com.lovetropics.minigames.common.core.extension.LimitedSpawnerAttachment;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
@@ -167,6 +168,7 @@ public class LoveTropics {
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
         PlayerDisguise.ATTACHMENT_TYPES.register(modBus);
         ChatChannelStore.ATTACHMENT_TYPES.register(modBus);
+        LimitedSpawnerAttachment.ATTACHMENT_TYPES.register(modBus);
         SoundRegistry.REGISTER.register(modBus);
         MinigameDataComponents.REGISTER.register(modBus);
         BiodiversityBlitz.DATA_COMPONENTS.register(modBus);

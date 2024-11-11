@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "plugin": "com.lovetropics.minigames.mixin.LTMixinPlugin",
   "mixins": [
+    "BaseSpawnerAccessor",
     "ChunkStorageMixin",
     "CommonHooksMixin",
     "DataCommandsMixin",
