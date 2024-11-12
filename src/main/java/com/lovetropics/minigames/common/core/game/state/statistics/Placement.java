@@ -42,9 +42,9 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 		return fromPlayerScore(order, game, statistic, false);
 	}
 
-	static <T extends Comparable<T>> Score<GameTeamKey, T> fromTeamScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic) {
+	static <T extends Comparable<T>> Score<GameTeamKey, T> fromTeamScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic, @Nullable T defaultValue) {
 		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
-		return fromScore(game, teams != null ? teams.getTeamKeys() : List.of(), statistic, order.asComparator());
+		return fromScore(game, teams != null ? teams.getTeamKeys() : List.of(), statistic, order.asComparator(), defaultValue);
 	}
 
 	static <T extends Comparable<T>> Score<PlayerKey, T> fromPlayerScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic, boolean onlyOnline) {
@@ -52,10 +52,10 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 		if (onlyOnline) {
 			players.removeIf(key -> !game.allPlayers().contains(key.id()));
 		}
-		return fromScore(game, players, statistic, order.asComparator());
+		return fromScore(game, players, statistic, order.asComparator(), null);
 	}
 
-	static <H extends StatisticHolder, T> Score<H, T> fromScore(IGamePhase game, Collection<H> scoreHolders, StatisticKey<T> scoreKey, Comparator<T> comparator) {
+	static <H extends StatisticHolder, T> Score<H, T> fromScore(IGamePhase game, Collection<H> scoreHolders, StatisticKey<T> scoreKey, Comparator<T> comparator, @Nullable T defaultValue) {
 		GameStatistics statistics = game.statistics();
 
 		List<H> sortedHolders = new ArrayList<>(scoreHolders);
@@ -71,7 +71,7 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 
 		for (H holder : sortedHolders) {
 			StatisticsMap ownStatistics = holder.getOwnStatistics(statistics);
-			T score = ownStatistics.get(scoreKey);
+			T score = ownStatistics.getOr(scoreKey, defaultValue);
 			if (score == null) {
 				continue;
 			}

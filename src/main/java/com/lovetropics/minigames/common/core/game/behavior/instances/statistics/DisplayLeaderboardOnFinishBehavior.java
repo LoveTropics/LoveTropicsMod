@@ -35,7 +35,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 			if (teams == null) {
 				Placement.fromPlayerScore(order, game, statistic).sendTo(players, length);
 			} else {
-				Placement.fromTeamScore(order, game, statistic).sendTo(players, length);
+				Placement.fromTeamScore(order, game, statistic, null).sendTo(players, length);
 			}
 		});
 	}

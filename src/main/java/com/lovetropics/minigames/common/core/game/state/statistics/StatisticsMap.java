@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.state.statistics;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -24,7 +25,9 @@ public final class StatisticsMap {
 		return (T) values.get(key);
 	}
 
-	public <T> T getOr(StatisticKey<T> key, T or) {
+	@Contract("_,null->null;_,!null->!null")
+	@Nullable
+	public <T> T getOr(StatisticKey<T> key, @Nullable T or) {
 		T value = get(key);
 		return value != null ? value : or;
 	}
