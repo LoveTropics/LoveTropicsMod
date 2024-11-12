@@ -11,6 +11,5 @@ public class TrashDiveTexts {
 		KEYS.add("sidebar.instruction", "Pick up trash!");
 		KEYS.add1("sidebar.collected", "%total% collected");
 		KEYS.add("sidebar.top_players", "MVPs:");
-		KEYS.add("time_remaining", "Time Remaining: %time%...");
 	}
 }

@@ -28,7 +28,6 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameType
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetupIntegrationsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorChaseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TimedGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
@@ -152,7 +151,6 @@ public class GameBehaviorTypes {
 
 	public static final GameBehaviorEntry<CompositeBehavior> COMPOSITE = register("composite", CompositeBehavior.MAP_CODEC);
 	public static final GameBehaviorEntry<PositionPlayersBehavior> POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);
-	public static final GameBehaviorEntry<TimedGameBehavior> TIMED = register("timed", TimedGameBehavior.CODEC);
 	public static final GameBehaviorEntry<TimedCloseBehavior> TIMED_CLOSE = register("timed_close", TimedCloseBehavior.CODEC);
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
