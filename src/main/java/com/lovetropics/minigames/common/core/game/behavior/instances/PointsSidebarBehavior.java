@@ -7,8 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
+import com.lovetropics.minigames.common.core.game.state.statistics.Placement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
@@ -55,13 +57,22 @@ public record PointsSidebarBehavior(
 		for (final PlayerKey player : game.statistics().getPlayers()) {
 			totalCount += game.statistics().forPlayer(player).getInt(statistic);
 		}
+		for (final GameTeamKey team : game.statistics().getTeams()) {
+			totalCount += game.statistics().forTeam(team).getInt(statistic);
+		}
 
 		final List<Component> sidebar = new ArrayList<>(10);
 		for (final TemplatedText line : header) {
 			sidebar.add(line.apply(Map.of("total", Component.literal(String.valueOf(totalCount)))));
 		}
 
-		final PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, statistic, false);
+		final Placement.Score<?, Integer> placement;
+		final TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+		if (teams == null) {
+			placement = Placement.fromPlayerScore(PlacementOrder.MAX, game, statistic, false);
+		} else {
+			placement = Placement.fromTeamScore(PlacementOrder.MAX, game, statistic);
+		}
 		placement.addToSidebar(sidebar, count);
 
 		return sidebar.toArray(new Component[0]);

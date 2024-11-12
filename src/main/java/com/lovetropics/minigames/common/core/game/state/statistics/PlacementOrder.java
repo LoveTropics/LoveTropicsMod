@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.core.game.state.statistics;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
+import java.util.Comparator;
+
 public enum PlacementOrder implements StringRepresentable {
 	MAX("max"),
 	MIN("min");
@@ -13,6 +15,10 @@ public enum PlacementOrder implements StringRepresentable {
 
 	PlacementOrder(String key) {
 		this.key = key;
+	}
+
+	public <T extends Comparable<T>> Comparator<T> asComparator() {
+		return this == MAX ? Comparator.reverseOrder() : Comparator.naturalOrder();
 	}
 
 	@Override

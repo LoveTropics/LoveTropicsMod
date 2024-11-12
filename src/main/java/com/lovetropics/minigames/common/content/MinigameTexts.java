@@ -116,6 +116,8 @@ public final class MinigameTexts {
 	public static final TranslationCollector.Fun2 REWARD_ITEM = KEYS.add2("reward_item", " - %sx %s").withStyle(ChatFormatting.GRAY);
 	public static final TranslationCollector.Fun1 ELIMINATED = KEYS.add1("eliminated", "☠ %s was eliminated!").withStyle(ChatFormatting.GRAY);
 
+	public static final Component UNKNOWN = KEYS.add("unknown", "Unknown");
+
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");
 

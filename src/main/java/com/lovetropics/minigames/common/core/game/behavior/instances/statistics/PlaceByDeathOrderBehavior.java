@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
+import com.lovetropics.minigames.common.core.game.state.statistics.Placement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,6 +44,6 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 	}
 
 	private void onFinish(IGamePhase game) {
-		PlayerPlacement.fromDeathOrder(game, deathOrder).placeInto(StatisticKey.PLACEMENT);
+		Placement.fromDeathOrder(game, deathOrder).placeInto(StatisticKey.PLACEMENT);
 	}
 }

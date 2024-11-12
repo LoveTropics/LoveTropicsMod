@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.state.statistics;
 import com.google.common.collect.Iterators;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -10,13 +11,14 @@ import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
-	static Order fromDeathOrder(IGamePhase game, List<PlayerKey> deathOrder) {
+public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>> {
+	static PlayerOrder fromDeathOrder(IGamePhase game, List<PlayerKey> deathOrder) {
 		PlayerSet participants = game.participants();
 		List<Placed<PlayerKey>> order = new ArrayList<>(participants.size() + deathOrder.size());
 
@@ -31,57 +33,52 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 			order.add(Placed.at(++placement, deathOrder.get(i)));
 		}
 
-		return new Order(game, order);
+		return new PlayerOrder(game, order);
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMinScore(IGamePhase game, StatisticKey<T> score, boolean onlyOnline) {
-		return fromScore(game, score, Comparator.naturalOrder(), onlyOnline);
+	static <T extends Comparable<T>> Score<PlayerKey, T> fromPlayerScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic) {
+		return fromPlayerScore(order, game, statistic, false);
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMaxScore(IGamePhase game, StatisticKey<T> score, boolean onlyOnline) {
-		return fromScore(game, score, Comparator.reverseOrder(), onlyOnline);
+	static <T extends Comparable<T>> Score<GameTeamKey, T> fromTeamScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic) {
+		return fromScore(game, game.statistics().getTeams(), statistic, order.asComparator());
 	}
 
-	static <T extends Comparable<T>> Score<T> fromScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic) {
-		return fromScore(order, game, statistic, false);
-	}
-
-	static <T extends Comparable<T>> Score<T> fromScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic, boolean onlyOnline) {
-		if (order == PlacementOrder.MAX) {
-			return fromMaxScore(game, statistic, onlyOnline);
-		} else {
-			return fromMinScore(game, statistic, onlyOnline);
-		}
-	}
-
-	static <T> Score<T> fromScore(IGamePhase game, StatisticKey<T> scoreKey, Comparator<T> comparator, boolean onlyOnline) {
-		GameStatistics statistics = game.statistics();
-
-		List<PlayerKey> players = new ArrayList<>(statistics.getPlayers());
+	static <T extends Comparable<T>> Score<PlayerKey, T> fromPlayerScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic, boolean onlyOnline) {
+		List<PlayerKey> players = new ArrayList<>(game.statistics().getPlayers());
 		if (onlyOnline) {
 			players.removeIf(key -> !game.allPlayers().contains(key.id()));
 		}
-		players.sort(Comparator.comparing(
-				player -> statistics.forPlayer(player).get(scoreKey),
+		return fromScore(game, players, statistic, order.asComparator());
+	}
+
+	static <H extends StatisticHolder, T> Score<H, T> fromScore(IGamePhase game, Collection<H> scoreHolders, StatisticKey<T> scoreKey, Comparator<T> comparator) {
+		GameStatistics statistics = game.statistics();
+
+		List<H> sortedHolders = new ArrayList<>(scoreHolders);
+		sortedHolders.sort(Comparator.comparing(
+				holder -> holder.getOwnStatistics(statistics).get(scoreKey),
 				Comparator.nullsLast(comparator)
 		));
 
-		List<Score.Entry<T>> entries = new ArrayList<>(players.size());
+		List<Score.Entry<H, T>> entries = new ArrayList<>(sortedHolders.size());
 
 		int placement = 0;
 		T lastScore = null;
 
-		for (PlayerKey player : players) {
-			StatisticsMap playerStatistics = statistics.forPlayer(player);
-			T score = playerStatistics.get(scoreKey);
+		for (H holder : sortedHolders) {
+			StatisticsMap ownStatistics = holder.getOwnStatistics(statistics);
+			T score = ownStatistics.get(scoreKey);
 			if (score == null) {
 				continue;
 			}
 
-			if (!Objects.equals(score, lastScore) || placement == 0) placement++;
+			if (!Objects.equals(score, lastScore) || placement == 0) {
+				placement++;
+			}
 			lastScore = score;
 
-			entries.add(new Score.Entry<>(player, placement, score));
+			entries.add(new Score.Entry<>(holder, placement, score));
 		}
 
 		return new Score<>(game, scoreKey, entries);
@@ -93,11 +90,11 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 
 	void addToSidebar(List<Component> sidebar, int length);
 
-	final class Order implements PlayerPlacement {
+	final class PlayerOrder implements Placement<PlayerKey> {
 		private final IGamePhase game;
 		private final List<Placed<PlayerKey>> order;
 
-		Order(IGamePhase game, List<Placed<PlayerKey>> order) {
+		PlayerOrder(IGamePhase game, List<Placed<PlayerKey>> order) {
 			this.game = game;
 			this.order = order;
 		}
@@ -151,12 +148,12 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 		}
 	}
 
-	final class Score<T> implements PlayerPlacement {
+	final class Score<H extends StatisticHolder, T> implements Placement<H> {
 		private final IGamePhase game;
 		private final StatisticKey<T> scoreKey;
-		private final List<Entry<T>> entries;
+		private final List<Entry<H, T>> entries;
 
-		Score(IGamePhase game, StatisticKey<T> scoreKey, List<Entry<T>> entries) {
+		Score(IGamePhase game, StatisticKey<T> scoreKey, List<Entry<H, T>> entries) {
 			this.game = game;
 			this.scoreKey = scoreKey;
 			this.entries = entries;
@@ -167,15 +164,15 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 			GameStatistics statistics = game.statistics();
 			statistics.clear(placementKey);
 
-			for (Entry<T> entry : entries) {
-				statistics.forPlayer(entry.player).set(placementKey, entry.placement);
+			for (Entry<H, T> entry : entries) {
+				entry.holder.getOwnStatistics(statistics).set(placementKey, entry.placement);
 			}
 		}
 
 		@Override
 		public void sendTo(PlayerSet players, int length) {
 			int i = 0;
-			Entry<T> entry;
+			Entry<H, T> entry;
 
 			for (int place = 1; place <= length; place++) {
 				String headPrefix = " " + place + ". ";
@@ -186,7 +183,7 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					MutableComponent name = Component.literal(prefix + entry.player.name() + ": ");
+					MutableComponent name = Component.literal(prefix).append(entry.holder.getName(game)).append(": ");
 					MutableComponent score = Component.literal(scoreKey.display(entry.score));
 
 					players.sendMessage(name.withStyle(ChatFormatting.AQUA).append(score.withStyle(ChatFormatting.GOLD)));
@@ -200,19 +197,19 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 		public void addToSidebar(List<Component> sidebar, int length) {
 			length = Math.min(entries.size(), length);
 			for (int i = 0; i < length; i++) {
-				Entry<T> entry = entries.get(i);
-				Component name = Component.literal(entry.player.name() + ": ").withStyle(ChatFormatting.AQUA);
+				Entry<H, T> entry = entries.get(i);
+				Component name = Component.empty().append(entry.holder.getName(game)).append(": ").withStyle(ChatFormatting.AQUA);
 				Component score = Component.literal(scoreKey.display(entry.score)).withStyle(ChatFormatting.GOLD);
 				sidebar.add(Component.literal(" - ").append(name).append(score));
 			}
 		}
 
 		@Override
-		public Iterator<Placed<PlayerKey>> iterator() {
-			return Iterators.transform(entries.iterator(), input -> new Placed<>(input.placement, input.player));
+		public Iterator<Placed<H>> iterator() {
+			return Iterators.transform(entries.iterator(), input -> new Placed<>(input.placement, input.holder));
 		}
 
-		record Entry<T>(PlayerKey player, int placement, T score) {
+		record Entry<H, T>(H holder, int placement, T score) {
 		}
 	}
 }

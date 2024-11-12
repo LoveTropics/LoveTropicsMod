@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
+import com.lovetropics.minigames.common.core.game.state.statistics.Placement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -25,7 +25,7 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.FINISH, () -> {
-			PlayerPlacement.fromScore(order, game, statistic).placeInto(StatisticKey.PLACEMENT);
+			Placement.fromPlayerScore(order, game, statistic).placeInto(StatisticKey.PLACEMENT);
 
 			final GameStatistics statistics = game.statistics();
 			statistics.getPlayers().stream()

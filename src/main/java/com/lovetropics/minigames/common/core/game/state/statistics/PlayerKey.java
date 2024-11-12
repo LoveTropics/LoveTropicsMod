@@ -3,12 +3,13 @@ package com.lovetropics.minigames.common.core.game.state.statistics;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilEnvironment;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -16,9 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import java.net.Proxy;
 import java.util.UUID;
 
-public final class PlayerKey {
-	public static final JsonSerializer<PlayerKey> PROFILE_SERIALIZER = (statistics, type, ctx) -> statistics.serializeProfile();
-
+public final class PlayerKey implements StatisticHolder {
 	private static final YggdrasilAuthenticationService AUTH_SERVICE = new YggdrasilAuthenticationService(Proxy.NO_PROXY, YggdrasilEnvironment.PROD.getEnvironment());
 	private static final MinecraftSessionService SESSION_SERVICE = AUTH_SERVICE.createMinecraftSessionService();
 
@@ -94,5 +93,15 @@ public final class PlayerKey {
 
 	public boolean matches(Entity entity) {
 		return entity instanceof ServerPlayer && entity.getUUID().equals(profile.getId());
+	}
+
+	@Override
+	public Component getName(IGamePhase game) {
+		return Component.literal(name());
+	}
+
+	@Override
+	public StatisticsMap getOwnStatistics(GameStatistics statistics) {
+		return statistics.forPlayer(this);
 	}
 }
