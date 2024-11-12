@@ -108,7 +108,7 @@ public record ScoreMobInGoalBehavior(
 		Component scoringName = scoringPlayer != null ? scoringPlayer.getDisplayName() : MinigameTexts.UNKNOWN;
 		boolean opposingGoal = scoringPlayer == null || teams.isOnTeam(scoringPlayer, goal.defensiveTeam);
 
-		Component title = opposingGoal ? POSITIVE_EMOTE : NEGATIVE_EMOTE;
+		Component title = opposingGoal ? NEGATIVE_EMOTE : POSITIVE_EMOTE;
 		Component subtitle = MinigameTexts.POINT_SCORED.apply(scoringName, scoringTeam.config().styledName());
 
 		int fade = SharedConstants.TICKS_PER_SECOND / 4;
