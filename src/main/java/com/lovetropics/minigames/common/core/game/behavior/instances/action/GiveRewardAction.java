@@ -43,7 +43,7 @@ public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding>
 		).apply(i, StatisticBinding::new));
 
 		public int resolve(final IGamePhase game, final ServerPlayer player) {
-			final int value = game.statistics().forPlayer(player).getOr(statistic, 0);
+			final int value = game.statistics().forPlayer(player).getInt(statistic);
 			return Mth.floor(multiplier * value);
 		}
 	}

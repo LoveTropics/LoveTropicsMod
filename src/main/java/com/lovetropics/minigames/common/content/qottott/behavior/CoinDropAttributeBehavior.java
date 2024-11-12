@@ -37,7 +37,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 				final double coinDrops = killer.getAttributeValue(Qottott.COIN_DROPS);
 				if (coinDrops > 0.0) {
 					final StatisticsMap statistics = game.statistics().forPlayer(player);
-					final int amount = Mth.floor(statistics.getOr(statistic, 0) * coinDrops);
+					final int amount = Mth.floor(statistics.getInt(statistic) * coinDrops);
 					if (amount > 0) {
 						statistics.incrementInt(statistic, -amount);
 						spawnItems(game, player, amount, item);

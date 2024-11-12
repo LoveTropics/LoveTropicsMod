@@ -47,7 +47,7 @@ public record StatisticTagBehavior(StatisticKey<Integer> statistic, Item icon) i
 	private boolean updateState(final IGamePhase game, final Object2IntMap<UUID> points) {
 		boolean changed = false;
 		for (final PlayerKey player : game.statistics().getPlayers()) {
-			final int value = game.statistics().forPlayer(player).getOr(statistic, 0);
+			final int value = game.statistics().forPlayer(player).getInt(statistic);
 			if (points.put(player.id(), value) != value) {
 				changed = true;
 			}

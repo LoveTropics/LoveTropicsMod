@@ -29,6 +29,11 @@ public final class StatisticsMap {
 		return value != null ? value : or;
 	}
 
+	public int getInt(StatisticKey<? extends Number> key) {
+		Number value = get(key);
+		return value != null ? value.intValue() : 0;
+	}
+
 	public <T> T getOrElse(StatisticKey<T> key, Supplier<T> orElse) {
 		T value = get(key);
 		return value != null ? value : orElse.get();

@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -22,7 +23,10 @@ public record SumStatisticBehavior(StatisticKey<Integer> statistic) implements I
 			final GameStatistics statistics = game.statistics();
 			int total = 0;
 			for (final PlayerKey player : statistics.getPlayers()) {
-				total += statistics.forPlayer(player).getOr(statistic, 0);
+				total += statistics.forPlayer(player).getInt(statistic);
+			}
+			for (final GameTeamKey team : statistics.getTeams()) {
+				total += statistics.forTeam(team).getInt(statistic);
 			}
 			statistics.global().set(statistic, total);
 		});

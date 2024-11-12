@@ -22,7 +22,7 @@ public record SetXpToStatisticBehavior(StatisticKey<Integer> statistic) implemen
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, player -> {
 			final StatisticsMap statistics = game.statistics().forPlayer(player);
-			final int level = statistics.getOr(statistic, 0);
+			final int level = statistics.getInt(statistic);
 			if (level != player.experienceLevel) {
 				player.setExperienceLevels(level);
 				player.experienceProgress = 1.0f;
