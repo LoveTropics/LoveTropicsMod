@@ -22,9 +22,10 @@ import net.minecraft.world.item.component.DyedItemColor;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
-public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet, boolean clear, boolean colorByTeam) implements IGameBehavior {
+public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet, boolean clear, boolean colorByTeam, Map<GameTeamKey, ItemStack> hotbarTeamItems) implements IGameBehavior {
 	public static final MapCodec<AddEquipmentAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.ITEM_STACK.listOf().optionalFieldOf("items", List.of()).forGetter(AddEquipmentAction::items),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("head", ItemStack.EMPTY).forGetter(AddEquipmentAction::head),
@@ -32,7 +33,8 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 			MoreCodecs.ITEM_STACK.optionalFieldOf("legs", ItemStack.EMPTY).forGetter(AddEquipmentAction::legs),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("feet", ItemStack.EMPTY).forGetter(AddEquipmentAction::feet),
 			Codec.BOOL.optionalFieldOf("clear", false).forGetter(AddEquipmentAction::clear),
-			Codec.BOOL.optionalFieldOf("color_by_team", false).forGetter(AddEquipmentAction::colorByTeam)
+			Codec.BOOL.optionalFieldOf("color_by_team", false).forGetter(AddEquipmentAction::colorByTeam),
+			Codec.unboundedMap(GameTeamKey.CODEC, MoreCodecs.ITEM_STACK).optionalFieldOf("hotbar_team_items", Map.of()).forGetter(AddEquipmentAction::hotbarTeamItems)
 	).apply(i, AddEquipmentAction::new));
 
 	@Override
@@ -49,6 +51,13 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 			player.setItemSlot(EquipmentSlot.CHEST, copyAndModify(player, teams, chest));
 			player.setItemSlot(EquipmentSlot.LEGS, copyAndModify(player, teams, legs));
 			player.setItemSlot(EquipmentSlot.FEET, copyAndModify(player, teams, feet));
+			if (teams != null) {
+				final GameTeamKey teamKey = teams.getTeamForPlayer(player);
+				final ItemStack hotbarItem = hotbarTeamItems.get(teamKey);
+				if (hotbarItem != null) {
+					player.getInventory().add(8, copyAndModify(player, teams, hotbarItem));
+				}
+			}
 			return true;
 		});
 	}
