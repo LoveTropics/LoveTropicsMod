@@ -206,6 +206,11 @@ public class GamePhase implements IGamePhase {
 	}
 
 	@Override
+	public GameEventListeners events() {
+		return events;
+	}
+
+	@Override
 	public <T> T invoker(GameEventType<T> type) {
 		return events.invoker(type);
 	}

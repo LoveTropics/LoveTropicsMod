@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -62,6 +63,8 @@ public interface IGamePhase extends IGame {
 	GamePhaseType phaseType();
 
 	IGamePhaseDefinition phaseDefinition();
+
+	GameEventListeners events();
 
 	<T> T invoker(GameEventType<T> type);
 

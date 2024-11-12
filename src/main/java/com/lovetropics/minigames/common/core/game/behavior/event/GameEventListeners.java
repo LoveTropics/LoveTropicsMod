@@ -36,4 +36,21 @@ public final class GameEventListeners implements EventRegistrar {
 	public <T> T invoker(GameEventType<T> type) {
 		return (T) invokers.getOrDefault(type, type.empty());
 	}
+
+	public void addAll(GameEventListeners listeners) {
+		listeners.listeners.forEach((type, list) -> {
+			this.listeners.computeIfAbsent(type, e -> new ArrayList<>()).addAll(list);
+			rebuildInvoker(type);
+		});
+	}
+
+	public void removeAll(GameEventListeners listeners) {
+		listeners.listeners.forEach((type, list) -> {
+			List<Object> targetList = this.listeners.get(type);
+			if (targetList != null) {
+				targetList.removeAll(list);
+				rebuildInvoker(type);
+			}
+		});
+	}
 }

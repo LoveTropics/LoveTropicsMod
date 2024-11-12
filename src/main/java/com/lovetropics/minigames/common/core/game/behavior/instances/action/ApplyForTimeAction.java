@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
@@ -25,11 +26,20 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionList<ServerPlayer> clear, GameActionList<ServerPlayer> tick, Optional<TemplatedText> indicator, int seconds) implements IGameBehavior {
+public record ApplyForTimeAction(
+		GameActionList<ServerPlayer> apply,
+		GameActionList<ServerPlayer> clear,
+		GameActionList<ServerPlayer> tick,
+		// Slightly sketchy implications for plugging any behavior in here, but oh well
+		IGameBehavior nested,
+		Optional<TemplatedText> indicator,
+		int seconds
+) implements IGameBehavior {
 	public static final MapCodec<ApplyForTimeAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			GameActionList.PLAYER_CODEC.optionalFieldOf("apply", GameActionList.EMPTY).forGetter(ApplyForTimeAction::apply),
 			GameActionList.PLAYER_CODEC.optionalFieldOf("clear", GameActionList.EMPTY).forGetter(ApplyForTimeAction::clear),
 			GameActionList.PLAYER_CODEC.optionalFieldOf("tick", GameActionList.EMPTY).forGetter(ApplyForTimeAction::tick),
+			IGameBehavior.CODEC.optionalFieldOf("nested", IGameBehavior.EMPTY).forGetter(ApplyForTimeAction::nested),
 			TemplatedText.CODEC.optionalFieldOf("indicator").forGetter(ApplyForTimeAction::indicator),
 			Codec.INT.fieldOf("seconds").forGetter(ApplyForTimeAction::seconds)
 	).apply(i, ApplyForTimeAction::new));
@@ -41,6 +51,8 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 		clear.register(game, events);
 
 		final State state = new State();
+		nested.register(game, state.nestedListeners);
+
 		events.listen(GameActionEvents.APPLY, context -> state.tryApply(game, context));
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> state.tryApplyTo(game, context, player));
 		events.listen(GamePhaseEvents.TICK, () -> state.tick(game));
@@ -53,6 +65,8 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 
 	private class State {
 		private static final long NOT_ACTIVE = -1;
+
+		private final GameEventListeners nestedListeners = new GameEventListeners();
 
 		private long finishTime = NOT_ACTIVE;
 		private final Object2LongMap<UUID> playerFinishTimes = new Object2LongOpenHashMap<>();
@@ -67,6 +81,7 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 				tick.apply(game, GameActionContext.EMPTY);
 				if (time >= finishTime) {
 					clear.apply(game, GameActionContext.EMPTY);
+					game.events().removeAll(nestedListeners);
 					finishTime = NOT_ACTIVE;
 				}
 			}
@@ -102,6 +117,7 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 
 		private boolean tryApply(final IGamePhase game, final GameActionContext context) {
 			if (finishTime == NOT_ACTIVE && apply.apply(game, context)) {
+				game.events().addAll(nestedListeners);
 				finishTime = game.ticks() + (long) seconds * SharedConstants.TICKS_PER_SECOND;
 				return true;
 			}
