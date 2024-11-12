@@ -10,6 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -90,6 +91,9 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 
 	void addToSidebar(List<Component> sidebar, int length);
 
+	@Nullable
+	H getWinner();
+
 	final class PlayerOrder implements Placement<PlayerKey> {
 		private final IGamePhase game;
 		private final List<Placed<PlayerKey>> order;
@@ -140,6 +144,12 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 				Component name = Component.literal(entry.value().name()).withStyle(ChatFormatting.AQUA);
 				sidebar.add(Component.literal(" - ").append(name));
 			}
+		}
+
+		@Override
+		@Nullable
+		public PlayerKey getWinner() {
+			return !order.isEmpty() ? order.getFirst().value() : null;
 		}
 
 		@Override
@@ -202,6 +212,20 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 				Component score = Component.literal(scoreKey.display(entry.score)).withStyle(ChatFormatting.GOLD);
 				sidebar.add(Component.literal(" - ").append(name).append(score));
 			}
+		}
+
+		@Override
+		@Nullable
+		public H getWinner() {
+			if (entries.isEmpty()) {
+				return null;
+			}
+			Entry<H, T> first = entries.getFirst();
+			// The winning score is ambiguous
+			if (entries.size() > 1 && first.score.equals(entries.get(1).score)) {
+				return null;
+			}
+			return first.holder;
 		}
 
 		@Override
