@@ -20,7 +20,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -29,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,7 +44,8 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys),
 			Codec.unboundedMap(GameTeamKey.CODEC, MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new)).optionalFieldOf("teams", Map.of()).forGetter(c -> c.teamSpawnKeys),
 			Codec.BOOL.optionalFieldOf("split_by_team", true).forGetter(c -> c.splitByTeam),
-			Codec.FLOAT.optionalFieldOf("angle", 0.0f).forGetter(c -> c.angle)
+			Codec.FLOAT.optionalFieldOf("angle", 0.0f).forGetter(c -> c.angle),
+			Codec.STRING.optionalFieldOf("face_region").forGetter(c -> c.faceRegion)
 	).apply(i, PositionPlayersBehavior::new));
 
 	private final String[] participantSpawnKeys;
@@ -50,24 +54,31 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	private final Map<GameTeamKey, String[]> teamSpawnKeys;
 	private final boolean splitByTeam;
 	private final float angle;
+	private final Optional<String> faceRegion;
 
 	private CycledSpawner participantSpawner = CycledSpawner.EMPTY;
 	private CycledSpawner spectatorSpawner = CycledSpawner.EMPTY;
 	private CycledSpawner fallbackSpawner = CycledSpawner.EMPTY;
 	private Map<GameTeamKey, CycledSpawner> teamSpawners = Map.of();
 
-	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, Map<GameTeamKey, String[]> teamSpawnKeys, boolean splitByTeam, float angle) {
+	@Nullable
+	private Vec3 facePos;
+
+	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, Map<GameTeamKey, String[]> teamSpawnKeys, boolean splitByTeam, float angle, Optional<String> faceRegion) {
 		this.participantSpawnKeys = participantSpawnKeys;
 		this.spectatorSpawnKeys = spectatorSpawnKeys;
 		this.allSpawnKeys = allSpawnKeys;
 		this.teamSpawnKeys = teamSpawnKeys;
 		this.splitByTeam = splitByTeam;
 		this.angle = angle;
+		this.faceRegion = faceRegion;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		MapRegions regions = game.mapRegions();
+
+		faceRegion.ifPresent(key -> facePos = regions.getOrThrow(key).center());
 
 		participantSpawner = new CycledSpawner(regions, participantSpawnKeys);
 		spectatorSpawner = new CycledSpawner(regions, spectatorSpawnKeys);
@@ -112,6 +123,12 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		BlockBox region = getSpawnRegionFor(playerId, role, teams);
 		if (region != null) {
 			BlockPos pos = tryFindEmptyPos(game, game.level().getRandom(), region);
+			float angle = this.angle;
+			if (facePos != null) {
+				double deltaX = facePos.x - (pos.getX() + 0.5);
+				double deltaZ = facePos.z - (pos.getZ() + 0.5);
+				angle = (float) (Mth.atan2(deltaZ, deltaX) * Mth.RAD_TO_DEG - 90.0f);
+			}
 			spawn.teleportTo(game.level(), pos, angle);
 		}
 	}
