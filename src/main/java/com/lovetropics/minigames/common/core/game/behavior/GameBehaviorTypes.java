@@ -112,6 +112,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.pha
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameTickTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StartGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerAttacksBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DamageInWaterBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
@@ -273,6 +274,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TriggerEveryPackageBehavior> TRIGGER_EVERY_PACKAGE = register("trigger_every_package", TriggerEveryPackageBehavior.CODEC);
 	public static final GameBehaviorEntry<WhileInInventoryTrigger> WHILE_IN_INVENTORY = register("while_in_inventory", WhileInInventoryTrigger.CODEC);
 	public static final GameBehaviorEntry<ScoreMobInGoalBehavior> SCORE_MOB_IN_GOAL = register("score_mob_in_goal", ScoreMobInGoalBehavior.CODEC);
+	public static final GameBehaviorEntry<CancelPlayerAttacksBehavior> CANCEL_PLAYER_ATTACKS = register("cancel_player_attacks", CancelPlayerAttacksBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

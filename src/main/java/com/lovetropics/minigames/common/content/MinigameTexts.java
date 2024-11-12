@@ -122,6 +122,8 @@ public final class MinigameTexts {
 
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");
+		KEYS.add("get_ready", "Get ready!");
+		KEYS.add("go", "Go!");
 
 		KEYS.add("donation.antidote_package", "Antidote Package");
 		KEYS.add("donation.antidote_package.description", "Help someone avoid bad effects by giving them a Bucket of Milk!");
