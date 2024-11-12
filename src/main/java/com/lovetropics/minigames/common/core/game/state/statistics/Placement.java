@@ -4,6 +4,7 @@ import com.google.common.collect.Iterators;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -42,7 +43,8 @@ public interface Placement<H extends StatisticHolder> extends Iterable<Placed<H>
 	}
 
 	static <T extends Comparable<T>> Score<GameTeamKey, T> fromTeamScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic) {
-		return fromScore(game, game.statistics().getTeams(), statistic, order.asComparator());
+		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+		return fromScore(game, teams != null ? teams.getTeamKeys() : List.of(), statistic, order.asComparator());
 	}
 
 	static <T extends Comparable<T>> Score<PlayerKey, T> fromPlayerScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic, boolean onlyOnline) {
