@@ -1,46 +1,71 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.Placement;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.function.Supplier;
 
-public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, PlacementOrder order) implements IGameBehavior {
+public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, PlacementOrder order, boolean triggerWin) implements IGameBehavior {
 	public static final MapCodec<PlaceByStatisticBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(c -> c.statistic),
-			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order)
+			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order),
+			Codec.BOOL.optionalFieldOf("trigger_win", true).forGetter(c -> c.triggerWin)
 	).apply(i, PlaceByStatisticBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.FINISH, () -> {
-			Placement.Score<PlayerKey, Integer> playerPlacement = Placement.fromPlayerScore(order, game, statistic);
-			playerPlacement.placeInto(StatisticKey.PLACEMENT);
+		if (triggerWin) {
+			events.listen(GameLogicEvents.GAME_OVER, () -> {
+				GameWinner winner = runPlacement(game);
+				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winner);
+			});
+		}
 
-			PlayerKey winningPlayer = playerPlacement.getWinner();
-			if (winningPlayer != null) {
-				game.statistics().global().set(StatisticKey.WINNING_PLAYER, winningPlayer);
-			}
+		// Just to make sure that the placement statistics are there, even if game_over was never triggered
+		events.listen(GamePhaseEvents.FINISH, () -> runPlacement(game));
+	}
 
-			Placement.Score<GameTeamKey, Integer> teamPlacement = Placement.fromTeamScore(order, game, statistic);
-			teamPlacement.placeInto(StatisticKey.PLACEMENT);
+	private GameWinner runPlacement(IGamePhase game) {
+		Placement.Score<PlayerKey, Integer> playerPlacement = Placement.fromPlayerScore(order, game, statistic);
+		playerPlacement.placeInto(StatisticKey.PLACEMENT);
 
-			GameTeamKey winningTeam = teamPlacement.getWinner();
-			if (winningTeam != null) {
-				game.statistics().global().set(StatisticKey.WINNING_TEAM, winningTeam);
-			}
-		});
+		PlayerKey winningPlayerKey = playerPlacement.getWinner();
+		if (winningPlayerKey != null) {
+			game.statistics().global().set(StatisticKey.WINNING_PLAYER, winningPlayerKey);
+		}
+
+		Placement.Score<GameTeamKey, Integer> teamPlacement = Placement.fromTeamScore(order, game, statistic);
+		teamPlacement.placeInto(StatisticKey.PLACEMENT);
+
+		GameTeamKey winningTeamKey = teamPlacement.getWinner();
+		if (winningTeamKey != null) {
+			game.statistics().global().set(StatisticKey.WINNING_TEAM, winningTeamKey);
+		}
+
+		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+		GameTeam winningTeam = teams != null && winningTeamKey != null ? teams.getTeamByKey(winningTeamKey) : null;
+		if (winningTeam != null) {
+			return new GameWinner.Team(winningTeam);
+		} else if (winningPlayerKey != null) {
+			return GameWinner.byPlayerKey(game, winningPlayerKey);
+		}
+		return new GameWinner.Nobody();
 	}
 
 	@Override
