@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsTo
 import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.IndividualWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.JoinLateWithRoleBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.ScoreMobInGoalBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.OnlyTickInPeriodBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PermanentItemBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PlayerHeadRewardBehavior;
@@ -273,6 +274,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<CountdownEffectsBehavior> COUNTDOWN_EFFECTS = register("countdown_effects", CountdownEffectsBehavior.CODEC);
 	public static final GameBehaviorEntry<TriggerEveryPackageBehavior> TRIGGER_EVERY_PACKAGE = register("trigger_every_package", TriggerEveryPackageBehavior.CODEC);
 	public static final GameBehaviorEntry<WhileInInventoryTrigger> WHILE_IN_INVENTORY = register("while_in_inventory", WhileInInventoryTrigger.CODEC);
+	public static final GameBehaviorEntry<ScoreMobInGoalBehavior> SCORE_MOB_IN_GOAL = register("score_mob_in_goal", ScoreMobInGoalBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 
 public class GameActionList<T> {
     public static final GameActionList<ServerPlayer> EMPTY = new GameActionList<>(IGameBehavior.EMPTY, PlayerActionTarget.SOURCE);
+    public static final GameActionList<Void> EMPTY_VOID = new GameActionList<>(IGameBehavior.EMPTY, NoneActionTarget.INSTANCE);
 
     public static final MapCodec<GameActionList<?>> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             IGameBehavior.CODEC.fieldOf("actions").forGetter(list -> list.behavior),

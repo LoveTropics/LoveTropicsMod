@@ -37,6 +37,7 @@ public final class MinigameTexts {
 	public static final Component QOTTOTT = KEYS.add("qottott", "Qottott");
 	public static final Component CONNECT_FOUR = KEYS.add("connect_four", "Connect Four");
 	public static final Component CRAFTING_BEE = KEYS.add("crafting_bee", "Crafting Bee");
+	public static final Component CRAB_HOCKEY = KEYS.add("crab_hockey", "Crab Hockey");
 
 	// TODO: These should move into SurviveTheTideTexts
 	public static final Component[] SURVIVE_THE_TIDE_INTRO = {
@@ -117,6 +118,7 @@ public final class MinigameTexts {
 	public static final TranslationCollector.Fun1 ELIMINATED = KEYS.add1("eliminated", "☠ %s was eliminated!").withStyle(ChatFormatting.GRAY);
 
 	public static final Component UNKNOWN = KEYS.add("unknown", "Unknown");
+	public static final TranslationCollector.Fun2 POINT_SCORED = KEYS.add2("goal_scored", "%s scored for %s!").withStyle(ChatFormatting.GRAY);
 
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");
