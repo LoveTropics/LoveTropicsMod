@@ -73,14 +73,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		addTeamsToScoreboard(game);
 
-		events.listen(GamePhaseEvents.CREATE, () ->
-				teams.getAllocations().allocate(game.participants(), (player, teamKey) -> {
-					GameTeam team = teams.getTeamByKey(teamKey);
-					if (team != null) {
-						teams.addPlayerTo(player, teamKey);
-					}
-				})
-		);
+		events.listen(GamePhaseEvents.CREATE, () -> teams.allocatePlayers(game.participants()));
 
 		events.listen(GamePlayerEvents.ADD, player -> {
 			GameTeamKey teamKey = teams.getTeamForPlayer(player);

@@ -118,7 +118,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	}
 
 	private void onRequestJoinTeam(ServerPlayer player, GameTeam team) {
-		teamState.getAllocations().setPlayerPreference(player.getUUID(), team.key());
+		teamState.setPlayerPreference(player.getUUID(), team.key());
 
 		Component teamName = team.config().name().copy().withStyle(team.config().formatting(), ChatFormatting.BOLD);
 		player.displayClientMessage(MinigameTexts.JOINED_TEAM.apply(teamName), false);

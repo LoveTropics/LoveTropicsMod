@@ -37,7 +37,8 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 
 	private final Collection<GameTeam> pollingTeams;
 
-	private final Allocations allocations = new Allocations();
+	@Nullable
+	private Allocations allocations = new Allocations();
 
 	public TeamState(List<GameTeam> teams) {
 		this.teams = teams;
@@ -52,8 +53,24 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		}
 	}
 
-	public Allocations getAllocations() {
-		return allocations;
+	public void setPlayerPreference(UUID player, GameTeamKey team) {
+		if (allocations != null) {
+			allocations.setPlayerPreference(player, team);
+		}
+	}
+
+	public void allocatePlayers(PlayerSet participants) {
+		// We might end up here in a microgame, so don't reassign teams if they were already decided
+		if (allocations == null) {
+			return;
+		}
+		allocations.allocate(participants, (player, teamKey) -> {
+			GameTeam team = getTeamByKey(teamKey);
+			if (team != null) {
+				addPlayerTo(player, teamKey);
+			}
+		});
+		allocations = null;
 	}
 
 	public void addPlayerTo(ServerPlayer player, GameTeamKey team) {
