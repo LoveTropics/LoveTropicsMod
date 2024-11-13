@@ -51,7 +51,7 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSp
 			}
 			return false;
 		});
-		events.listen(GameLogicEvents.GAME_OVER, gameOver::setTrue);
+		events.listen(GameLogicEvents.GAME_OVER, winner -> gameOver.setTrue());
 	}
 
 	private void broadcastToTeam(ServerPlayer player, PlayerChatMessage signedMessage, IGamePhase game, GameTeam team) {

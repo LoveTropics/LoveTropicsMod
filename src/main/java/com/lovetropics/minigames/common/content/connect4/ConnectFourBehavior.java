@@ -5,6 +5,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -167,8 +168,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         if (checkWin(x, y, team)) {
             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
             GameTeam gameTeam = teams.getTeamByKey(team);
-            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(gameTeam);
-            game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+            game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
 
             game.allPlayers().forEach(ServerPlayer::closeContainer);
 
@@ -176,7 +176,7 @@ public class ConnectFourBehavior implements IGameBehavior {
             game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
         } else {
             if (placedPieces == width * height) {
-                game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+                game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
 
                 game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
                 game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));

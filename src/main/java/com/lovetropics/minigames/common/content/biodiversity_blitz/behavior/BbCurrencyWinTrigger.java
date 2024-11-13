@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -85,9 +86,10 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 	private void triggerWin(IGamePhase game, GameTeamKey teamKey, @Nullable GameTeam team) {
 		game.statistics().global().set(StatisticKey.WINNING_TEAM, teamKey);
 		if (team != null) {
-			game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(team);
+			game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(team);
+		} else {
+			game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
 		}
-		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
 		gameOver = true;
 	}

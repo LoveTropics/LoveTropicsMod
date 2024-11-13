@@ -224,8 +224,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 			winner = new GameWinner.Nobody();
 		}
 
-		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winner);
-		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+		game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
 
 		for (ServerPlayer player : game.participants()) {
 			clearPlayerState(player);

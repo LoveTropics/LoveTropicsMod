@@ -31,9 +31,10 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		if (triggerWin) {
-			events.listen(GameLogicEvents.GAME_OVER, () -> {
+			events.listen(GameLogicEvents.GAME_TIME_RAN_OUT, () -> {
 				GameWinner winner = runPlacement(game);
-				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winner);
+				game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
+				return true;
 			});
 		}
 

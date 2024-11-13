@@ -67,7 +67,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         // Victory points from collectible blocks
         events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBlockBroken);
         // Victory points from winning microgame
-        events.listen(GameLogicEvents.WIN_TRIGGERED, this::onWinTriggered);
+        events.listen(GameLogicEvents.GAME_OVER, this::onWinTriggered);
         events.listen(RiverRaceEvents.VICTORY_POINTS_CHANGED, (team, value, lastValue) -> {
             PlayerSet playersForTeam = teams.getPlayersForTeam(team);
             playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(value - lastValue), true);

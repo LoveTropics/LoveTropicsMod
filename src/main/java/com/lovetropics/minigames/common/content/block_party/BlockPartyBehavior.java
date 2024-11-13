@@ -189,7 +189,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 								message = MinigameTexts.PLAYER_WON.apply(styledTeamName).withStyle(ChatFormatting.GREEN);
 //								game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 
-								game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningTeam);
+								game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(winningTeam);
 							} else {
 								message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
 							}
@@ -215,7 +215,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 					message = MinigameTexts.PLAYER_WON.apply(winningPlayer.getDisplayName()).withStyle(ChatFormatting.GREEN);
 					game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 
-					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer);
+					game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(winningPlayer);
 				} else {
 					message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
 				}

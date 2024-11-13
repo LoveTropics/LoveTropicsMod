@@ -34,9 +34,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GameLogicEvents.GAME_OVER, () -> {
-			minigameEnded = true;
-		});
+		events.listen(GameLogicEvents.GAME_OVER, winner -> minigameEnded = true);
 
 		events.listen(GamePhaseEvents.TICK, () -> checkForGameEndCondition(game, game.level()));
 	}

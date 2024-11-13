@@ -43,7 +43,7 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.START, () -> integrations.start(events));
 
 		AtomicBoolean finished = new AtomicBoolean();
-		events.listen(GameLogicEvents.GAME_OVER, () -> {
+		events.listen(GameLogicEvents.GAME_OVER, winner -> {
 			if (finished.compareAndSet(false, true)) {
 				integrations.finish(game.statistics());
 			}

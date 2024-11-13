@@ -74,11 +74,8 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GameLogicEvents.WIN_TRIGGERED, winner ->
-				this.winner = ComponentUtils.mergeStyles(winner.name().copy(), Style.EMPTY.withColor(ChatFormatting.AQUA))
-		);
-
-		events.listen(GameLogicEvents.GAME_OVER, () -> {
+		events.listen(GameLogicEvents.GAME_OVER, winner -> {
+			this.winner = ComponentUtils.mergeStyles(winner.name().copy(), Style.EMPTY.withColor(ChatFormatting.AQUA));
 			if (!ended) {
 				triggerEnd(game);
 			}

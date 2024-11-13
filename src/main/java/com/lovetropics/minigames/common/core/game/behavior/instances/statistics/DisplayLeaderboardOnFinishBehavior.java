@@ -29,7 +29,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
-		events.listen(GameLogicEvents.GAME_OVER, () -> {
+		events.listen(GameLogicEvents.GAME_OVER, winner -> {
 			PlayerSet players = game.allPlayers();
 			players.sendMessage(MinigameTexts.RESULTS);
 			if (teams == null) {

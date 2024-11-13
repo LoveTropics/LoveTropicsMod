@@ -28,9 +28,7 @@ public class IndividualWinTrigger implements IGameBehavior {
 				ServerPlayer winningPlayer = participants.iterator().next();
 
 				game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
-
-				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer);
-				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+				game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(winningPlayer);
 			}
 		});
 	}

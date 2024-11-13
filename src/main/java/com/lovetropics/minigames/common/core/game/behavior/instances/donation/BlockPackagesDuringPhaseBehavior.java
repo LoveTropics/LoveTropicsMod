@@ -28,7 +28,7 @@ public record BlockPackagesDuringPhaseBehavior(List<ProgressionPeriod> blockedPe
 		}
 
 		MutableBoolean gameOver = new MutableBoolean();
-		events.listen(GameLogicEvents.GAME_OVER, gameOver::setTrue);
+		events.listen(GameLogicEvents.GAME_OVER, winner -> gameOver.setTrue());
 
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, gamePackage -> {
 			if (progression.is(blockedPeriods) || gameOver.isTrue()) {

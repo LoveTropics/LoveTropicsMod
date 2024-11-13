@@ -2,6 +2,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -27,7 +28,9 @@ public record TimedCloseBehavior(Optional<ProgressionPoint> end, Optional<Progre
 		final MutableBoolean gameOver = new MutableBoolean();
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (end.isPresent() && !gameOver.getValue() && progression.isAfter(end.get())) {
-				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+				if (!game.invoker(GameLogicEvents.GAME_TIME_RAN_OUT).onGameTimeRanOut()) {
+					game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
+				}
 				gameOver.setTrue();
 			}
 			if (close.isPresent() && progression.isAfter(close.get())) {

@@ -56,7 +56,7 @@ public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eve
 			return InteractionResult.PASS;
 		});
 
-		events.listen(GameLogicEvents.GAME_OVER, () -> invoke(game, "game_over"));
+		events.listen(GameLogicEvents.GAME_OVER, winner -> invoke(game, "game_over"));
 
 		events.listen(GamePhaseEvents.TICK, () -> invoke(game, "tick"));
 	}

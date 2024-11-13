@@ -5,38 +5,37 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class GameLogicEvents {
-	public static final GameEventType<WinTriggered> WIN_TRIGGERED = GameEventType.create(WinTriggered.class, listeners -> (winnerName) -> {
-		for (WinTriggered listener : listeners) {
-			listener.onWinTriggered(winnerName);
+	public static final GameEventType<GameOver> GAME_OVER = GameEventType.create(GameOver.class, listeners -> winner -> {
+		for (GameOver listener : listeners) {
+			listener.onGameOver(winner);
 		}
 	});
 
-	public static final GameEventType<GameOver> GAME_OVER = GameEventType.create(GameOver.class, listeners -> () -> {
-		for (GameOver listener : listeners) {
-			listener.onGameOver();
+	public static final GameEventType<GameTimeRanOut> GAME_TIME_RAN_OUT = GameEventType.create(GameTimeRanOut.class, listeners -> () -> {
+		for (GameTimeRanOut listener : listeners) {
+			if (listener.onGameTimeRanOut()) {
+				return true;
+			}
 		}
+		return false;
 	});
 
 	private GameLogicEvents() {
 	}
 
-	public interface WinTriggered {
-		void onWinTriggered(GameWinner winner);
-
-		default void onWinTriggered(ServerPlayer player) {
-			onWinTriggered(new GameWinner.Player(player));
-		}
-
-		default void onWinTriggered(GameTeam team) {
-			onWinTriggered(new GameWinner.Team(team));
-		}
-
-		default void onStalemate() {
-			onWinTriggered(new GameWinner.Nobody());
-		}
+	public interface GameTimeRanOut {
+		boolean onGameTimeRanOut();
 	}
 
 	public interface GameOver {
-		void onGameOver();
+		void onGameOver(GameWinner winner);
+
+		default void onGameWonBy(ServerPlayer player) {
+			onGameOver(new GameWinner.Player(player));
+		}
+
+		default void onGameWonBy(GameTeam team) {
+			onGameOver(new GameWinner.Team(team));
+		}
 	}
 }

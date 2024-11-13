@@ -218,8 +218,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
         if (completed == teamTasks.size()) {
             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
-            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(gameTeam);
-            game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+            game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
 
             done = true;
 
@@ -253,19 +252,18 @@ public class CraftingBeeBehavior implements IGameBehavior {
                         var withMax = tasks.asMap().entrySet().stream().filter(e -> e.getValue().stream().filter(c -> c.done).count() == mx)
                                         .toList();
                         if (withMax.size() != 1) {
-                            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(new GameWinner.Nobody());
+                            game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
 
                             game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
                         } else {
                             var gameTeam = teams.getTeamByKey(withMax.getFirst().getKey());
                             var teamConfig = gameTeam.config();
                             game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
-                            game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(gameTeam);
+                            game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
 
                             game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
                         }
 
-                        game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
                         done = true;
                         game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
                     }

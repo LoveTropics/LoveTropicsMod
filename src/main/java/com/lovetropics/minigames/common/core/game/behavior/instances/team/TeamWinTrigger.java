@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -49,9 +48,7 @@ public class TeamWinTrigger implements IGameBehavior {
 
 				winTriggered = true;
 
-				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(finalTeam);
-				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
-
+				game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(finalTeam);
 				game.statistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
 			}
 		});

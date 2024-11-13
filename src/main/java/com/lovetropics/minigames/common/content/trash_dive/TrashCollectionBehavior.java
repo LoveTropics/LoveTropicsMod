@@ -57,7 +57,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.LEFT_CLICK_BLOCK, (player, world, pos) -> onPlayerLeftClickBlock(game, player, pos));
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onPlayerBreakBlock);
 
-		events.listen(GameLogicEvents.GAME_OVER, () -> triggerGameOver(game));
+		events.listen(GameLogicEvents.GAME_OVER, winner -> triggerGameOver(game));
 	}
 
 	private void onStart(IGamePhase game) {
