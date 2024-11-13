@@ -4,6 +4,7 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaDifficulty;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -229,23 +230,22 @@ public final class TriviaBehaviour implements IGameBehavior {
                 ExtraCodecs.nonEmptyList(TriviaQuestion.CODEC.listOf()).fieldOf("questions").forGetter(TriviaZone::questionPool)
         ).apply(i, TriviaZone::new));
 
-        private Stream<TriviaQuestion> questionsByDifficulty(String difficulty) {
-            return questionPool.stream()
-                    .filter(question -> question.difficulty().equalsIgnoreCase(difficulty));
+        private Stream<TriviaQuestion> questionsByDifficulty(TriviaDifficulty difficulty) {
+            return questionPool.stream().filter(question -> question.difficulty() == difficulty);
         }
     }
 
-    public record TriviaQuestion(String question, List<TriviaQuestionAnswer> answers, String difficulty) {
+    public record TriviaQuestion(String question, List<TriviaQuestionAnswer> answers, TriviaDifficulty difficulty) {
         public static final Codec<TriviaQuestion> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("question").forGetter(TriviaQuestion::question),
                 ExtraCodecs.nonEmptyList(TriviaQuestionAnswer.CODEC.listOf()).fieldOf("answers").forGetter(TriviaQuestion::answers),
-                Codec.STRING.fieldOf("difficulty").forGetter(TriviaQuestion::difficulty)
+                TriviaDifficulty.CODEC.fieldOf("difficulty").forGetter(TriviaQuestion::difficulty)
         ).apply(i, TriviaQuestion::new));
 
         public static final StreamCodec<ByteBuf, TriviaQuestion> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8, TriviaQuestion::question,
                 TriviaQuestionAnswer.STREAM_CODEC.apply(ByteBufCodecs.list()), TriviaQuestion::answers,
-                ByteBufCodecs.STRING_UTF8, TriviaQuestion::difficulty,
+                TriviaDifficulty.STREAM_CODEC, TriviaQuestion::difficulty,
                 TriviaQuestion::new
         );
 

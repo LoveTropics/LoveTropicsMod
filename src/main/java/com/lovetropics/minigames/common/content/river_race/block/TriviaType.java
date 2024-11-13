@@ -3,23 +3,25 @@ package com.lovetropics.minigames.common.content.river_race.block;
 import net.minecraft.util.StringRepresentable;
 
 public enum TriviaType implements StringRepresentable {
-	REWARD("easy"),
-	GATE("medium"),
-	COLLECTABLE("hard"),
-	VICTORY("hard");
+	REWARD("reward", TriviaDifficulty.EASY),
+	GATE("gate", TriviaDifficulty.MEDIUM),
+	COLLECTABLE("collectable", TriviaDifficulty.HARD),
+	VICTORY("victory", TriviaDifficulty.HARD);
 
-	private final String difficulty;
+	private final String id;
+	private final TriviaDifficulty difficulty;
 
-	TriviaType(String difficulty) {
+	TriviaType(String id, TriviaDifficulty difficulty) {
+		this.id = id;
 		this.difficulty = difficulty;
 	}
 
-	public String difficulty() {
+	public TriviaDifficulty difficulty() {
 		return difficulty;
 	}
 
 	@Override
 	public String getSerializedName() {
-		return toString().toLowerCase();
+		return id;
 	}
 }
