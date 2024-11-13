@@ -63,7 +63,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 
         // Victory points from trivia
-        events.listen(RiverRaceEvents.ANSWER_QUESTION, this::onQuestionAnswered);
+        events.listen(RiverRaceEvents.QUESTION_COMPLETED, this::onQuestionAnswered);
         // Victory points from collectible blocks
         events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBlockBroken);
         // Victory points from winning microgame
@@ -123,24 +123,22 @@ public class VictoryPointsBehavior implements IGameBehavior {
         return InteractionResult.PASS;
     }
 
-    private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, boolean correct) {
-        if (correct) {
-            UUID playerId = player.getUUID();
-			switch (triviaType) {
-				case COLLECTABLE -> {
-					tryAddPoints(playerId, collectibleCollectedPoints);
-					player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
-				}
-				case VICTORY -> {
-					tryAddPoints(playerId, triviaChallengePoints);
-					player.displayClientMessage(RiverRaceTexts.VICTORY_POINT_GIVEN, false);
-				}
-				case REWARD -> {
-					tryAddPoints(playerId, triviaChestPoints);
-					player.displayClientMessage(RiverRaceTexts.LOOT_GIVEN, false);
-				}
-				case GATE -> tryAddPoints(playerId, triviaGatePoints);
-			}
+    private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos) {
+        UUID playerId = player.getUUID();
+        switch (triviaType) {
+            case COLLECTABLE -> {
+                tryAddPoints(playerId, collectibleCollectedPoints);
+                player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
+            }
+            case VICTORY -> {
+                tryAddPoints(playerId, triviaChallengePoints);
+                player.displayClientMessage(RiverRaceTexts.VICTORY_POINT_GIVEN, false);
+            }
+            case REWARD -> {
+                tryAddPoints(playerId, triviaChestPoints);
+                player.displayClientMessage(RiverRaceTexts.LOOT_GIVEN, false);
+            }
+            case GATE -> tryAddPoints(playerId, triviaGatePoints);
         }
     }
 }

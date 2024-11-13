@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.network.trivia;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
+import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -11,6 +12,8 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAnswer) implements CustomPacketPayload {
@@ -22,21 +25,26 @@ public record SelectTriviaAnswerMessage(BlockPos triviaBlock, String selectedAns
     );
 
     public static void handle(final SelectTriviaAnswerMessage message, final IPayloadContext context) {
-        if (context.player().level().getBlockEntity(message.triviaBlock()) instanceof final HasTrivia triviaBlockEntity){
-            IGamePhase game = IGameManager.get().getGamePhaseFor(context.player());
-            if (game != null) {
-                ServerPlayer player = (ServerPlayer) context.player();
-                boolean isCorrect = game.invoker(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION)
-                        .onAnswerQuestion(player, player.serverLevel(), message.triviaBlock(),
-                                triviaBlockEntity,
-                                triviaBlockEntity.getQuestion(), message.selectedAnswer());
-
-            }
-//            triviaBlockEntity.handleAnswerSelection(context.player(), message.selectedAnswer());
+        ServerPlayer player = (ServerPlayer) context.player();
+        if (!player.canInteractWithBlock(message.triviaBlock(), ServerPlayer.INTERACTION_DISTANCE_VERIFICATION_BUFFER)) {
+            return;
         }
+        IGamePhase game = IGameManager.get().getGamePhaseFor(player);
+		if (game != null && player.level().getBlockEntity(message.triviaBlock) instanceof final HasTrivia triviaBlock) {
+            TriviaBehaviour.TriviaQuestion question = triviaBlock.getQuestion();
+            if (question == null) {
+                return;
+            }
+            TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer selectedAnswer = question.getAnswer(message.selectedAnswer);
+			if (selectedAnswer != null) {
+				game.invoker(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION).onAnswerQuestion(player, message.triviaBlock(), triviaBlock, question, selectedAnswer);
+//                triviaBlock.handleAnswerSelection(context.player(), message.selectedAnswer());
+            }
+		}
     }
+
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public Type<SelectTriviaAnswerMessage> type() {
         return TYPE;
     }
 }

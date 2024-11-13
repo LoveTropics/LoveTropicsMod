@@ -112,32 +112,30 @@ public final class TriviaBehaviour implements IGameBehavior {
             }
             return InteractionResult.PASS;
         });
-        events.listen(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION, (player, level, pos, triviaBlockEntity, question, answer) -> {
-            if (question == null || triviaBlockEntity.getState().lockedOut()) {
+        events.listen(TriviaEvents.ANSWER_TRIVIA_BLOCK_QUESTION, (player, pos, triviaBlockEntity, question, answer) -> {
+            if (triviaBlockEntity.getState().lockedOut()) {
                 return false;
             }
-            TriviaQuestion.TriviaQuestionAnswer answerObj = question.getAnswer(answer);
-            if (answerObj != null) {
-                if (answerObj.correct()) {
-                    player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
-					switch (triviaBlockEntity.getTriviaType()) {
-						case GATE -> {
-							level.destroyBlock(pos, false);
-							findNeighboursOfTypeAndDestroy(game.scheduler(), level, pos, null);
-						}
-						case COLLECTABLE -> giveCollectableToPlayer(game, player, pos);
-					}
-                    triviaBlockEntity.markAsCorrect();
-                    PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
-                } else {
-                    player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
-                    lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
-                    PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
-                }
-                game.invoker(RiverRaceEvents.ANSWER_QUESTION).onAnswer(player, triviaBlockEntity.getTriviaType(), answerObj.correct());
-                return answerObj.correct();
+            if (answer.correct()) {
+                player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
+                triviaBlockEntity.markAsCorrect();
+                PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
+                game.invoker(RiverRaceEvents.QUESTION_COMPLETED).onAnswer(player, triviaBlockEntity.getTriviaType(), pos);
+            } else {
+                player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
+                lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
+                PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
             }
-            return false;
+            return answer.correct();
+        });
+        events.listen(RiverRaceEvents.QUESTION_COMPLETED, (player, triviaType, triviaPos) -> {
+            switch (triviaType) {
+                case GATE -> {
+                    game.level().destroyBlock(triviaPos, false);
+                    findNeighboursOfTypeAndDestroy(game.scheduler(), game.level(), triviaPos, null);
+                }
+                case COLLECTABLE -> giveCollectableToPlayer(game, player, triviaPos);
+            }
         });
     }
 
