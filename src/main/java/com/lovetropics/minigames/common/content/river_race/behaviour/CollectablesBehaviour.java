@@ -13,7 +13,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.ColliderState;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -78,17 +77,12 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        ColliderState colliders = ColliderState.getOrAdd(game, events);
         game.instanceState().register(COLLECTABLES, this);
         RiverRaceState riverRaceState = game.state().getOrThrow(RiverRaceState.KEY);
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         for (Collectable collectable : collectables) {
             collectable.onCompleteAction.register(game, events);
-            for (String key : collectable.unlocksColliders) {
-                BlockBox collider = game.mapRegions().getOrThrow(key);
-                colliders.addCollider(key, collider);
-            }
         }
 
         events.listen(GamePhaseEvents.TICK, () -> {
@@ -109,7 +103,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             if (placedCollectable == null) {
                 return InteractionResult.PASS;
             }
-            return tryPlaceCollectable(game, player, pos, placedCollectable, teams, riverRaceState, colliders);
+            return tryPlaceCollectable(game, player, pos, placedCollectable, teams, riverRaceState);
         });
     }
 
@@ -121,17 +115,17 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         game.level().addFreshEntity(itemDisplay);
     }
 
-    private InteractionResult tryPlaceCollectable(IGamePhase game, ServerPlayer player, BlockPos pos, Collectable placedCollectable, TeamState teams, RiverRaceState riverRaceState, ColliderState colliders) {
+    private InteractionResult tryPlaceCollectable(IGamePhase game, ServerPlayer player, BlockPos pos, Collectable placedCollectable, TeamState teams, RiverRaceState riverRaceState) {
         BlockPos slot = getMonumentSlotAt(placedCollectable, game, pos);
         if (slot == null) {
             player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
             player.sendSystemMessage(RiverRaceTexts.CANT_PLACE_COLLECTABLE, true);
             return InteractionResult.FAIL;
         }
-        return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, colliders, player, placedCollectable, slot);
+        return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, player, placedCollectable, slot);
     }
 
-    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ColliderState colliders, ServerPlayer player, Collectable collectable, BlockPos slotCenterPos) {
+    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ServerPlayer player, Collectable collectable, BlockPos slotCenterPos) {
         GameTeamKey teamKey = teams.getTeamForPlayer(player);
         if (teamKey == null) {
             return InteractionResult.FAIL;
@@ -141,7 +135,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             addEffectsForPlacedCollectable(game, collectable, team);
             // Start microgames countdown
             countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
-                clearCollidersForCollectable(colliders, collectable);
                 collectable.onCompleteAction.apply(game, GameActionContext.EMPTY);
                 countdown = null;
             });
@@ -150,12 +143,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         FireworkPalette.DYE_COLORS.spawn(slotCenterPos.above(), game.level());
         return InteractionResult.PASS;
     }
-
-    private static void clearCollidersForCollectable(ColliderState colliders, Collectable collectable) {
-		for (String key : collectable.unlocksColliders) {
-			colliders.removeCollider(key);
-		}
-	}
 
     private static void addEffectsForPlacedCollectable(IGamePhase game, Collectable collectable, GameTeam team) {
         Component teamName = team.config().styledName();
@@ -218,16 +205,14 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions,
-                              int victoryPoints, GameActionList<Void> onCompleteAction,
-                              List<String> unlocksColliders) {
+                              int victoryPoints, GameActionList<Void> onCompleteAction) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
                 Codec.STRING.fieldOf("zone_display_name").forGetter(Collectable::zoneDisplayName),
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
                 Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
-                GameActionList.VOID_CODEC.fieldOf("on_complete").forGetter(Collectable::onCompleteAction),
-                Codec.STRING.listOf().fieldOf("unlocks_colliders").forGetter(Collectable::unlocksColliders)
+                GameActionList.VOID_CODEC.fieldOf("on_complete").forGetter(Collectable::onCompleteAction)
         ).apply(i, Collectable::new));
     }
 }

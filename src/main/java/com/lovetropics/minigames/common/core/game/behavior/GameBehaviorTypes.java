@@ -30,6 +30,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorCh
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddCollidersAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyForTimeAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
@@ -45,6 +46,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Give
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.RemoveCollidersAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ResetHungerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
@@ -275,6 +277,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<WhileInInventoryTrigger> WHILE_IN_INVENTORY = register("while_in_inventory", WhileInInventoryTrigger.CODEC);
 	public static final GameBehaviorEntry<ScoreMobInGoalBehavior> SCORE_MOB_IN_GOAL = register("score_mob_in_goal", ScoreMobInGoalBehavior.CODEC);
 	public static final GameBehaviorEntry<CancelPlayerAttacksBehavior> CANCEL_PLAYER_ATTACKS = register("cancel_player_attacks", CancelPlayerAttacksBehavior.CODEC);
+	public static final GameBehaviorEntry<AddCollidersAction> ADD_COLLIDERS = register("add_colliders", AddCollidersAction.CODEC);
+	public static final GameBehaviorEntry<RemoveCollidersAction> REMOVE_COLLIDERS = register("remove_colliders", RemoveCollidersAction.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
