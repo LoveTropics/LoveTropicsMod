@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.util.LinearSpline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -37,6 +38,8 @@ public class GameProgressionBehavior implements IGameBehavior {
 
 	private Float2FloatFunction playerCountToTime = key -> 0.0f;
 
+	private int debugTimeMultiplier = 1;
+
 	public GameProgressionBehavior(Map<String, Float> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints) {
 		this.namedPoints = namedPoints;
 		this.maxTimeStep = maxTimeStep;
@@ -62,11 +65,15 @@ public class GameProgressionBehavior implements IGameBehavior {
 			int newTime = tickTime(game, progressionState.time());
 			progressionState.set(newTime);
 		});
+
+		game.controlCommands().add("pause", ControlCommand.forInitiator(source -> debugTimeMultiplier = 0));
+		game.controlCommands().add("resume", ControlCommand.forInitiator(source -> debugTimeMultiplier = 1));
+		game.controlCommands().add("fastForward", ControlCommand.forInitiator(source -> debugTimeMultiplier *= 2));
 	}
 
 	private int tickTime(IGamePhase game, int time) {
 		if (progressionState.is(fixedTimeStep)) {
-			return ++time;
+			return time + debugTimeMultiplier;
 		}
 
 		int playerCount = game.participants().size();
@@ -74,10 +81,9 @@ public class GameProgressionBehavior implements IGameBehavior {
 		int targetTimeByPlayerCount = Mth.ceil(playerCountToTime.get(playerCount));
 		if (targetTimeByPlayerCount > time) {
 			int step = Math.min(targetTimeByPlayerCount - time, maxTimeStep);
-			time += step;
-			return time;
+			return time + step * debugTimeMultiplier;
 		} else {
-			return ++time;
+			return time + debugTimeMultiplier;
 		}
 	}
 

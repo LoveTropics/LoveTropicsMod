@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -49,13 +50,13 @@ public record ControlCommand(Scope scope, Handler handler) {
 		ADMINS("admins") {
 			@Override
 			public boolean testSource(CommandSourceStack source, @Nullable PlayerKey initiator) {
-				return source.hasPermission(2);
+				return source.hasPermission(Commands.LEVEL_GAMEMASTERS);
 			}
 		},
 		INITIATOR("initiator") {
 			@Override
 			public boolean testSource(CommandSourceStack source, @Nullable PlayerKey initiator) {
-				if (source.hasPermission(2)) {
+				if (source.hasPermission(Commands.LEVEL_GAMEMASTERS)) {
 					return true;
 				}
 
