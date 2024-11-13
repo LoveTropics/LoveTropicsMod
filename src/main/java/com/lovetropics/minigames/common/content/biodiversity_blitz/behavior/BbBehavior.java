@@ -156,6 +156,10 @@ public final class BbBehavior implements IGameBehavior {
 			}
 		}
 
+		if (state.is(Blocks.DECORATED_POT)) {
+			return InteractionResult.FAIL;
+		}
+
 		return InteractionResult.PASS;
 	}
 
