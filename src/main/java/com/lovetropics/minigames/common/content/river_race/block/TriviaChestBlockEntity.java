@@ -109,9 +109,13 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
     }
 
     @Override
-    public void markAsCorrect() {
+    public boolean markAsCorrect() {
+        if (answered) {
+            return false;
+        }
         answered = true;
         markUpdated();
+        return true;
     }
 
     @Override

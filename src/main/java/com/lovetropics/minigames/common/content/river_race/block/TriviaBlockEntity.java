@@ -147,9 +147,13 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     }
 
     @Override
-	public void markAsCorrect(){
+	public boolean markAsCorrect(){
+        if (answered) {
+            return false;
+        }
         answered = true;
         markUpdated();
+        return true;
     }
 
     @Override

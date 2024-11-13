@@ -17,7 +17,7 @@ public interface HasTrivia {
 
     void unlock();
 
-    void markAsCorrect();
+    boolean markAsCorrect();
 
     TriviaBlockEntity.TriviaBlockState getState();
 }

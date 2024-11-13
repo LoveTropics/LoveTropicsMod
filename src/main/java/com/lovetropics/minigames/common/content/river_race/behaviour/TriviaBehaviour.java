@@ -144,9 +144,10 @@ public final class TriviaBehaviour implements IGameBehavior {
             }
             if (answer.correct()) {
                 player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
-                triviaBlockEntity.markAsCorrect();
+                if (triviaBlockEntity.markAsCorrect()) {
+                    game.invoker(RiverRaceEvents.QUESTION_COMPLETED).onAnswer(player, triviaBlockEntity.getTriviaType(), pos);
+                }
                 PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
-                game.invoker(RiverRaceEvents.QUESTION_COMPLETED).onAnswer(player, triviaBlockEntity.getTriviaType(), pos);
             } else {
                 player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
                 lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
