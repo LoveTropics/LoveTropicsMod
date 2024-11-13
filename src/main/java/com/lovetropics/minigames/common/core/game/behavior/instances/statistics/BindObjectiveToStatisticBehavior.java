@@ -17,7 +17,7 @@ import java.util.Map;
 
 public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String> statisticToObjective) implements IGameBehavior {
 	public static final MapCodec<BindObjectiveToStatisticBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.unboundedMap(StatisticKey.codecFor(Integer.class), Codec.STRING).fieldOf("objectives").forGetter(c -> c.statisticToObjective)
+			Codec.unboundedMap(StatisticKey.typedCodec(Integer.class), Codec.STRING).fieldOf("objectives").forGetter(c -> c.statisticToObjective)
 	).apply(i, BindObjectiveToStatisticBehavior::new));
 
 	@Override

@@ -4,23 +4,25 @@ import com.lovetropics.minigames.SoundRegistry;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
-import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
-import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsGameState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,9 +30,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
 
 public class VictoryPointsBehavior implements IGameBehavior {
 
@@ -43,7 +42,6 @@ public class VictoryPointsBehavior implements IGameBehavior {
     ).apply(i, VictoryPointsBehavior::new));
 
     private IGamePhase game;
-    private VictoryPointsGameState victoryPointsState;
 
     private final int triviaChestPoints;
     private final int triviaGatePoints;
@@ -60,15 +58,9 @@ public class VictoryPointsBehavior implements IGameBehavior {
     }
 
     @Override
-    public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-        // TODO how to make this more generic to not be specific to river race?
-        victoryPointsState = instanceState.getOrRegister(RiverRaceState.KEY, new RiverRaceState(game));
-    }
-
-    @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
-        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         // Victory points from trivia
         events.listen(RiverRaceEvents.QUESTION_COMPLETED, this::onQuestionAnswered);
@@ -77,38 +69,43 @@ public class VictoryPointsBehavior implements IGameBehavior {
         // Victory points from winning microgame
         events.listen(GameLogicEvents.WIN_TRIGGERED, this::onWinTriggered);
         events.listen(RiverRaceEvents.VICTORY_POINTS_CHANGED, (team, value, lastValue) -> {
-            PlayerSet playersForTeam = teams != null ? teams.getPlayersForTeam(team) : PlayerSet.EMPTY;
+            PlayerSet playersForTeam = teams.getPlayersForTeam(team);
             playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(value - lastValue), true);
             playersForTeam.playSound(SoundRegistry.COINS.value(), SoundSource.NEUTRAL, 0.4f, 1);
+        });
+
+        Object2IntMap<GameTeamKey> lastTeamPoints = new Object2IntArrayMap<>();
+        events.listen(GamePhaseEvents.TICK, () -> {
+            for (GameTeamKey teamKey : teams.getTeamKeys()) {
+                int newPoints = game.statistics().forTeam(teamKey).getInt(StatisticKey.VICTORY_POINTS);
+                int oldPoints = lastTeamPoints.put(teamKey, newPoints);
+                if (newPoints != oldPoints) {
+                    game.invoker(RiverRaceEvents.VICTORY_POINTS_CHANGED).onVictoryPointsChanged(teamKey, newPoints, oldPoints);
+                }
+            }
         });
     }
 
     private void onWinTriggered(GameWinner winner) {
 		switch (winner) {
-            case GameWinner.Player(ServerPlayer player) -> tryAddPoints(player.getUUID(), pointsPerGameWon);
-            case GameWinner.Team(GameTeam team) -> {
-                var teams = game.instanceState().getOrNull(TeamState.KEY);
-                if (teams == null) {
-                    return;
-                }
-                tryAddPoints(team.key(), pointsPerGameWon);
-            }
-            case GameWinner.OfflinePlayer(UUID playerId, Component ignored) -> tryAddPoints(playerId, pointsPerGameWon);
+            case GameWinner.Player(ServerPlayer player) -> tryAddPoints(PlayerKey.from(player), pointsPerGameWon);
+            case GameWinner.Team(GameTeam team) -> tryAddPoints(team.key(), pointsPerGameWon);
+            case GameWinner.OfflinePlayer(PlayerKey playerKey, Component ignored) -> tryAddPoints(playerKey, pointsPerGameWon);
             case GameWinner.Nobody ignored -> {
             }
 		}
     }
 
-    private void tryAddPoints(final UUID playerId, final int points) {
-        victoryPointsState.addPointsToTeam(playerId, points);
+    private void tryAddPoints(final PlayerKey playerKey, final int points) {
+        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        GameTeamKey team = teams != null ? teams.getTeamForPlayer(playerKey) : null;
+		if (team != null) {
+            game.statistics().forTeam(team).incrementInt(StatisticKey.VICTORY_POINTS, points);
+        }
     }
 
     private void tryAddPoints(final GameTeamKey team, final int points) {
-        victoryPointsState.addPointsToTeam(team, points);
-    }
-
-    private int getPoints(final ServerPlayer player) {
-        return victoryPointsState.getVictoryPoints(player);
+        game.statistics().forTeam(team).incrementInt(StatisticKey.VICTORY_POINTS, points);
     }
 
     private InteractionResult onBlockBroken(ServerPlayer serverPlayer, BlockPos blockPos, BlockState blockState, InteractionHand interactionHand) {
@@ -116,21 +113,21 @@ public class VictoryPointsBehavior implements IGameBehavior {
     }
 
     private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos) {
-        UUID playerId = player.getUUID();
+        PlayerKey playerKey = PlayerKey.from(player);
         switch (triviaType) {
             case COLLECTABLE -> {
-                tryAddPoints(playerId, collectibleCollectedPoints);
+                tryAddPoints(playerKey, collectibleCollectedPoints);
                 player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
             }
             case VICTORY -> {
-                tryAddPoints(playerId, triviaChallengePoints);
+                tryAddPoints(playerKey, triviaChallengePoints);
                 player.displayClientMessage(RiverRaceTexts.VICTORY_POINT_GIVEN, false);
             }
             case REWARD -> {
-                tryAddPoints(playerId, triviaChestPoints);
+                tryAddPoints(playerKey, triviaChestPoints);
                 player.displayClientMessage(RiverRaceTexts.LOOT_GIVEN, false);
             }
-            case GATE -> tryAddPoints(playerId, triviaGatePoints);
+            case GATE -> tryAddPoints(playerKey, triviaGatePoints);
         }
     }
 }

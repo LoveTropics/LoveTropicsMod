@@ -36,6 +36,8 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Integer> KILLS = ofInt("kills").displays(unit("kills"));
 	public static final StatisticKey<Integer> POINTS = ofInt("points");
 
+	public static final StatisticKey<Integer> VICTORY_POINTS = ofInt("victory_points");
+
 	public static final StatisticKey<Integer> TIME_SURVIVED = ofInt("time_survived").displays(minutesSeconds());
 	public static final StatisticKey<CauseOfDeath> CAUSE_OF_DEATH = register(CauseOfDeath.class, "cause_of_death", CauseOfDeath::serialize);
 	public static final StatisticKey<PlayerKey> KILLED_BY = ofPlayer("killed_by");
@@ -178,19 +180,5 @@ public final class StatisticKey<T> {
 	@Nullable
 	public static StatisticKey<?> get(String key) {
 		return REGISTRY.get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Codec<StatisticKey<T>> codecFor(Class<T> type) {
-		return CODEC.comapFlatMap(
-				key -> {
-					if (key.type.equals(type)) {
-						return DataResult.success((StatisticKey<T>) key);
-					} else {
-						return DataResult.error(() -> "Mismatched type on key: got " + key.type + " but expected " + type);
-					}
-				},
-				key -> key
-		);
 	}
 }

@@ -47,7 +47,7 @@ public record ScoreMobInGoalBehavior(
 			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("scoring_entity").forGetter(ScoreMobInGoalBehavior::scoringEntityType),
 			GameActionList.VOID_CODEC.optionalFieldOf("score_action", GameActionList.EMPTY_VOID).forGetter(ScoreMobInGoalBehavior::scoreAction),
 			Codec.unboundedMap(GameTeamKey.CODEC, Codec.STRING).fieldOf("team_goal_regions").forGetter(ScoreMobInGoalBehavior::teamGoalRegions),
-			StatisticKey.codecFor(Integer.class).fieldOf("statistic").forGetter(ScoreMobInGoalBehavior::statistic)
+			StatisticKey.typedCodec(Integer.class).fieldOf("statistic").forGetter(ScoreMobInGoalBehavior::statistic)
 	).apply(i, ScoreMobInGoalBehavior::new));
 
 	private static final Component POSITIVE_EMOTE = Component.literal("⭐").withStyle(ChatFormatting.GOLD);

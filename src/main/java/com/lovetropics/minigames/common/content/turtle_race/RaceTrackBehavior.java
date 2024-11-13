@@ -218,7 +218,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 			if (onlinePlayer != null) {
 				winner = new GameWinner.Player(onlinePlayer);
 			} else {
-				winner = new GameWinner.OfflinePlayer(entry.player.id(), Component.literal(entry.name));
+				winner = new GameWinner.OfflinePlayer(entry.player, Component.literal(entry.name));
 			}
 		} else {
 			winner = new GameWinner.Nobody();

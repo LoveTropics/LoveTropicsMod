@@ -4,7 +4,6 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
-import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -16,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -83,7 +83,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        RiverRaceState riverRaceState = game.instanceState().getOrThrow(RiverRaceState.KEY);
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         for (Collectable collectable : collectables) {
@@ -108,7 +107,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             if (placedCollectable == null) {
                 return InteractionResult.PASS;
             }
-            return tryPlaceCollectable(game, player, pos, placedCollectable, teams, riverRaceState);
+            return tryPlaceCollectable(game, player, pos, placedCollectable, teams);
         });
     }
 
@@ -120,17 +119,17 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         game.level().addFreshEntity(itemDisplay);
     }
 
-    private InteractionResult tryPlaceCollectable(IGamePhase game, ServerPlayer player, BlockPos pos, Collectable placedCollectable, TeamState teams, RiverRaceState riverRaceState) {
+    private InteractionResult tryPlaceCollectable(IGamePhase game, ServerPlayer player, BlockPos pos, Collectable placedCollectable, TeamState teams) {
         BlockPos slot = getMonumentSlotAt(placedCollectable, game, pos);
         if (slot == null) {
             player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
             player.sendSystemMessage(RiverRaceTexts.CANT_PLACE_COLLECTABLE, true);
             return InteractionResult.FAIL;
         }
-        return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, player, placedCollectable, slot);
+        return tryPlaceIntoMonumentSlot(game, teams, player, placedCollectable, slot);
     }
 
-    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ServerPlayer player, Collectable collectable, BlockPos slotCenterPos) {
+    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, ServerPlayer player, Collectable collectable, BlockPos slotCenterPos) {
         GameTeamKey teamKey = teams.getTeamForPlayer(player);
         if (teamKey == null) {
             return InteractionResult.FAIL;
@@ -144,7 +143,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 countdown = null;
             });
         }
-        riverRaceState.addPointsToTeam(teamKey, collectable.victoryPoints);
+        game.statistics().forTeam(teamKey).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
         FireworkPalette.DYE_COLORS.spawn(slotCenterPos.above(), game.level());
         return InteractionResult.PASS;
     }
