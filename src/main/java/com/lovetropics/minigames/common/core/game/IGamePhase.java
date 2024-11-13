@@ -2,10 +2,13 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
@@ -139,5 +142,15 @@ public interface IGamePhase extends IGame {
 
 	default RandomSource random() {
 		return level().getRandom();
+	}
+
+	default ControlCommands controlCommands() {
+		return state().get(ControlCommands.KEY);
+	}
+
+	default ControlCommandInvoker getControlInvoker() {
+		ControlCommands commands = controlCommands();
+		GameLobbyMetadata lobby = lobby().getMetadata();
+		return ControlCommandInvoker.create(commands, lobby);
 	}
 }

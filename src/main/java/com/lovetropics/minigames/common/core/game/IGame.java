@@ -39,18 +39,8 @@ public interface IGame  {
 		return instanceState().get(GameStatistics.KEY);
 	}
 
-	default ControlCommands controlCommands() {
-		return instanceState().get(ControlCommands.KEY);
-	}
-
 	default GameInstanceIntegrations getIntegrationsOrThrow() {
 		return instanceState().getOrThrow(GameInstanceIntegrations.KEY);
-	}
-
-	default ControlCommandInvoker getControlInvoker() {
-		ControlCommands commands = controlCommands();
-		GameLobbyMetadata lobby = lobby().getMetadata();
-		return ControlCommandInvoker.create(commands, lobby);
 	}
 
     default RegistryAccess registryAccess() {
