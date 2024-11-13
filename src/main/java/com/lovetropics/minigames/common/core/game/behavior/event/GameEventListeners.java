@@ -53,4 +53,8 @@ public final class GameEventListeners implements EventRegistrar {
 			}
 		});
 	}
+
+	public boolean hasListeners(GameEventType<?> type) {
+		return !listeners.getOrDefault(type, List.of()).isEmpty();
+	}
 }

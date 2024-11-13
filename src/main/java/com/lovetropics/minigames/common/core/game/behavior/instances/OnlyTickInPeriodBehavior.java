@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
@@ -29,21 +30,33 @@ public record OnlyTickInPeriodBehavior(ProgressionPeriod period, IGameBehavior b
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final GameEventListeners tickEvents = new GameEventListeners();
-		behavior.register(game, events.redirect(type -> type == GamePhaseEvents.TICK || type == GamePlayerEvents.TICK, tickEvents));
+		final GameEventListeners conditionalEvents = new GameEventListeners();
+		behavior.register(game, events.redirect(type -> type == GamePhaseEvents.TICK || type == GamePlayerEvents.TICK || type == GameLivingEntityEvents.TICK, conditionalEvents));
 
 		final BooleanSupplier predicate = period.createPredicate(game);
-		events.listen(GamePhaseEvents.TICK, () -> {
-			if (predicate.getAsBoolean()) {
-				tickEvents.invoker(GamePhaseEvents.TICK).tick();
-			}
-		});
+		if (conditionalEvents.hasListeners(GamePhaseEvents.TICK)) {
+			events.listen(GamePhaseEvents.TICK, () -> {
+				if (predicate.getAsBoolean()) {
+					conditionalEvents.invoker(GamePhaseEvents.TICK).tick();
+				}
+			});
+		}
 
-		events.listen(GamePlayerEvents.TICK, player -> {
-			if (predicate.getAsBoolean()) {
-				tickEvents.invoker(GamePlayerEvents.TICK).tick(player);
-			}
-		});
+		if (conditionalEvents.hasListeners(GamePlayerEvents.TICK)) {
+			events.listen(GamePlayerEvents.TICK, player -> {
+				if (predicate.getAsBoolean()) {
+					conditionalEvents.invoker(GamePlayerEvents.TICK).tick(player);
+				}
+			});
+		}
+
+		if (conditionalEvents.hasListeners(GameLivingEntityEvents.TICK)) {
+			events.listen(GameLivingEntityEvents.TICK, entity -> {
+				if (predicate.getAsBoolean()) {
+					conditionalEvents.invoker(GameLivingEntityEvents.TICK).tick(entity);
+				}
+			});
+		}
 	}
 
 	@Override
