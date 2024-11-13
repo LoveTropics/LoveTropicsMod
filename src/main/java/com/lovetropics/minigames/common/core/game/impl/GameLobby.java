@@ -215,7 +215,6 @@ final class GameLobby implements IGameLobby {
 	}
 
 	private GameResult<Unit> startPhase(GamePhase phase) {
-		phase.state().register(GameRewardsMap.STATE, rewardsMap);
 		if (phase instanceof final MultiGamePhase multiPhase) {
 			multiPhaseDataMap.clear();
 			multiPhase.registerState(this);

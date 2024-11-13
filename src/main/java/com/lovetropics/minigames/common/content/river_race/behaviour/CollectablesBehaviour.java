@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -76,8 +77,12 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     }
 
     @Override
+    public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+        phaseState.register(COLLECTABLES, this);
+    }
+
+    @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        game.instanceState().register(COLLECTABLES, this);
         RiverRaceState riverRaceState = game.state().getOrThrow(RiverRaceState.KEY);
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 

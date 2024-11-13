@@ -5,6 +5,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
@@ -106,6 +107,7 @@ abstract class LobbyState {
 
 		private CompletableFuture<GameResult<LobbyState>> createGame(GameLobby lobby, IGameDefinition definition) {
 			GameInstance game = new GameInstance(lobby, definition);
+			game.stateMap.register(GameRewardsMap.STATE, lobby.getRewardsMap());
 
 			final IGamePhaseDefinition playing = definition.getPlayingPhase();
 			return definition.getWaitingPhase()

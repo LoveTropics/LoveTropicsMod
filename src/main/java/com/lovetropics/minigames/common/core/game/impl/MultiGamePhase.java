@@ -90,7 +90,6 @@ public class MultiGamePhase extends GamePhase {
         this.activePhase = activePhase;
         this.activePhaseId = activePhaseId;
         MultiGameManager.INSTANCE.addGamePhaseToDimension(activePhase.dimension(), activePhase);
-        activePhase.state().register(GameRewardsMap.STATE, ((GameLobby) lobby()).getRewardsMap());
         activePhase.state().register(RiverRaceState.KEY, (RiverRaceState) ((GameLobby) lobby()).createOrGetMultiPhaseState(this));
         activePhase.start(saveInventory);
     }

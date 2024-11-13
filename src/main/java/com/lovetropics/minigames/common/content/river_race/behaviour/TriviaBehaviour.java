@@ -200,7 +200,7 @@ public final class TriviaBehaviour implements IGameBehavior {
 
     private void spawnCollectableFromBlock(IGamePhase game, BlockPos pos) {
         TriviaZone inZone = getZoneByPos(pos);
-        CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
+        CollectablesBehaviour collectables = game.state().getOrNull(CollectablesBehaviour.COLLECTABLES);
         if (inZone == null || collectables == null) {
             return;
         }

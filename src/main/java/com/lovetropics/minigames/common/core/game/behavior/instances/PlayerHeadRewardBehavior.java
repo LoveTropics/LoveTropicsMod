@@ -28,7 +28,7 @@ public record PlayerHeadRewardBehavior() implements IGameBehavior {
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) throws GameException {
-		final GameRewardsMap rewards = game.state().getOrThrow(GameRewardsMap.STATE);
+		final GameRewardsMap rewards = game.instanceState().getOrThrow(GameRewardsMap.STATE);
 		final MutableObject<CompletableFuture<?>> resolvedFuture = new MutableObject<>(CompletableFuture.completedFuture(null));
 
 		events.listen(GamePlayerEvents.DEATH, (target, source) -> {
