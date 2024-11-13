@@ -14,7 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.GameEndEffe
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameProgressionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsToKillerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.IndividualWinTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.LastRemainingWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.JoinLateWithRoleBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ScoreMobInGoalBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.OnlyTickInPeriodBehavior;
@@ -93,7 +93,6 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SyncTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamChatBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ApplyToPlayerWhileTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ApplyToPlayersAround;
@@ -195,8 +194,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DisableThrowingItemsBehavior> DISABLE_THROWING_ITEMS = register("disable_throwing_items", DisableThrowingItemsBehavior.CODEC);
 	public static final GameBehaviorEntry<DisableTntDestructionBehavior> DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTntDestructionBehavior.CODEC);
 	public static final GameBehaviorEntry<SetMaxHealthBehavior> SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
-	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
-	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
+	public static final GameBehaviorEntry<LastRemainingWinTrigger> LAST_REMAINING_WIN_TRIGGER = register("last_remaining_win_trigger", LastRemainingWinTrigger.CODEC);
 	public static final GameBehaviorEntry<SyncTeamsBehavior> SYNC_TEAMS = register("sync_teams", SyncTeamsBehavior.CODEC);
 	public static final GameBehaviorEntry<AddEquipmentAction> ADD_EQUIPMENT = register("add_equipment", AddEquipmentAction.CODEC);
 	public static final GameBehaviorEntry<ResetHungerAction> RESET_HUNGER = register("reset_hunger", ResetHungerAction.CODEC);
