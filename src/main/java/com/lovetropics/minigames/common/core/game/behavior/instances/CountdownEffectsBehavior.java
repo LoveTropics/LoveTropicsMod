@@ -25,7 +25,7 @@ import net.minecraft.util.Mth;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, SoundEvent sound, float volume, int startColor, int endColor, LinearSpline pitch) implements IGameBehavior {
+public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, SoundEvent sound, float volume, int startColor, int endColor, LinearSpline pitch, boolean showTitle) implements IGameBehavior {
 	public static final MapCodec<CountdownEffectsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ProgressionPoint.CODEC.fieldOf("target").forGetter(CountdownEffectsBehavior::target),
 			Codec.INT.fieldOf("seconds").forGetter(CountdownEffectsBehavior::seconds),
@@ -33,7 +33,8 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 			Codec.FLOAT.optionalFieldOf("volume", 1.0f).forGetter(CountdownEffectsBehavior::volume),
 			Codec.INT.optionalFieldOf("start_color", 0x55ff55).forGetter(CountdownEffectsBehavior::startColor),
 			Codec.INT.optionalFieldOf("end_color", 0xffaa00).forGetter(CountdownEffectsBehavior::endColor),
-			LinearSpline.CODEC.optionalFieldOf("pitch", LinearSpline.constant(1.0f)).forGetter(CountdownEffectsBehavior::pitch)
+			LinearSpline.CODEC.optionalFieldOf("pitch", LinearSpline.constant(1.0f)).forGetter(CountdownEffectsBehavior::pitch),
+			Codec.BOOL.optionalFieldOf("show_title", true).forGetter(CountdownEffectsBehavior::showTitle)
 	).apply(i, CountdownEffectsBehavior::new));
 
 	private static final int WAITING_FOR_COUNTDOWN = -1;
@@ -82,12 +83,14 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 	private void showCountdown(final IGamePhase game, final int secondsLeft) {
 		final float delta = Mth.inverseLerp(secondsLeft, seconds, 1);
 		final float pitch = this.pitch.get(delta);
-		final int color = FastColor.ARGB32.lerp(delta, startColor, endColor);
-
 		final PlayerSet players = game.allPlayers();
 		players.playSound(sound, SoundSource.MASTER, 1.0f, pitch);
-		final Component title = Component.literal(".." + secondsLeft).withStyle(Style.EMPTY.withColor(color));
-		players.showTitle(title, 4, SharedConstants.TICKS_PER_SECOND, 4);
+
+		if (showTitle) {
+			final int color = FastColor.ARGB32.lerp(delta, startColor, endColor);
+			final Component title = Component.literal(".." + secondsLeft).withStyle(Style.EMPTY.withColor(color));
+			players.showTitle(title, 4, SharedConstants.TICKS_PER_SECOND, 4);
+		}
 	}
 
 	@Override
