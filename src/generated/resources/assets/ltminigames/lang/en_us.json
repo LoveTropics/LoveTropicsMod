@@ -406,6 +406,7 @@
   "ltminigames.minigame.reward_item": " - %sx %s",
   "ltminigames.minigame.rewards_granted": "You got rewards for playing minigames!",
   "ltminigames.minigame.river_race": "River Race",
+  "ltminigames.minigame.river_race.cant_place_collectable": "Place in the Monument at the end of this zone to progress",
   "ltminigames.minigame.river_race.shop": "Shop",
   "ltminigames.minigame.river_race.trivia.collectable_given": "You've been given a collectable to place into the monument!",
   "ltminigames.minigame.river_race.trivia.collectable_placed": "%s team are first to place the %s collectable! The micro-games will start in %s seconds.",

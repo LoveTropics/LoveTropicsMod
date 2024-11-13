@@ -32,6 +32,9 @@ public final class RiverRaceTexts {
 	public static final TranslationCollector.Fun1 GAMES_START_IN = KEYS.add1("trivia.games_start_in", "Microgames start in %s second(s)")
 			.withStyle(ChatFormatting.GREEN);
 
+	public static final Component CANT_PLACE_COLLECTABLE = KEYS.add("cant_place_collectable", "Place in the Monument at the end of this zone to progress")
+			.withStyle(ChatFormatting.RED);
+
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.forEach(consumer);
 

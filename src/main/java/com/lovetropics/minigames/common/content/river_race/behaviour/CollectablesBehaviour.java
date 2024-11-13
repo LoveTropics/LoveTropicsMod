@@ -18,7 +18,6 @@ import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -125,11 +124,11 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             }
         });
         events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn, placedItemStack) -> {
-            Pair<Collectable, BlockPos> slot = getMonumentSlotAt(game, pos);
-            if (slot == null) {
+            Collectable placedCollectable = getMatchingCollectable(placedItemStack);
+            if (placedCollectable == null) {
                 return InteractionResult.PASS;
             }
-            return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, colliders, player, placedItemStack, slot.getFirst(), slot.getSecond());
+            return tryPlaceCollectable(game, player, pos, placedCollectable, teams, riverRaceState, colliders);
         });
     }
 
@@ -141,10 +140,17 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         game.level().addFreshEntity(itemDisplay);
     }
 
-    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ColliderState colliders, ServerPlayer player, ItemStack placedItemStack, Collectable collectable, BlockPos slotCenterPos) {
-        if (!ItemStack.isSameItemSameComponents(collectable.collectable, placedItemStack)) {
+    private InteractionResult tryPlaceCollectable(IGamePhase game, ServerPlayer player, BlockPos pos, Collectable placedCollectable, TeamState teams, RiverRaceState riverRaceState, ColliderState colliders) {
+        BlockPos slot = getMonumentSlotAt(placedCollectable, game, pos);
+        if (slot == null) {
+            player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
+            player.sendSystemMessage(RiverRaceTexts.CANT_PLACE_COLLECTABLE, true);
             return InteractionResult.FAIL;
         }
+        return tryPlaceIntoMonumentSlot(game, teams, riverRaceState, colliders, player, placedCollectable, slot);
+    }
+
+    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, RiverRaceState riverRaceState, ColliderState colliders, ServerPlayer player, Collectable collectable, BlockPos slotCenterPos) {
         GameTeamKey teamKey = teams.getTeamForPlayer(player);
         if (teamKey == null) {
             return InteractionResult.FAIL;
@@ -180,13 +186,20 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     }
 
     @Nullable
-    private Pair<Collectable, BlockPos> getMonumentSlotAt(IGamePhase game, BlockPos pos) {
+    private Collectable getMatchingCollectable(ItemStack itemStack) {
         for (Collectable collectable : collectables) {
-            for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
-                BlockBox region = game.mapRegions().getAny(monumentSlotRegion);
-                if (region != null && region.contains(pos)) {
-                    return Pair.of(collectable, region.centerBlock());
-                }
+            if (ItemStack.isSameItemSameComponents(collectable.collectable, itemStack)) {
+                return collectable;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private BlockPos getMonumentSlotAt(Collectable collectable, IGamePhase game, BlockPos pos) {
+        for (BlockBox region : game.mapRegions().getAll(collectable.monumentSlotRegions)) {
+            if (region.contains(pos)) {
+                return region.centerBlock();
             }
         }
         return null;

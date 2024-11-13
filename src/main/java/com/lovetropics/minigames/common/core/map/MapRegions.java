@@ -56,7 +56,11 @@ public final class MapRegions {
 	}
 
 	public List<BlockBox> getAll(String... keys) {
-		return Arrays.stream(keys).flatMap(key -> get(key).stream()).toList();
+		return getAll(Arrays.asList(keys));
+	}
+
+	public List<BlockBox> getAll(Collection<String> keys) {
+		return keys.stream().flatMap(key -> get(key).stream()).toList();
 	}
 
 	@Nonnull
