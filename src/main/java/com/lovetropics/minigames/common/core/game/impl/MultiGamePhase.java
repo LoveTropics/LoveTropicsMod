@@ -47,6 +47,10 @@ public class MultiGamePhase extends GamePhase {
     public void startSubPhase(GamePhase subPhase, final boolean saveInventory) {
         activePhase = subPhase;
         subPhase.assignRolesFrom(this);
+        for (ServerPlayer player : allPlayers()) {
+            invoker(GamePlayerEvents.REMOVE).onRemove(player);
+        }
+        addedPlayers.clear();
         MultiGameManager.INSTANCE.addGamePhaseToDimension(subPhase.dimension(), subPhase);
         subPhase.start(saveInventory);
     }

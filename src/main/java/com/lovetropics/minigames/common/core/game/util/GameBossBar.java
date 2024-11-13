@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.util;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.server.level.ServerBossEvent;
 
@@ -23,7 +24,7 @@ public final class GameBossBar implements GameWidget {
 
 	public void setProgress(float progress) {
 		if (Math.abs(progress - bar.getProgress()) > UPDATE_PROGRESS_THRESHOLD) {
-			bar.setProgress(progress);
+			bar.setProgress(Mth.clamp(progress, 0.0f, 1.0f));
 		}
 	}
 
