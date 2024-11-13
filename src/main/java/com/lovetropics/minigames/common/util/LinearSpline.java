@@ -1,13 +1,36 @@
 package com.lovetropics.minigames.common.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class LinearSpline implements Float2FloatFunction {
+	private static final Codec<LinearSpline> FULL_CODEC = ExtraCodecs.nonEmptyList(Point.CODEC.listOf()).xmap(
+			points -> {
+				Builder spline = builder();
+				spline.points.addAll(points);
+				return spline.build();
+			},
+			LinearSpline::points
+	);
+
+	public static final Codec<LinearSpline> CODEC = Codec.withAlternative(
+			FULL_CODEC,
+			Codec.mapPair(
+					Codec.FLOAT.fieldOf("start"),
+					Codec.FLOAT.fieldOf("end")
+			).codec(),
+			pair -> builder().point(0.0f, pair.getFirst()).point(1.0f, pair.getSecond()).build()
+	);
+
 	private final float[] xs;
 	private final float[] ys;
 	private final float[] gradients;
@@ -16,6 +39,10 @@ public class LinearSpline implements Float2FloatFunction {
 		this.xs = xs;
 		this.ys = ys;
 		this.gradients = gradients;
+	}
+
+	public static LinearSpline constant(float y) {
+		return new LinearSpline(new float[1], new float[]{y}, new float[1]);
 	}
 
 	public static Builder builder() {
@@ -40,6 +67,30 @@ public class LinearSpline implements Float2FloatFunction {
 	private int indexAt(float x) {
 		int i = Arrays.binarySearch(xs, x);
 		return i >= 0 ? i : -i - 1;
+	}
+
+	private List<Point> points() {
+		List<Point> points = new ArrayList<>(xs.length);
+		for (int i = 0; i < xs.length; i++) {
+			points.add(new Point(xs[i], ys[i]));
+		}
+		return points;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof LinearSpline spline) {
+			return Arrays.equals(xs, spline.xs) && Arrays.equals(ys, spline.ys);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(xs) * 31 + Arrays.hashCode(ys);
 	}
 
 	public static class Builder {
@@ -81,5 +132,9 @@ public class LinearSpline implements Float2FloatFunction {
 	}
 
 	private record Point(float x, float y) {
+		public static final Codec<Point> CODEC = Codec.FLOAT.listOf(2, 2).xmap(
+				floats -> new Point(floats.getFirst(), floats.getLast()),
+				point -> List.of(point.x, point.y)
+		);
 	}
 }
