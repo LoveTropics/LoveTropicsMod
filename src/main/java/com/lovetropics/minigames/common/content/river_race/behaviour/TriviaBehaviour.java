@@ -147,18 +147,26 @@ public final class TriviaBehaviour implements IGameBehavior {
             return InteractionResult.FAIL;
         }
 		if (hasTrivia.getState().isAnswered()) {
-            return switch (hasTrivia.getTriviaType()) {
-                case COLLECTABLE, GATE, VICTORY -> {
-                    player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
-                    player.sendSystemMessage(RiverRaceTexts.TRIVIA_BLOCK_ALREADY_USED, true);
-                    yield InteractionResult.FAIL;
-                }
-                // Let the player open the chest
-                case REWARD -> InteractionResult.PASS;
-            };
+            return useUnlockedTriviaBlock(game, player, pos, hasTrivia);
         } else {
             return useLockedTriviaBlock(game, player, pos, hasTrivia);
         }
+    }
+
+    private InteractionResult useUnlockedTriviaBlock(IGamePhase game, ServerPlayer player, BlockPos pos, HasTrivia hasTrivia) {
+        return switch (hasTrivia.getTriviaType()) {
+            case GATE, VICTORY -> {
+                player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
+                player.sendSystemMessage(RiverRaceTexts.TRIVIA_BLOCK_ALREADY_USED, true);
+                yield InteractionResult.FAIL;
+            }
+            case COLLECTABLE -> {
+                spawnCollectableFromBlock(game, pos);
+                yield InteractionResult.SUCCESS_NO_ITEM_USED;
+            }
+            // Let the player open the chest
+            case REWARD -> InteractionResult.PASS;
+        };
     }
 
     private InteractionResult useLockedTriviaBlock(IGamePhase game, ServerPlayer player, BlockPos pos, HasTrivia hasTrivia) {
