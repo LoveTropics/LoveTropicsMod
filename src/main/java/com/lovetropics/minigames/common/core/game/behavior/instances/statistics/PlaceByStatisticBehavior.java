@@ -46,18 +46,11 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 		Placement.Score<PlayerKey, Integer> playerPlacement = Placement.fromPlayerScore(order, game, statistic);
 		playerPlacement.placeInto(StatisticKey.PLACEMENT);
 
-		PlayerKey winningPlayerKey = playerPlacement.getWinner();
-		if (winningPlayerKey != null) {
-			game.statistics().global().set(StatisticKey.WINNING_PLAYER, winningPlayerKey);
-		}
-
 		Placement.Score<GameTeamKey, Integer> teamPlacement = Placement.fromTeamScore(order, game, statistic, 0);
 		teamPlacement.placeInto(StatisticKey.PLACEMENT);
 
+		PlayerKey winningPlayerKey = playerPlacement.getWinner();
 		GameTeamKey winningTeamKey = teamPlacement.getWinner();
-		if (winningTeamKey != null) {
-			game.statistics().global().set(StatisticKey.WINNING_TEAM, winningTeamKey);
-		}
 
 		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 		GameTeam winningTeam = teams != null && winningTeamKey != null ? teams.getTeamByKey(winningTeamKey) : null;

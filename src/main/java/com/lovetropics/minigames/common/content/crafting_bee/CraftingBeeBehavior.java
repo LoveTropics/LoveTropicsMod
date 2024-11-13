@@ -217,7 +217,6 @@ public class CraftingBeeBehavior implements IGameBehavior {
         game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), completed, teamTasks.size()));
 
         if (completed == teamTasks.size()) {
-            game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
             game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
 
             done = true;
@@ -258,7 +257,6 @@ public class CraftingBeeBehavior implements IGameBehavior {
                         } else {
                             var gameTeam = teams.getTeamByKey(withMax.getFirst().getKey());
                             var teamConfig = gameTeam.config();
-                            game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
                             game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
 
                             game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));

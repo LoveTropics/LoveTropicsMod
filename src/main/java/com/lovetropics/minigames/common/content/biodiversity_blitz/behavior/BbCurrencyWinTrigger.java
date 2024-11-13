@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -58,7 +57,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (!gameOver && !winnerCandidates.isEmpty()) {
 				GameTeamKey teamKey = selectWinningTeam(teams, plots, currency, winnerCandidates);
-				triggerWin(game, teamKey, teams.getTeamByKey(teamKey));
+				triggerWin(game, teams.getTeamByKey(teamKey));
 			}
 		});
 	}
@@ -83,8 +82,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 				.sum();
 	}
 
-	private void triggerWin(IGamePhase game, GameTeamKey teamKey, @Nullable GameTeam team) {
-		game.statistics().global().set(StatisticKey.WINNING_TEAM, teamKey);
+	private void triggerWin(IGamePhase game, @Nullable GameTeam team) {
 		if (team != null) {
 			game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(team);
 		} else {

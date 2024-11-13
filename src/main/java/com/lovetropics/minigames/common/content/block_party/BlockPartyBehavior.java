@@ -213,8 +213,6 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				Component message;
 				if (winningPlayer != null) {
 					message = MinigameTexts.PLAYER_WON.apply(winningPlayer.getDisplayName()).withStyle(ChatFormatting.GREEN);
-					game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
-
 					game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(winningPlayer);
 				} else {
 					message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);

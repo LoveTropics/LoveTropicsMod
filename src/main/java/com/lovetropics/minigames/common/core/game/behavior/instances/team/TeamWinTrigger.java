@@ -49,7 +49,6 @@ public class TeamWinTrigger implements IGameBehavior {
 				winTriggered = true;
 
 				game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(finalTeam);
-				game.statistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
 			}
 		});
 	}

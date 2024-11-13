@@ -166,7 +166,6 @@ public class ConnectFourBehavior implements IGameBehavior {
         game.allPlayers().getPlayerBy(playingTeams.current().players().current()).setGlowingTag(false);
 
         if (checkWin(x, y, team)) {
-            game.statistics().global().set(StatisticKey.WINNING_TEAM, team);
             GameTeam gameTeam = teams.getTeamByKey(team);
             game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
 

@@ -213,7 +213,6 @@ public class RaceTrackBehavior implements IGameBehavior {
 		GameWinner winner;
 		if (!finishedPlayers.isEmpty()) {
 			FinishEntry entry = finishedPlayers.getFirst();
-			game.statistics().global().set(StatisticKey.WINNING_PLAYER, entry.player());
 			ServerPlayer onlinePlayer = game.allPlayers().getPlayerBy(entry.player);
 			if (onlinePlayer != null) {
 				winner = new GameWinner.Player(onlinePlayer);
