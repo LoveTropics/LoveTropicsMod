@@ -97,6 +97,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 			mob.setNoAi(true);
 			mob.setBaby(false);
 			mob.setInvulnerable(true);
+			mob.setPersistenceRequired();
 		}
 
 		merchants.add(merchant.getUUID());
