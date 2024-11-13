@@ -15,6 +15,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -150,6 +151,9 @@ public final class PlayerIsolation {
 		newPlayer.initInventoryMenu();
 		newPlayer.setHealth(newPlayer.getHealth());
 		newPlayer.connection.send(new ClientboundSetHealthPacket(newPlayer.getHealth(), newPlayer.getFoodData().getFoodLevel(), newPlayer.getFoodData().getSaturationLevel()));
+		// It's not possible to specify to the client to drop its base attributes anymore - so just resync everything
+		newPlayer.connection.send(new ClientboundUpdateAttributesPacket(newPlayer.getId(), newPlayer.getAttributes().getSyncableAttributes()));
+		newPlayer.getAttributes().getAttributesToSync().clear();
 
 		((PlayerListAccess) playerList).ltminigames$add(newPlayer);
 
