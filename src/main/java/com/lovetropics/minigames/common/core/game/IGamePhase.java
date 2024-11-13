@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
+import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -71,6 +72,8 @@ public interface IGamePhase extends IGame {
 	GameResult<Unit> requestStop(GameStopReason reason);
 
 	GameScheduler scheduler();
+
+	void allocateRoles(TeamAllocator<PlayerRole, ServerPlayer> allocator);
 
 	/**
 	 * Adds the player to this game instance with the given role, or if already in the change, changes their role.

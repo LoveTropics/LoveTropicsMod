@@ -25,6 +25,7 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.nbt.CompoundTag;
@@ -60,6 +61,7 @@ public class GamePhase implements IGamePhase {
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 	protected final Set<UUID> addedPlayers = new ObjectArraySet<>();
+	private boolean assignedRoles;
 
 	final GameEventListeners events = new GameEventListeners();
 
@@ -201,6 +203,23 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public <T> T invoker(GameEventType<T> type) {
 		return events.invoker(type);
+	}
+
+	@Override
+	public void allocateRoles(TeamAllocator<PlayerRole, ServerPlayer> allocator) {
+		if (!assignedRoles) {
+			allocator.allocate(this::setPlayerRole);
+			assignedRoles = true;
+		}
+	}
+
+	public void assignRolesFrom(IGamePhase topLevelGame) {
+		for (PlayerRole role : PlayerRole.values()) {
+			for (ServerPlayer player : topLevelGame.getPlayersWithRole(role)) {
+				setPlayerRole(player, role);
+			}
+		}
+		assignedRoles = true;
 	}
 
 	@Override

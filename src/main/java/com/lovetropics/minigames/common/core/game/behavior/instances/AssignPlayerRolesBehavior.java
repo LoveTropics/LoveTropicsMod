@@ -44,12 +44,10 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		// TODO: somehow if a player is in a lobby and then leaves they can get in such a state as to join late and be joined as a participant when clicking 'play'
-		events.listen(GamePhaseEvents.CREATE, () ->
-				allocateRoles(game, game::setPlayerRole)
-		);
+		events.listen(GamePhaseEvents.CREATE, () -> game.allocateRoles(createAllocator(game)));
 	}
 
-	private void allocateRoles(IGamePhase game, BiConsumer<ServerPlayer, PlayerRole> apply) {
+	private TeamAllocator<PlayerRole, ServerPlayer> createAllocator(IGamePhase game) {
         LOGGER.info("SELECTED ROLES: {}", game.lobby().getPlayers().getRoleSelections());
 		TeamAllocator<PlayerRole, ServerPlayer> allocator = game.lobby().getPlayers().createRoleAllocator();
 		allocator.setSizeForTeam(PlayerRole.PARTICIPANT, game.definition().getMaximumParticipantCount());
@@ -59,7 +57,7 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 		game.invoker(GamePlayerEvents.ALLOCATE_ROLES).onAllocateRoles(allocator);
         LOGGER.info("SELECTED ROLES: {}", game.lobby().getPlayers().getRoleSelections());
 
-		allocator.allocate(apply);
+		return allocator;
 	}
 
 	private void applyForcedParticipants(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {

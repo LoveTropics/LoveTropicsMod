@@ -44,10 +44,11 @@ public class MultiGamePhase extends GamePhase {
         super(game, gameDefinition, definition, phaseType, map, behaviors);
     }
 
-    public void setActivePhase(GamePhase activePhase, final boolean saveInventory) {
-        this.activePhase = activePhase;
-        MultiGameManager.INSTANCE.addGamePhaseToDimension(activePhase.dimension(), activePhase);
-        activePhase.start(saveInventory);
+    public void startSubPhase(GamePhase subPhase, final boolean saveInventory) {
+        activePhase = subPhase;
+        subPhase.assignRolesFrom(this);
+        MultiGameManager.INSTANCE.addGamePhaseToDimension(subPhase.dimension(), subPhase);
+        subPhase.start(saveInventory);
     }
 
     public void returnHere(){
@@ -179,7 +180,7 @@ public class MultiGamePhase extends GamePhase {
         final GameConfig nextGame = subPhaseGames.removeFirst();
         return GamePhase.create(game(), nextGame, nextGame.getPlayingPhase(), GamePhaseType.PLAYING).thenApply(result -> {
             if (result.isOk()) {
-				setActivePhase(result.getOk(), saveInventory);
+				startSubPhase(result.getOk(), saveInventory);
                 invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
                 game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(nextGame.name()).withStyle(ChatFormatting.GREEN));
                 game.allPlayers().showTitle(Component.empty().append(nextGame.name()).withStyle(ChatFormatting.GREEN),
