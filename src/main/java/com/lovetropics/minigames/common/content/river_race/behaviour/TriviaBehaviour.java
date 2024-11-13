@@ -20,6 +20,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -57,31 +59,52 @@ public final class TriviaBehaviour implements IGameBehavior {
 
     public static final MapCodec<TriviaBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExtraCodecs.nonEmptyList(TriviaZone.CODEC.listOf()).fieldOf("zones").forGetter(b -> b.zones),
-            Codec.INT.optionalFieldOf("question_lockout", 30).forGetter(b -> b.questionLockout)
+            Codec.INT.optionalFieldOf("question_lockout", 30).forGetter(b -> b.questionLockout),
+            Direction.CODEC.fieldOf("forward_direction").forGetter(b -> b.forwardDirection)
     ).apply(i, TriviaBehaviour::new));
 
     private static final TagKey<Block> STAINED_GLASS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("lt", "all_stained_glass"));
 
     private final List<TriviaZone> zones;
     private final int questionLockout;
+    private final Direction forwardDirection;
     private final Map<Long, BlockPos> lockedOutTriviaBlocks = new ConcurrentHashMap<>();
+
     private final Set<TriviaQuestion> usedQuestions = new ObjectOpenHashSet<>();
+    private final Long2ObjectMap<TriviaQuestion> questionsByZoneLocalPos = new Long2ObjectOpenHashMap<>();
 
     private final List<ZoneRegion> zoneRegions = new ArrayList<>();
 
-    public TriviaBehaviour(List<TriviaZone> zones, int questionLockout) {
+    public TriviaBehaviour(List<TriviaZone> zones, int questionLockout, Direction forwardDirection) {
         this.zones = zones;
         this.questionLockout = questionLockout;
+        this.forwardDirection = forwardDirection;
     }
 
     @Nullable
-    private TriviaZone getZoneByPos(BlockPos pos) {
+    private ZoneRegion getZoneByPos(BlockPos pos) {
         for (ZoneRegion region : zoneRegions) {
             if (region.box.contains(pos)) {
-                return region.zone;
+                return region;
             }
         }
         return null;
+    }
+
+    // Mirrored for the opposite team side so that equivalent trivia blocks can reuse the same question
+    private long getTriviaQuestionKey(ZoneRegion zone, BlockPos pos) {
+        pos = pos.subtract(zone.box.min());
+        BlockPos size = zone.box.size();
+        if (forwardDirection.getAxis() == Direction.Axis.X) {
+			if (pos.getZ() >= size.getZ() / 2) {
+                pos = new BlockPos(pos.getX(), pos.getY(), size.getZ() - 1 - pos.getZ());
+            }
+        } else {
+            if (pos.getX() >= size.getX() / 2) {
+                pos = new BlockPos(size.getX() - 1 - pos.getX(), pos.getY(), pos.getZ());
+            }
+        }
+        return pos.asLong();
     }
 
     @Override
@@ -188,23 +211,25 @@ public final class TriviaBehaviour implements IGameBehavior {
 
     @Nullable
     private TriviaQuestion pickTriviaForPos(IGamePhase game, BlockPos pos, TriviaType triviaType) {
-        TriviaZone triviaZone = getZoneByPos(pos);
-        if (triviaZone != null) {
-            List<TriviaQuestion> questionPool = triviaZone.questionsByDifficulty(triviaType.difficulty())
+        ZoneRegion region = getZoneByPos(pos);
+		if (region == null) {
+			return null;
+		}
+        return questionsByZoneLocalPos.computeIfAbsent(getTriviaQuestionKey(region, pos), k -> {
+            List<TriviaQuestion> questionPool = region.zone.questionsByDifficulty(triviaType.difficulty())
                     .filter(question -> !usedQuestions.contains(question))
                     .toList();
             return Util.getRandomSafe(questionPool, game.random()).orElse(null);
-        }
-        return null;
-    }
+        });
+	}
 
     private void spawnCollectableFromBlock(IGamePhase game, BlockPos pos) {
-        TriviaZone inZone = getZoneByPos(pos);
+        ZoneRegion inZone = getZoneByPos(pos);
         CollectablesBehaviour collectables = game.state().getOrNull(CollectablesBehaviour.COLLECTABLES);
         if (inZone == null || collectables == null) {
             return;
         }
-        CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inZone.regionKey());
+        CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inZone.zone.regionKey());
         if (collectable != null) {
             collectables.spawnCollectableItem(game, collectable, Vec3.atCenterOf(pos.above()));
         }
