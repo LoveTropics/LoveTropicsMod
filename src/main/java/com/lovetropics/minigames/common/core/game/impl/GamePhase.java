@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
@@ -29,7 +30,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,7 +50,8 @@ import java.util.concurrent.CompletableFuture;
 public class GamePhase implements IGamePhase {
 	final GameInstance game;
 	final MinecraftServer server;
-	final IGamePhaseDefinition definition;
+	final IGameDefinition gameDefinition;
+	final IGamePhaseDefinition phaseDefinition;
 	final GamePhaseType phaseType;
 
 	final GameMap map;
@@ -69,10 +70,11 @@ public class GamePhase implements IGamePhase {
 
 	private final GameScheduler scheduler = new GameScheduler();
 
-	protected GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
+	protected GamePhase(GameInstance game, IGameDefinition gameDefinition, IGamePhaseDefinition phaseDefinition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
 		server = game.server();
-		this.definition = definition;
+		this.gameDefinition = gameDefinition;
+		this.phaseDefinition = phaseDefinition;
 		this.phaseType = phaseType;
 
 		this.map = map;
@@ -84,40 +86,21 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	public static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
+	public static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGameDefinition gameDefinition, IGamePhaseDefinition phaseDefinition, GamePhaseType phaseType) {
 		MinecraftServer server = game.server();
 
-		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
+		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(phaseDefinition);
 		if (result.isError()) {
 			return CompletableFuture.completedFuture(result.castError());
 		}
 
-		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
+		CompletableFuture<GameResult<GamePhase>> future = phaseDefinition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
-					BehaviorList behaviors = definition.createBehaviors();
-					if(game.definition.isMultiGamePhase()){
-						return new MultiGamePhase(game, definition, phaseType, map, behaviors);
+					BehaviorList behaviors = phaseDefinition.createBehaviors();
+					if (game.definition.isMultiGamePhase()) {
+						return new MultiGamePhase(game, gameDefinition, phaseDefinition, phaseType, map, behaviors);
 					}
-					return new GamePhase(game, definition, phaseType, map, behaviors);
-				}), server);
-
-		return GameResult.handleException("Unknown exception starting game phase", future);
-	}
-	public static CompletableFuture<GameResult<GamePhase>> createMultiGame(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, ResourceLocation gameId) {
-		MinecraftServer server = game.server();
-
-		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
-		if (result.isError()) {
-			return CompletableFuture.completedFuture(result.castError());
-		}
-
-		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
-				.thenApplyAsync(r -> r.map(map -> {
-					BehaviorList behaviors = definition.createBehaviors();
-					if(game.definition.isMultiGamePhase()){
-						return new MultiGamePhase(game, definition, phaseType, map, behaviors, gameId);
-					}
-					return new GamePhase(game, definition, phaseType, map, behaviors);
+					return new GamePhase(game, gameDefinition, phaseDefinition, phaseType, map, behaviors);
 				}), server);
 
 		return GameResult.handleException("Unknown exception starting game phase", future);
@@ -201,8 +184,13 @@ public class GamePhase implements IGamePhase {
 	}
 
 	@Override
+	public IGameDefinition definition() {
+		return gameDefinition;
+	}
+
+	@Override
 	public IGamePhaseDefinition phaseDefinition() {
-		return definition;
+		return phaseDefinition;
 	}
 
 	@Override

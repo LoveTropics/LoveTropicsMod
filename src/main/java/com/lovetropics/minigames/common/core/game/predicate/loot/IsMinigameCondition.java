@@ -28,14 +28,10 @@ public class IsMinigameCondition implements LootItemCondition {
 
     @Override
     public boolean test(LootContext lootContext) {
-        IGamePhase gamePhaseInDimension = MultiGameManager.INSTANCE.getGamePhaseInDimension(lootContext.getLevel());
-        if(gamePhaseInDimension == null){
+        IGamePhase phase = MultiGameManager.INSTANCE.getGamePhaseInDimension(lootContext.getLevel());
+        if (phase == null) {
             return false;
         }
-        ResourceLocation gameId = gamePhaseInDimension.definition().id();
-        if(gamePhaseInDimension.definition().isMultiGamePhase()){
-            gameId = ((MultiGamePhase)gamePhaseInDimension).getGameId();
-        }
-        return gameId.equals(minigameId);
+		return phase.definition().id().equals(minigameId);
     }
 }

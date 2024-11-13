@@ -58,10 +58,6 @@ final class GameLobby implements IGameLobby {
 	);
 	private final GameRewardsMap rewardsMap = new GameRewardsMap();
 
-	// Game ID -> state
-	// Useful for things that should retain state no matter how deep into microgames you go
-	private final Map<ResourceLocation, IGameState> multiPhaseDataMap = Maps.newHashMap();
-
 	private boolean needsRolePrompt = false;
 	private boolean closed;
 
@@ -173,18 +169,6 @@ final class GameLobby implements IGameLobby {
 		return rewardsMap;
 	}
 
-	public Map<ResourceLocation, IGameState> getMultiPhaseDataMap() {
-		return multiPhaseDataMap;
-	}
-
-	public IGameState createOrGetMultiPhaseState(final MultiGamePhase gamePhase) {
-		final ResourceLocation gameID = gamePhase.game.definition().id();
-		if (!multiPhaseDataMap.containsKey(gameID)) {
-			gamePhase.registerState(this);
-		}
-		return multiPhaseDataMap.get(gameID);
-	}
-
 	// If old phase is null, it probably means we're entering from the main event world
 	private GameResult<Unit> onGamePhaseChange(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
@@ -215,10 +199,6 @@ final class GameLobby implements IGameLobby {
 	}
 
 	private GameResult<Unit> startPhase(GamePhase phase) {
-		if (phase instanceof final MultiGamePhase multiPhase) {
-			multiPhaseDataMap.clear();
-			multiPhase.registerState(this);
-		}
 		return phase.start(false);
 	}
 

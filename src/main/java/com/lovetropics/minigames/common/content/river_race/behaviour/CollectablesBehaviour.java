@@ -83,7 +83,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        RiverRaceState riverRaceState = game.state().getOrThrow(RiverRaceState.KEY);
+        RiverRaceState riverRaceState = game.instanceState().getOrThrow(RiverRaceState.KEY);
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         for (Collectable collectable : collectables) {

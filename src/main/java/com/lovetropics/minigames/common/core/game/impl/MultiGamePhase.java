@@ -1,29 +1,24 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
-import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
-import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
@@ -35,70 +30,24 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class MultiGamePhase extends GamePhase {
 
     private static final Logger LOGGER = LogManager.getLogger(MultiGamePhase.class);
-    @FunctionalInterface
-    interface GameStateRegistration<L, M, R> {
-        void registerState(L lobby, M phase, R id);
-    }
 
-    private enum MultiPhaseGameStates {
-        RIVER_RACE((lobby, phase, id) -> {
-            IGameState state = lobby.getMultiPhaseDataMap().get(id);
-            if (state instanceof RiverRaceState riverRaceState) {
-                riverRaceState.reset();
-            } else {
-                lobby.getMultiPhaseDataMap().put(id, new RiverRaceState(phase));
-            }
-            phase.phaseState.register(RiverRaceState.KEY, (RiverRaceState) lobby.getMultiPhaseDataMap().get(id));
-        });
-
-        final GameStateRegistration<GameLobby, MultiGamePhase, ResourceLocation> registration;
-
-        MultiPhaseGameStates(GameStateRegistration<GameLobby, MultiGamePhase, ResourceLocation> registration) {
-            this.registration = registration;
-        }
-    }
-    private final ResourceLocation gameId;
     @Nullable
     private GamePhase activePhase = null;
-    @Nullable
-    private ResourceLocation activePhaseId = null;
     private final List<GameConfig> subPhaseGames = new ArrayList<>();
-    private static final Map<ResourceLocation, MultiPhaseGameStates> gameStateMap = Maps.newHashMap();
 
-    protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors, ResourceLocation gameId) {
-        super(game, definition, phaseType, map, behaviors);
-        this.gameId = gameId;
-        gameStateMap.put(gameId, MultiPhaseGameStates.RIVER_RACE);
+    protected MultiGamePhase(GameInstance game, IGameDefinition gameDefinition, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
+        super(game, gameDefinition, definition, phaseType, map, behaviors);
     }
 
-    protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
-        this(game, definition, phaseType, map, behaviors, ResourceLocation.parse("lt:river_race"));
-    }
-
-    public void registerState(final GameLobby lobby) {
-        final ResourceLocation id = game.definition.id();
-        gameStateMap.get(id).registration.registerState(lobby, this, id);
-    }
-
-    public void setActivePhase(GamePhase activePhase, final boolean saveInventory, ResourceLocation activePhaseId) {
+    public void setActivePhase(GamePhase activePhase, final boolean saveInventory) {
         this.activePhase = activePhase;
-        this.activePhaseId = activePhaseId;
         MultiGameManager.INSTANCE.addGamePhaseToDimension(activePhase.dimension(), activePhase);
-        activePhase.state().register(RiverRaceState.KEY, (RiverRaceState) ((GameLobby) lobby()).createOrGetMultiPhaseState(this));
         activePhase.start(saveInventory);
-    }
-
-    public ResourceLocation getActiveGameId(){
-        if(activePhaseId != null){
-            return activePhaseId;
-        }
-        return definition().id();
     }
 
     public void returnHere(){
@@ -120,10 +69,6 @@ public class MultiGamePhase extends GamePhase {
         invoker(GamePlayerEvents.SET_ROLE).onSetRole(newPlayer, role, null);
 
         addedPlayers.add(player.getUUID());
-    }
-
-    public ResourceLocation getGameId() {
-        return gameId;
     }
 
     @Override
@@ -157,7 +102,6 @@ public class MultiGamePhase extends GamePhase {
                 MultiGameManager.INSTANCE.removeGamePhaseFromDimension(activePhase.dimension(), activePhase);
                 activePhase.destroy();
                 activePhase = null;
-                activePhaseId = null;
                 startNextQueuedMicrogame(false).whenComplete((newGame, throwable) -> {
                     if(!newGame){
                         returnHere();
@@ -214,7 +158,6 @@ public class MultiGamePhase extends GamePhase {
         if(activePhase != null){
             activePhase.destroy();
             activePhase = null;
-            activePhaseId = null;
             return;
         }
         super.destroy();
@@ -234,9 +177,9 @@ public class MultiGamePhase extends GamePhase {
             return CompletableFuture.completedFuture(false);
         }
         final GameConfig nextGame = subPhaseGames.removeFirst();
-        return GamePhase.createMultiGame(game(), nextGame.getPlayingPhase(), GamePhaseType.PLAYING, nextGame.id()).thenApply(result -> {
+        return GamePhase.create(game(), nextGame, nextGame.getPlayingPhase(), GamePhaseType.PLAYING).thenApply(result -> {
             if (result.isOk()) {
-                setActivePhase(result.getOk(), saveInventory, nextGame.id());
+				setActivePhase(result.getOk(), saveInventory);
                 invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
                 game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(nextGame.name()).withStyle(ChatFormatting.GREEN));
                 game.allPlayers().showTitle(Component.empty().append(nextGame.name()).withStyle(ChatFormatting.GREEN),

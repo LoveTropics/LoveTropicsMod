@@ -12,6 +12,12 @@ import java.util.Optional;
 public final class GameStateMap {
 	private final Map<GameStateKey<?>, IGameState> state = new Reference2ObjectOpenHashMap<>();
 
+	@SuppressWarnings("unchecked")
+	public <T extends IGameState> T getOrRegister(GameStateKey<T> key, T state) {
+		T oldState = (T) this.state.putIfAbsent(key, state);
+		return oldState != null ? oldState : state;
+	}
+
 	public <T extends IGameState> T register(GameStateKey<T> key, T state) {
 		if (this.state.putIfAbsent(key, state) == null) {
 			return state;

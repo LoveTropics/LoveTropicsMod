@@ -116,12 +116,12 @@ abstract class LobbyState {
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createPlaying(GameInstance game, IGamePhaseDefinition definition) {
-			return GamePhase.create(game, definition, GamePhaseType.PLAYING)
+			return GamePhase.create(game, game.definition, definition, GamePhaseType.PLAYING)
 					.thenApply(result -> result.map(Playing::new));
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createWaiting(GameInstance game, IGamePhaseDefinition definition, IGamePhaseDefinition playing) {
-			return GamePhase.create(game, definition, GamePhaseType.WAITING)
+			return GamePhase.create(game, game.definition, definition, GamePhaseType.WAITING)
 					.thenApply(result -> result.map(waiting -> {
 						Supplier<LobbyState> start = () -> {
 							CompletableFuture<GameResult<LobbyState>> next = createPlaying(waiting.game, playing);

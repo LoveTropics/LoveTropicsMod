@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -42,6 +43,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
     ).apply(i, VictoryPointsBehavior::new));
 
     private IGamePhase game;
+    private VictoryPointsGameState victoryPointsState;
 
     private final int triviaChestPoints;
     private final int triviaGatePoints;
@@ -58,6 +60,12 @@ public class VictoryPointsBehavior implements IGameBehavior {
     }
 
     @Override
+    public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+        // TODO how to make this more generic to not be specific to river race?
+        victoryPointsState = instanceState.getOrRegister(RiverRaceState.KEY, new RiverRaceState(game));
+    }
+
+    @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
@@ -69,7 +77,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         // Victory points from winning microgame
         events.listen(GameLogicEvents.WIN_TRIGGERED, this::onWinTriggered);
         events.listen(RiverRaceEvents.VICTORY_POINTS_CHANGED, (team, value, lastValue) -> {
-            PlayerSet playersForTeam = teams.getPlayersForTeam(team);
+            PlayerSet playersForTeam = teams != null ? teams.getPlayersForTeam(team) : PlayerSet.EMPTY;
             playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(value - lastValue), true);
             playersForTeam.playSound(SoundRegistry.COINS.value(), SoundSource.NEUTRAL, 0.4f, 1);
         });
@@ -92,31 +100,15 @@ public class VictoryPointsBehavior implements IGameBehavior {
     }
 
     private void tryAddPoints(final UUID playerId, final int points) {
-        final VictoryPointsGameState pointState = state();
-        if (pointState != null) {
-            pointState.addPointsToTeam(playerId, points);
-        }
+        victoryPointsState.addPointsToTeam(playerId, points);
     }
 
     private void tryAddPoints(final GameTeamKey team, final int points) {
-        final VictoryPointsGameState pointState = state();
-        if (pointState != null) {
-            pointState.addPointsToTeam(team, points);
-        }
+        victoryPointsState.addPointsToTeam(team, points);
     }
 
     private int getPoints(final ServerPlayer player) {
-        final VictoryPointsGameState gameState = state();
-        if (gameState != null) {
-            return gameState.getVictoryPoints(player);
-        }
-        return -1;
-    }
-
-    @Nullable
-    private VictoryPointsGameState state() {
-        // TODO how to make this more generic to not be specific to river race?
-        return game.state().getOrNull(RiverRaceState.KEY);
+        return victoryPointsState.getVictoryPoints(player);
     }
 
     private InteractionResult onBlockBroken(ServerPlayer serverPlayer, BlockPos blockPos, BlockState blockState, InteractionHand interactionHand) {
