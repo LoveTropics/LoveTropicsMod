@@ -7,8 +7,8 @@ import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
+import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
@@ -326,17 +326,17 @@ final class GameLobby implements IGameLobby {
 	static final class ChatNotifyListener implements LobbyStateListener {
 		@Override
 		public void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
-			IGame currentGame = lobby.getCurrentGame();
-			if (currentGame != null) {
-				onPlayerJoinGame(lobby, currentGame);
+			IGamePhase currentPhase = lobby.getCurrentPhase();
+			if (currentPhase != null && currentPhase.phaseType() == GamePhaseType.WAITING) {
+				onPlayerJoinGame(lobby, currentPhase);
 			}
 		}
 
 		@Override
 		public void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
-			IGame currentGame = lobby.getCurrentGame();
-			if (currentGame != null) {
-				onPlayerLeaveGame(lobby, currentGame);
+			IGamePhase currentPhase = lobby.getCurrentPhase();
+			if (currentPhase != null && currentPhase.phaseType() == GamePhaseType.WAITING) {
+				onPlayerLeaveGame(lobby, currentPhase);
 			}
 		}
 
@@ -345,16 +345,16 @@ final class GameLobby implements IGameLobby {
 			player.displayClientMessage(GameTexts.Status.lobbyOpened(lobby), false);
 		}
 
-		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {
-			int minimumParticipants = currentGame.definition().getMinimumParticipantCount();
+		private void onPlayerJoinGame(IGameLobby lobby, IGamePhase currentPhase) {
+			int minimumParticipants = currentPhase.definition().getMinimumParticipantCount();
 			if (lobby.getPlayers().size() == minimumParticipants) {
 				Component enoughPlayers = GameTexts.Status.enoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(enoughPlayers);
 			}
 		}
 
-		private void onPlayerLeaveGame(IGameLobby lobby, IGame currentGame) {
-			int minimumParticipants = currentGame.definition().getMinimumParticipantCount();
+		private void onPlayerLeaveGame(IGameLobby lobby, IGamePhase currentPhase) {
+			int minimumParticipants = currentPhase.definition().getMinimumParticipantCount();
 			if (lobby.getPlayers().size() == minimumParticipants - 1) {
 				Component noLongerEnoughPlayers = GameTexts.Status.noLongerEnoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(noLongerEnoughPlayers);

@@ -2,12 +2,13 @@ package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 
@@ -24,6 +25,12 @@ public interface IGameLobby {
 	default IGame getCurrentGame() {
 		IGamePhase phase = getCurrentPhase();
 		return phase != null ? phase.game() : null;
+	}
+
+	@Nullable
+	default IGameDefinition getCurrentGameDefinition() {
+		IGamePhase phase = getCurrentPhase();
+		return phase != null ? phase.definition() : null;
 	}
 
 	@Nullable

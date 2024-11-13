@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
@@ -37,9 +37,9 @@ public class StartGameCommand {
 									Scheduler.nextTick().run(server -> {
 										GameResult<Unit> result = action.run();
 										if (result.isOk()) {
-											IGame game = lobby.getCurrentGame();
+											IGameDefinition game = lobby.getCurrentGameDefinition();
 											if (game != null) {
-												c.getSource().sendSuccess(() -> GameTexts.Commands.startedGame(game.definition()), false);
+												c.getSource().sendSuccess(() -> GameTexts.Commands.startedGame(game), false);
 											}
 										} else {
 											c.getSource().sendFailure(result.getError());
