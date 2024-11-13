@@ -303,5 +303,7 @@ public final class MinigameTexts {
 		for (DonationPackageData.PackageType type : DonationPackageData.PackageType.values()) {
 			KEYS.add("donation." + type.getSerializedName(), type.getName());
 		}
+
+		KEYS.add("time_remaining", "Time Remaining: %time%...");
 	}
 }

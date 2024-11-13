@@ -513,6 +513,7 @@
   "ltminigames.minigame.teams.red": "Red",
   "ltminigames.minigame.teams.seekers": "Seekers",
   "ltminigames.minigame.teams.yellow": "Yellow",
+  "ltminigames.minigame.time_remaining": "Time Remaining: %time%...",
   "ltminigames.minigame.trash_dive": "Trash Dive",
   "ltminigames.minigame.trash_dive.sidebar.collected": "%total% collected",
   "ltminigames.minigame.trash_dive.sidebar.instruction": "Pick up trash!",
