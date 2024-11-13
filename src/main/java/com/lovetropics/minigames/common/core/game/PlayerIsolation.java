@@ -95,14 +95,9 @@ public final class PlayerIsolation {
 
 			if (playerTag.isPresent()) {
 				final CompoundTag playerData = playerTag.get();
-				setPlayerPosAndMotionFromTag(newPlayer, playerData);
-
-				// TODO is this like super way too much?
-				// We just need to make sure we transfer things like inventory
-				newPlayer.readAdditionalSaveData(playerData);
-
-				newPlayer.addTag(ISOLATED_TAG);
+				newPlayer.load(playerData);
 				newPlayer.loadGameTypes(playerData);
+				newPlayer.addTag(ISOLATED_TAG);
 			}
 		});
 	}
@@ -201,23 +196,6 @@ public final class PlayerIsolation {
 
 	public boolean isReloading(final ServerPlayer player) {
 		return reloadingPlayers.contains(player.getUUID());
-	}
-
-	private static void setPlayerPosAndMotionFromTag(ServerPlayer newPlayer, CompoundTag playerData) {
-		ListTag posTag = playerData.getList("Pos", 6);
-		ListTag motionTag = playerData.getList("Motion", 6);
-		ListTag rotationTag = playerData.getList("Rotation", 5);
-		double xPos = motionTag.getDouble(0);
-		double yPos = motionTag.getDouble(1);
-		double zPos = motionTag.getDouble(2);
-		newPlayer.setDeltaMovement(Math.abs(xPos) > 10.0 ? 0.0 : xPos, Math.abs(yPos) > 10.0 ? 0.0 : yPos, Math.abs(zPos) > 10.0 ? 0.0 : zPos);
-		double epsilon = 3.0000512E7;
-		newPlayer.setPosRaw(Mth.clamp(posTag.getDouble(0), -epsilon, epsilon), Mth.clamp(posTag.getDouble(1), -2.0E7, 2.0E7), Mth.clamp(posTag.getDouble(2), -3.0000512E7, 3.0000512E7));
-		newPlayer.setYRot(rotationTag.getFloat(0));
-		newPlayer.setXRot(rotationTag.getFloat(1));
-		newPlayer.setOldPosAndRot();
-		newPlayer.setYHeadRot(newPlayer.getYRot());
-		newPlayer.setYBodyRot(newPlayer.getYRot());
 	}
 
 	// State that can be transferred into isolation, but not back out
