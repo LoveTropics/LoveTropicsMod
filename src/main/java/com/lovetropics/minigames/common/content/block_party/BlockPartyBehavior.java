@@ -5,6 +5,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -58,8 +59,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
 			Codec.INT.optionalFieldOf("time_decay_rounds", 5).forGetter(c -> c.timeDecayRounds),
 			Codec.LONG.optionalFieldOf("interval", 20L * 3).forGetter(c -> c.interval),
-			Codec.INT.optionalFieldOf("knockback_after_round", Integer.MAX_VALUE).forGetter(c -> c.knockbackAfterAround),
-			Codec.BOOL.optionalFieldOf("teams_support", false).forGetter(c -> c.teamsSupport)
+			Codec.INT.optionalFieldOf("knockback_after_round", Integer.MAX_VALUE).forGetter(c -> c.knockbackAfterAround)
 	).apply(i, BlockPartyBehavior::new));
 
 	private final String floorRegionKey;
@@ -71,7 +71,6 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	private final int timeDecayRounds;
 	private final long interval;
 	private final int knockbackAfterAround;
-	private final boolean teamsSupport;
 
 	private IGamePhase game;
 	private BlockBox floorRegion;
@@ -82,7 +81,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	@Nullable
 	private State state;
 
-	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround, boolean teamsSupport) {
+	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround) {
 		this.floorRegionKey = floorRegionKey;
 		this.blocks = blocks;
 		this.quadSize = quadSize;
@@ -91,7 +90,6 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		this.timeDecayRounds = timeDecayRounds;
 		this.interval = interval;
 		this.knockbackAfterAround = knockbackAfterAround;
-		this.teamsSupport = teamsSupport;
 	}
 
 	@Override
@@ -118,6 +116,18 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DAMAGE_AMOUNT, (player, damageSource, amount, originalAmount) -> hasKnockback(state) ? 0.0f : amount);
 		events.listen(GamePlayerEvents.ATTACK, (player, target) -> target instanceof Player && !hasKnockback(state) ? InteractionResult.FAIL : InteractionResult.PASS);
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> hasKnockback(state) ? InteractionResult.PASS : InteractionResult.FAIL);
+
+		events.listen(GameLogicEvents.GAME_OVER, winner -> {
+			Component message;
+			if (winner instanceof GameWinner.Nobody) {
+				message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
+			} else {
+				message = MinigameTexts.PLAYER_WON.apply(winner.name()).withStyle(ChatFormatting.GREEN);
+			}
+			game.allPlayers().sendMessage(message);
+
+			state = new Ending(game.ticks() + SharedConstants.TICKS_PER_SECOND * 5);
+		});
 	}
 
 	private boolean hasKnockback(@Nullable State state) {
@@ -153,85 +163,13 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			return;
 		}
 
-		List<ServerPlayer> eliminated = null;
-
 		PlayerSet participants = game.participants();
 		for (ServerPlayer player : participants) {
 			double y = player.getY();
 			if (y < player.level().getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
-				if (eliminated == null) {
-					eliminated = new ArrayList<>();
-				}
-
-				eliminated.add(player);
-
+				game.setPlayerRole(player, PlayerRole.SPECTATOR);
 				game.allPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
 			}
-		}
-
-		if (eliminated != null) {
-			for (ServerPlayer player : eliminated) {
-				game.setPlayerRole(player, PlayerRole.SPECTATOR);
-			}
-
-			if(teamsSupport) {
-				TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
-				if(teams != null){
-					if(teams.getTeamKeys().size() > 1){
-						Map<GameTeamKey, List<ServerPlayer>> collect = participants.stream().collect(Collectors.groupingBy(teams::getTeamForPlayer));
-						List<GameTeamKey> teamsWithPlayers = collect.keySet().stream().filter(gameTeamKey -> !collect.get(gameTeamKey).isEmpty()).toList();
-						if(teamsWithPlayers.size() == 1){
-							GameTeamKey winningTeamKey = teamsWithPlayers.getFirst();
-							GameTeam winningTeam = teams.getTeamByKey(winningTeamKey);
-							Component message;
-							if (winningTeam != null) {
-								MutableComponent styledTeamName = winningTeam.config().styledName();
-								message = MinigameTexts.PLAYER_WON.apply(styledTeamName).withStyle(ChatFormatting.GREEN);
-//								game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
-
-								game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(winningTeam);
-							} else {
-								message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
-							}
-
-							state = new Ending(game.ticks() + 20 * 5);
-
-							game.allPlayers().sendMessage(message);
-						} else if(teamsWithPlayers.isEmpty()){
-							Component message;
-							message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
-							state = new Ending(game.ticks() + 20 * 5);
-							game.allPlayers().sendMessage(message);
-						}
-						return;
-					}
-				}
-			}
-			if (participants.size() <= 1) {
-				ServerPlayer winningPlayer = getWinningPlayer();
-
-				Component message;
-				if (winningPlayer != null) {
-					message = MinigameTexts.PLAYER_WON.apply(winningPlayer.getDisplayName()).withStyle(ChatFormatting.GREEN);
-					game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(winningPlayer);
-				} else {
-					message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
-				}
-
-				state = new Ending(game.ticks() + 20 * 5);
-
-				game.allPlayers().sendMessage(message);
-			}
-		}
-	}
-
-	@Nullable
-	private ServerPlayer getWinningPlayer() {
-		PlayerSet participants = game.participants();
-		if (participants.isEmpty()) {
-			return null;
-		} else {
-			return participants.iterator().next();
 		}
 	}
 
