@@ -20,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.Iterator;
@@ -111,15 +112,10 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 	}
 
 	private LargeFireball createFireball(ServerLevel world, BlockPos spawn, BlockPos target) {
-		double deltaX = target.getX() - spawn.getX();
-		double deltaY = target.getY() - spawn.getY();
-		double deltaZ = target.getZ() - spawn.getZ();
-
 		LargeFireball fireball = new LargeFireball(EntityType.FIREBALL, world) {
 			@Override
 			protected void onHit(final HitResult hitResult) {
-				HitResult.Type resultType = hitResult.getType();
-				switch (resultType) {
+				switch (hitResult.getType()) {
 					case ENTITY -> onHitEntity((EntityHitResult) hitResult);
 					case BLOCK -> onHitBlock((BlockHitResult) hitResult);
 				}
@@ -133,8 +129,8 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 		};
 
 		fireball.moveTo(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.getYRot(), fireball.getXRot());
-		fireball.setPos(spawn.getX(), spawn.getY(), spawn.getZ());
-		fireball.accelerationPower = 0.1;
+		Vec3 direction = Vec3.atCenterOf(target).subtract(Vec3.atCenterOf(spawn));
+		fireball.setDeltaMovement(direction.normalize().scale(fireball.accelerationPower));
 
 		return fireball;
 	}
