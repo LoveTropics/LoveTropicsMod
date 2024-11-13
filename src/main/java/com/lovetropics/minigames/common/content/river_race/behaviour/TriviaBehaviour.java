@@ -144,23 +144,40 @@ public final class TriviaBehaviour implements IGameBehavior {
         if (!game.participants().contains(player)) {
             return InteractionResult.FAIL;
         }
-        if (!hasTrivia.hasQuestion()) {
+		if (hasTrivia.getState().isAnswered()) {
+            return useUnlockedTriviaBlock(game, player, pos, hasTrivia);
+        } else {
+            return useLockedTriviaBlock(game, player, pos, hasTrivia);
+        }
+    }
+
+    private InteractionResult useLockedTriviaBlock(IGamePhase game, ServerPlayer player, BlockPos pos, HasTrivia hasTrivia) {
+        TriviaQuestion question = hasTrivia.getQuestion();
+        if (question == null) {
             TriviaQuestion pickedQuestion = pickTriviaForPos(game, pos, hasTrivia.getTriviaType());
             if (pickedQuestion != null) {
                 usedQuestions.add(pickedQuestion);
                 hasTrivia.setQuestion(pickedQuestion);
+                question = pickedQuestion;
             } else {
                 player.sendSystemMessage(Component.literal("Failed to pick a question from the question pool for this trivia block").withStyle(ChatFormatting.RED));
+                return InteractionResult.FAIL;
             }
         }
-        if (hasTrivia.getQuestion() != null && !hasTrivia.getState().isAnswered()) {
-            PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, hasTrivia.getQuestion(), hasTrivia.getState()));
-        } else {
-            if (hasTrivia.getTriviaType() == TriviaBlock.TriviaType.COLLECTABLE) {
-                giveCollectableToPlayer(game, player, pos);
-            }
-        }
+        PacketDistributor.sendToPlayer(player, new ShowTriviaMessage(pos, question, hasTrivia.getState()));
         return InteractionResult.SUCCESS_NO_ITEM_USED;
+    }
+
+    private InteractionResult useUnlockedTriviaBlock(IGamePhase game, ServerPlayer player, BlockPos pos, HasTrivia hasTrivia) {
+        return switch (hasTrivia.getTriviaType()) {
+            case COLLECTABLE -> {
+                giveCollectableToPlayer(game, player, pos);
+                yield InteractionResult.SUCCESS_NO_ITEM_USED;
+            }
+            case GATE, VICTORY -> InteractionResult.SUCCESS_NO_ITEM_USED;
+            // Let the player open the chest
+            case REWARD -> InteractionResult.PASS;
+        };
     }
 
     @Nullable

@@ -15,10 +15,12 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivia {
     private static final Logger LOGGER = LogUtils.getLogger();
+    @Nullable
     private TriviaBehaviour.TriviaQuestion question;
     private long unlocksAt;
     private boolean answered;
@@ -71,10 +73,6 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
         tag.putBoolean(TriviaBlockEntity.TAG_ANSWERED, answered);
     }
 
-    @Override
-    public boolean hasQuestion() {
-        return question != null;
-    }
     private void markUpdated() {
         setChanged();
         level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
@@ -87,6 +85,7 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
     }
 
     @Override
+    @Nullable
     public TriviaBehaviour.TriviaQuestion getQuestion() {
         return question;
     }

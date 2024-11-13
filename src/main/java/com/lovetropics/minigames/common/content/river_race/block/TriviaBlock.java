@@ -64,8 +64,7 @@ public class TriviaBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-        return new TriviaBlockEntity(RiverRace.TRIVIA_BLOCK_ENTITY.get(), blockPos, blockState)
-                .setTriviaType(type);
+        return new TriviaBlockEntity(RiverRace.TRIVIA_BLOCK_ENTITY.get(), blockPos, blockState);
     }
 
     public TriviaType getType() {

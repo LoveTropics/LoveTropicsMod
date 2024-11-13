@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
@@ -36,33 +37,28 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     public static final String TAG_QUESTION = "question";
     public static final String TAG_UNLOCKS_AT = "unlocksAt";
     public static final String TAG_ANSWERED = "answered";
+    @Nullable
     private TriviaBehaviour.TriviaQuestion question;
     private long unlocksAt;
     private boolean answered;
-    private TriviaBlock.TriviaType triviaType;
+    private final TriviaBlock.TriviaType triviaType;
+
     public TriviaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
-        if(blockState.getBlock() instanceof TriviaBlock triviaBlock){
-            this.triviaType = triviaBlock.getType();
+        if (blockState.getBlock() instanceof TriviaBlock triviaBlock) {
+            triviaType = triviaBlock.getType();
+        } else {
+            throw new IllegalArgumentException("Cannot create TriviaBlockEntity for unrecognised block type: " + blockState);
         }
-    }
-
-    public TriviaBlockEntity setTriviaType(TriviaBlock.TriviaType blockType){
-        this.triviaType = blockType;
-        return this;
-    }
-
-    public TriviaBlock.TriviaType getTriviaBlockType() {
-        return triviaType;
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        if(question != null) {
+        if (question != null) {
             tag.put(TAG_QUESTION, TriviaBehaviour.TriviaQuestion.CODEC.encodeStart(NbtOps.INSTANCE, question).getOrThrow());
         }
-        if(unlocksAt > 0){
+        if (unlocksAt > 0) {
             tag.putLong(TAG_UNLOCKS_AT, unlocksAt);
         }
         tag.putBoolean(TAG_ANSWERED, answered);
@@ -122,17 +118,13 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     }
 
     @Override
-	public boolean hasQuestion(){
-        return question != null;
-    }
-
-    @Override
 	public void setQuestion(TriviaBehaviour.TriviaQuestion question) {
         this.question = question;
         markUpdated();
     }
 
     @Override
+    @Nullable
 	public TriviaBehaviour.TriviaQuestion getQuestion() {
         return question;
     }
