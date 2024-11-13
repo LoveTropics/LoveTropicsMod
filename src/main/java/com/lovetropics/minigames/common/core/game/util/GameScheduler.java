@@ -7,11 +7,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 
 /**
  * Schedule events for within a game
  */
-public final class GameScheduler {
+public final class GameScheduler implements Executor {
 
 	/**
 	 * This is to avoid concurrent modification exceptions
@@ -29,6 +30,11 @@ public final class GameScheduler {
 			blockChangeNotify.level.blockUpdated(blockChangeNotify.pos, blockChangeNotify.block);
 		}
 		blockChangeNotifies.clear();
+	}
+
+	@Override
+	public void execute(Runnable command) {
+		schedule(new DelayedTask(command, 0));
 	}
 
 	/**

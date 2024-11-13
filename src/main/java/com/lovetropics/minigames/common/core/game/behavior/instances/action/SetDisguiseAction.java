@@ -38,7 +38,7 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 			final CompletableFuture<DisguiseType> future = resolveDisguise(game, context);
 			if (ServerPlayerDisguises.set(player, disguise)) {
 				// This future might not complete, but we should have already
-				future.thenAcceptAsync(resolvedDisguise -> applyResolvedDisguise(player, resolvedDisguise), game);
+				future.thenAcceptAsync(resolvedDisguise -> applyResolvedDisguise(player, resolvedDisguise), game.scheduler());
 				return true;
 			}
 			return false;

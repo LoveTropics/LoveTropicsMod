@@ -13,9 +13,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.UUID;
-import java.util.concurrent.Executor;
 
-public interface IGame extends Executor {
+public interface IGame  {
 	IGameLobby lobby();
 
 	UUID gameUuid();
@@ -52,19 +51,6 @@ public interface IGame extends Executor {
 		ControlCommands commands = controlCommands();
 		GameLobbyMetadata lobby = lobby().getMetadata();
 		return ControlCommandInvoker.create(commands, lobby);
-	}
-
-	boolean isActive();
-
-	@Override
-	default void execute(final Runnable command) {
-		if (isActive()) {
-			server().execute(() -> {
-				if (isActive()) {
-					command.run();
-				}
-			});
-		}
 	}
 
     default RegistryAccess registryAccess() {

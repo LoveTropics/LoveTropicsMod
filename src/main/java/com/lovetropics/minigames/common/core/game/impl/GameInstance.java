@@ -50,12 +50,6 @@ public final class GameInstance implements IGame {
 		return stateMap;
 	}
 
-	@Override
-	public boolean isActive() {
-		final IGamePhase phase = lobby.getCurrentPhase();
-		return phase != null && phase.game() == this;
-	}
-
 	public PlayerStorage getPlayerStorage() {
 		return playerStorage;
 	}
