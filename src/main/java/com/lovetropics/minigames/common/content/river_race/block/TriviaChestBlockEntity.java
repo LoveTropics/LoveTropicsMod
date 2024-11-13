@@ -91,8 +91,8 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
     }
 
     @Override
-    public TriviaBlock.TriviaType getTriviaType() {
-        return TriviaBlock.TriviaType.REWARD;
+    public TriviaType getTriviaType() {
+        return TriviaType.REWARD;
     }
 
     @Override

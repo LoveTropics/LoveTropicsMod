@@ -11,7 +11,7 @@ public interface HasTrivia {
     @Nullable
     TriviaBehaviour.TriviaQuestion getQuestion();
 
-    TriviaBlock.TriviaType getTriviaType();
+    TriviaType getTriviaType();
 
     long lockout(int lockoutSeconds);
 

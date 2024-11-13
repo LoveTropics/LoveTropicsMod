@@ -4,7 +4,7 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
-import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -181,7 +181,7 @@ public final class TriviaBehaviour implements IGameBehavior {
     }
 
     @Nullable
-    private TriviaQuestion pickTriviaForPos(IGamePhase game, BlockPos pos, TriviaBlock.TriviaType triviaType) {
+    private TriviaQuestion pickTriviaForPos(IGamePhase game, BlockPos pos, TriviaType triviaType) {
         TriviaZone triviaZone = getZoneByPos(pos);
         if (triviaZone != null) {
             List<TriviaQuestion> questionPool = triviaZone.questionsByDifficulty(triviaType.difficulty())

@@ -2,12 +2,10 @@ package com.lovetropics.minigames.common.content.river_race.block;
 
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import org.jetbrains.annotations.Nullable;
 
 public class TriviaBlock extends Block implements EntityBlock {
@@ -33,26 +31,6 @@ public class TriviaBlock extends Block implements EntityBlock {
             super(properties, TriviaType.VICTORY);
         }
     }
-    public enum TriviaType implements StringRepresentable {
-        REWARD("easy"),
-        GATE("medium"),
-        COLLECTABLE("hard"),
-        VICTORY("hard");
-
-        private final String difficulty;
-        TriviaType(String difficulty){
-            this.difficulty = difficulty;
-        }
-
-        public String difficulty() {
-            return difficulty;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return toString().toLowerCase();
-        }
-    }
 
     private final TriviaType type;
 
@@ -70,11 +48,4 @@ public class TriviaBlock extends Block implements EntityBlock {
     public TriviaType getType() {
         return type;
     }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-    }
-
-
 }

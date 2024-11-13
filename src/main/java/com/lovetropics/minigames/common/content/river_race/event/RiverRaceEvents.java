@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.river_race.event;
 
-import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -27,7 +27,7 @@ public class RiverRaceEvents {
     });
 
     public interface AnswerTriviaQuestion {
-        void onAnswer(ServerPlayer player, final TriviaBlock.TriviaType triviaType, final boolean correct);
+        void onAnswer(ServerPlayer player, final TriviaType triviaType, final boolean correct);
     }
 
     public interface VictoryPointsChanged {

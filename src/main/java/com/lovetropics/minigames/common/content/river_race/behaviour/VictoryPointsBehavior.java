@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.minigames.SoundRegistry;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
-import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.content.river_race.state.VictoryPointsGameState;
@@ -123,7 +123,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         return InteractionResult.PASS;
     }
 
-    private void onQuestionAnswered(ServerPlayer player, TriviaBlock.TriviaType triviaType, boolean correct) {
+    private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, boolean correct) {
         if (correct) {
             UUID playerId = player.getUUID();
 			switch (triviaType) {

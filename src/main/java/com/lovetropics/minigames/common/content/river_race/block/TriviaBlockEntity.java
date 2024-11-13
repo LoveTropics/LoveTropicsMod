@@ -41,7 +41,7 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     private TriviaBehaviour.TriviaQuestion question;
     private long unlocksAt;
     private boolean answered;
-    private final TriviaBlock.TriviaType triviaType;
+    private final TriviaType triviaType;
 
     public TriviaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
@@ -130,7 +130,7 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     }
 
     @Override
-    public TriviaBlock.TriviaType getTriviaType() {
+    public TriviaType getTriviaType() {
         return triviaType;
     }
 
