@@ -18,6 +18,7 @@ import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -34,6 +35,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -89,11 +91,8 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         }
     }
 
-    public void givePlayerCollectable(IGamePhase game, Collectable collectable, ServerPlayer player) {
-        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
-        GameTeamKey teamKey = teams.getTeamForPlayer(player);
-
-        player.addItem(collectable.collectable().copy());
+    public void spawnCollectableItem(IGamePhase game, Collectable collectable, Vec3 pos) {
+        game.level().addFreshEntity(new ItemEntity(game.level(), pos.x, pos.y, pos.z, collectable.collectable.copy()));
     }
 
     @Override

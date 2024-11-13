@@ -34,6 +34,8 @@ public final class RiverRaceTexts {
 
 	public static final Component CANT_PLACE_COLLECTABLE = KEYS.add("cant_place_collectable", "Place in the Monument at the end of this zone to progress")
 			.withStyle(ChatFormatting.RED);
+	public static final Component TRIVIA_BLOCK_ALREADY_USED = KEYS.add("trivia_block_already_used", "This Trivia Block has already been used!")
+			.withStyle(ChatFormatting.RED);
 
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.forEach(consumer);

@@ -32,6 +32,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
@@ -39,6 +41,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -134,7 +137,7 @@ public final class TriviaBehaviour implements IGameBehavior {
                     game.level().destroyBlock(triviaPos, false);
                     findNeighboursOfTypeAndDestroy(game.scheduler(), game.level(), triviaPos, null);
                 }
-                case COLLECTABLE -> giveCollectableToPlayer(game, player, triviaPos);
+                case COLLECTABLE -> spawnCollectableFromBlock(game, triviaPos);
             }
         });
     }
@@ -144,7 +147,15 @@ public final class TriviaBehaviour implements IGameBehavior {
             return InteractionResult.FAIL;
         }
 		if (hasTrivia.getState().isAnswered()) {
-            return useUnlockedTriviaBlock(game, player, pos, hasTrivia);
+            return switch (hasTrivia.getTriviaType()) {
+                case COLLECTABLE, GATE, VICTORY -> {
+                    player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
+                    player.sendSystemMessage(RiverRaceTexts.TRIVIA_BLOCK_ALREADY_USED, true);
+                    yield InteractionResult.FAIL;
+                }
+                // Let the player open the chest
+                case REWARD -> InteractionResult.PASS;
+            };
         } else {
             return useLockedTriviaBlock(game, player, pos, hasTrivia);
         }
@@ -167,18 +178,6 @@ public final class TriviaBehaviour implements IGameBehavior {
         return InteractionResult.SUCCESS_NO_ITEM_USED;
     }
 
-    private InteractionResult useUnlockedTriviaBlock(IGamePhase game, ServerPlayer player, BlockPos pos, HasTrivia hasTrivia) {
-        return switch (hasTrivia.getTriviaType()) {
-            case COLLECTABLE -> {
-                giveCollectableToPlayer(game, player, pos);
-                yield InteractionResult.SUCCESS_NO_ITEM_USED;
-            }
-            case GATE, VICTORY -> InteractionResult.SUCCESS_NO_ITEM_USED;
-            // Let the player open the chest
-            case REWARD -> InteractionResult.PASS;
-        };
-    }
-
     @Nullable
     private TriviaQuestion pickTriviaForPos(IGamePhase game, BlockPos pos, TriviaType triviaType) {
         TriviaZone triviaZone = getZoneByPos(pos);
@@ -191,7 +190,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         return null;
     }
 
-    private void giveCollectableToPlayer(IGamePhase game, ServerPlayer player, BlockPos pos) {
+    private void spawnCollectableFromBlock(IGamePhase game, BlockPos pos) {
         TriviaZone inZone = getZoneByPos(pos);
         CollectablesBehaviour collectables = game.game().instanceState().getOrNull(CollectablesBehaviour.COLLECTABLES);
         if (inZone == null || collectables == null) {
@@ -199,7 +198,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         }
         CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inZone.regionKey());
         if (collectable != null) {
-            collectables.givePlayerCollectable(game, collectable, player);
+            collectables.spawnCollectableItem(game, collectable, Vec3.atCenterOf(pos.above()));
         }
     }
 

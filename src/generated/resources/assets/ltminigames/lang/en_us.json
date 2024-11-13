@@ -417,6 +417,7 @@
   "ltminigames.minigame.river_race.trivia.loot_given": "Loot has been unlocked!",
   "ltminigames.minigame.river_race.trivia.victory_point_change": "+%s Victory Point(s)",
   "ltminigames.minigame.river_race.trivia.victory_point_given": "You've gained a victory point!",
+  "ltminigames.minigame.river_race.trivia_block_already_used": "This Trivia Block has already been used!",
   "ltminigames.minigame.signature_run": "Signature Run",
   "ltminigames.minigame.spectating_notification": "You are a %s!\nScroll or use the arrow keys to select players.\nHold %s and scroll to zoom.",
   "ltminigames.minigame.spectating_notification.key": "Left Control",
