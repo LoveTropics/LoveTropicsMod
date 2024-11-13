@@ -35,7 +35,12 @@ public final class PlayerDisguiseBehavior {
 
 		Pose pose = event.getPose();
 		EntityDimensions disguiseDimensions = entity.getDimensions(pose);
-		EntityDimensions actualDimensions = disguise.type().changesSize() ? disguiseDimensions : event.getEntity().getDimensions(pose);
+		EntityDimensions actualDimensions;
+		if (disguise.type().changesSize()) {
+			actualDimensions = disguiseDimensions;
+		} else {
+			actualDimensions = event.getEntity().getDimensions(pose).withEyeHeight(disguiseDimensions.eyeHeight());
+		}
 		event.setNewSize(actualDimensions.scale(scale));
 	}
 
