@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
-import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
@@ -23,6 +22,8 @@ import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -43,6 +44,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class CollectablesBehaviour implements IGameBehavior, IGameState {
@@ -57,6 +59,9 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     public CollectablesBehaviour(List<Collectable> collectables) {
         this.collectables = collectables;
     }
+
+    private final Map<BlockPos, Collectable> monumentSlots = new HashMap<>();
+    private final LongSet placedCollectables = new LongOpenHashSet();
 
     private final Map<String, GameTeamKey> firstTeamToCollect = new HashMap<>();
     @Nullable
@@ -87,6 +92,11 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
         for (Collectable collectable : collectables) {
             collectable.onCompleteAction.register(game, events);
+            for (String region : collectable.monumentSlotRegions) {
+                for (BlockPos pos : game.mapRegions().getOrThrow(region)) {
+                    monumentSlots.put(pos.immutable(), collectable);
+                }
+            }
         }
 
         events.listen(GamePhaseEvents.TICK, () -> {
@@ -94,20 +104,22 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 countdown.tick(game);
             }
         });
-        events.listen(GamePhaseEvents.CREATE, () -> {
-            for (Collectable collectable : collectables) {
-                for (String monumentSlotRegion : collectable.monumentSlotRegions()) {
-                    BlockBox region = game.mapRegions().getOrThrow(monumentSlotRegion);
-                    spawnCollectableDisplay(game, collectable, region.center());
-                }
-            }
-        });
+        events.listen(GamePhaseEvents.CREATE, () ->
+                monumentSlots.forEach((pos, collectable) -> spawnCollectableDisplay(game, collectable, pos.getCenter()))
+        );
         events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn, placedItemStack) -> {
+            Collectable expectedCollectable = monumentSlots.get(pos);
             Collectable placedCollectable = getMatchingCollectable(placedItemStack);
-            if (placedCollectable == null) {
-                return InteractionResult.PASS;
-            }
-            return tryPlaceCollectable(game, player, pos, placedCollectable, teams);
+			if (expectedCollectable != null || placedCollectable != null) {
+				return tryPlaceCollectable(game, teams, player, pos, expectedCollectable, placedCollectable);
+			}
+			return InteractionResult.PASS;
+		});
+        events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> {
+			if (placedCollectables.contains(pos.asLong())) {
+                return InteractionResult.FAIL;
+			}
+            return InteractionResult.PASS;
         });
     }
 
@@ -119,23 +131,29 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         game.level().addFreshEntity(itemDisplay);
     }
 
-    private InteractionResult tryPlaceCollectable(IGamePhase game, ServerPlayer player, BlockPos pos, Collectable placedCollectable, TeamState teams) {
-        BlockPos slot = getMonumentSlotAt(placedCollectable, game, pos);
-        if (slot == null) {
+    private InteractionResult tryPlaceCollectable(IGamePhase game, TeamState teams, ServerPlayer player, BlockPos pos, @Nullable Collectable expectedCollectable, @Nullable Collectable placedCollectable) {
+        if (placedCollectable == null || !Objects.equals(expectedCollectable, placedCollectable)) {
             player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
             player.sendSystemMessage(RiverRaceTexts.CANT_PLACE_COLLECTABLE, true);
             return InteractionResult.FAIL;
         }
-        return tryPlaceIntoMonumentSlot(game, teams, player, placedCollectable, slot);
-    }
 
-    private InteractionResult tryPlaceIntoMonumentSlot(IGamePhase game, TeamState teams, ServerPlayer player, Collectable collectable, BlockPos slotCenterPos) {
         GameTeamKey teamKey = teams.getTeamForPlayer(player);
-        if (teamKey == null) {
+        GameTeam team = teamKey != null ? teams.getTeamByKey(teamKey) : null;
+        if (team == null) {
             return InteractionResult.FAIL;
         }
-        GameTeam team = teams.getTeamByKey(teamKey);
-        if (firstTeamToCollect.putIfAbsent(collectable.zone, teamKey) == null) {
+
+        // If the players somehow broke the old one - don't let them continue to trigger it and gain points
+        if (!placedCollectables.add(pos.asLong())) {
+            return InteractionResult.FAIL;
+        }
+
+        return onCollectablePlaced(game, team, placedCollectable, pos);
+    }
+
+    private InteractionResult onCollectablePlaced(IGamePhase game, GameTeam team, Collectable collectable, BlockPos slotPos) {
+        if (firstTeamToCollect.putIfAbsent(collectable.zone, team.key()) == null) {
             addEffectsForPlacedCollectable(game, collectable, team);
             // Start microgames countdown
             countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
@@ -143,8 +161,8 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 countdown = null;
             });
         }
-        game.statistics().forTeam(teamKey).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
-        FireworkPalette.DYE_COLORS.spawn(slotCenterPos.above(), game.level());
+        game.statistics().forTeam(team.key()).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
+        FireworkPalette.DYE_COLORS.spawn(slotPos.above(), game.level());
         return InteractionResult.PASS;
     }
 
@@ -161,16 +179,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         for (Collectable collectable : collectables) {
             if (ItemStack.isSameItemSameComponents(collectable.collectable, itemStack)) {
                 return collectable;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private BlockPos getMonumentSlotAt(Collectable collectable, IGamePhase game, BlockPos pos) {
-        for (BlockBox region : game.mapRegions().getAll(collectable.monumentSlotRegions)) {
-            if (region.contains(pos)) {
-                return region.centerBlock();
             }
         }
         return null;
