@@ -8,17 +8,17 @@ import com.lovetropics.minigames.common.content.river_race.state.RiverRaceState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
 import com.lovetropics.minigames.common.core.game.state.ColliderState;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -27,7 +27,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -41,8 +40,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,22 +72,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         return null;
     }
 
-    public void queueMicrogames(IGamePhase game, Collectable collectable) {
-        if (game instanceof MultiGamePhase multiGamePhase) {
-            multiGamePhase.clearQueuedGames();
-
-            final List<ResourceLocation> configs = new ArrayList<>(collectable.gamePool);
-            Collections.shuffle(configs);
-            multiGamePhase.queueGames(configs.subList(0, Math.min(configs.size(), collectable.gamesPerRound)));
-        }
-    }
-
-    public void startQueuedMicrogame(final IGamePhase game) {
-        if (game instanceof MultiGamePhase multiGamePhase) {
-            multiGamePhase.startNextQueuedMicrogame(true);
-        }
-    }
-
     public void spawnCollectableItem(IGamePhase game, Collectable collectable, Vec3 pos) {
         game.level().addFreshEntity(new ItemEntity(game.level(), pos.x, pos.y, pos.z, collectable.collectable.copy()));
     }
@@ -103,6 +84,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         for (Collectable collectable : collectables) {
+            collectable.onCompleteAction.register(game, events);
             for (String key : collectable.unlocksColliders) {
                 BlockBox collider = game.mapRegions().getOrThrow(key);
                 colliders.addCollider(key, collider);
@@ -157,11 +139,10 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         GameTeam team = teams.getTeamByKey(teamKey);
         if (firstTeamToCollect.putIfAbsent(collectable.zone, teamKey) == null) {
             addEffectsForPlacedCollectable(game, collectable, team);
-            queueMicrogames(game, collectable);
             // Start microgames countdown
             countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
-				clearCollidersForCollectable(colliders, collectable);
-                startQueuedMicrogame(game);
+                clearCollidersForCollectable(colliders, collectable);
+                collectable.onCompleteAction.apply(game, GameActionContext.EMPTY);
                 countdown = null;
             });
         }
@@ -237,7 +218,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions,
-                              int victoryPoints, List<ResourceLocation> gamePool, int gamesPerRound,
+                              int victoryPoints, GameActionList<Void> onCompleteAction,
                               List<String> unlocksColliders) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
@@ -245,8 +226,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
                 Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
-                ExtraCodecs.nonEmptyList(ResourceLocation.CODEC.listOf()).fieldOf("game_pool").forGetter(Collectable::gamePool),
-                Codec.INT.optionalFieldOf("games_per_round", 1).forGetter(Collectable::gamesPerRound),
+                GameActionList.VOID_CODEC.fieldOf("on_complete").forGetter(Collectable::onCompleteAction),
                 Codec.STRING.listOf().fieldOf("unlocks_colliders").forGetter(Collectable::unlocksColliders)
         ).apply(i, Collectable::new));
     }

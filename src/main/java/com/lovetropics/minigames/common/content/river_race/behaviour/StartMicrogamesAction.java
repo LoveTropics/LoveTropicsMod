@@ -5,10 +5,13 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
+import com.lovetropics.minigames.common.core.game.config.GameConfig;
+import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
@@ -16,29 +19,37 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public record StartMicrogamesAction(List<ResourceLocation> gameConfigs, int gamesPerRound) implements IGameBehavior {
+public record StartMicrogamesAction(List<ResourceLocation> gameConfigIds, int gamesPerRound) implements IGameBehavior {
 
     public static final MapCodec<StartMicrogamesAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExtraCodecs.nonEmptyList(ResourceLocation.CODEC.listOf()).fieldOf("games").forGetter(StartMicrogamesAction::gameConfigs),
+            ExtraCodecs.nonEmptyList(ResourceLocation.CODEC.listOf()).fieldOf("games").forGetter(StartMicrogamesAction::gameConfigIds),
             Codec.INT.optionalFieldOf("games_per_round", 1).forGetter(c -> c.gamesPerRound)
     ).apply(i, StartMicrogamesAction::new));
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        List<GameConfig> gameConfigs = new ArrayList<>(gameConfigIds.size());
+        for (ResourceLocation configId : gameConfigIds) {
+            GameConfig config = GameConfigs.REGISTRY.get(configId);
+            if (config == null) {
+                throw new GameException(Component.literal("Missing microgame config with id: " + configId));
+            }
+            gameConfigs.add(config);
+        }
         events.listen(GameActionEvents.APPLY, context -> {
-            queueMicrogames(game);
+            queueMicrogames(game, gameConfigs);
             startQueuedMicrogame(game);
             return true;
         });
     }
 
-    public void queueMicrogames(IGamePhase game) {
+    public void queueMicrogames(IGamePhase game, List<GameConfig> gameConfigs) {
         if (game instanceof MultiGamePhase multiGamePhase) {
             multiGamePhase.clearQueuedGames();
 
-            final List<ResourceLocation> configs = new ArrayList<>(gameConfigs);
+            final List<GameConfig> configs = new ArrayList<>(gameConfigs);
             Collections.shuffle(configs);
-            multiGamePhase.queueGames(configs.subList(0, gamesPerRound));
+            multiGamePhase.queueGames(configs.subList(0, Math.min(configs.size(), gamesPerRound)));
         }
     }
 

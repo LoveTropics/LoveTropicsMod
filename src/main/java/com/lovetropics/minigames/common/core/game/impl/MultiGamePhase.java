@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class MultiGamePhase extends GamePhase {
     private GamePhase activePhase = null;
     @Nullable
     private ResourceLocation activePhaseId = null;
-    private final List<ResourceLocation> subPhaseGames = Lists.newArrayList();
+    private final List<GameConfig> subPhaseGames = new ArrayList<>();
     private static final Map<ResourceLocation, MultiPhaseGameStates> gameStateMap = Maps.newHashMap();
 
     protected MultiGamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors, ResourceLocation gameId) {
@@ -120,10 +121,6 @@ public class MultiGamePhase extends GamePhase {
         invoker(GamePlayerEvents.SET_ROLE).onSetRole(newPlayer, role, null);
 
         addedPlayers.add(player.getUUID());
-    }
-
-    public List<ResourceLocation> getSubPhaseGames() {
-        return subPhaseGames;
     }
 
     public ResourceLocation getGameId() {
@@ -228,7 +225,7 @@ public class MultiGamePhase extends GamePhase {
         subPhaseGames.clear();
     }
 
-    public void queueGames(List<ResourceLocation> games) {
+    public void queueGames(List<GameConfig> games) {
         subPhaseGames.addAll(games);
     }
 
@@ -237,19 +234,17 @@ public class MultiGamePhase extends GamePhase {
         if (subPhaseGames.isEmpty()) {
             return CompletableFuture.completedFuture(false);
         }
-
-        final ResourceLocation gameKey = subPhaseGames.removeFirst();
-        GameConfig gameConfig = GameConfigs.REGISTRY.get(gameKey);
-        return GamePhase.createMultiGame(game(), gameConfig.getPlayingPhase(), GamePhaseType.PLAYING, gameConfig.id()).thenApply(gamePhaseGameResult -> {
-            if (gamePhaseGameResult.isOk()) {
-                setActivePhase(gamePhaseGameResult.getOk(), saveInventory, gameKey);
+        final GameConfig nextGame = subPhaseGames.removeFirst();
+        return GamePhase.createMultiGame(game(), nextGame.getPlayingPhase(), GamePhaseType.PLAYING, nextGame.id()).thenApply(result -> {
+            if (result.isOk()) {
+                setActivePhase(result.getOk(), saveInventory, nextGame.id());
                 invoker(RiverRaceEvents.MICROGAME_STARTED).onMicrogameStarted(this);
-                game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(gameConfig.name()).withStyle(ChatFormatting.GREEN));
-                game.allPlayers().showTitle(Component.empty().append(gameConfig.name()).withStyle(ChatFormatting.GREEN),
-                        gameConfig.subtitle(), 10, 40, 10);
+                game.allPlayers().sendMessage(Component.literal("Now Playing: ").append(nextGame.name()).withStyle(ChatFormatting.GREEN));
+                game.allPlayers().showTitle(Component.empty().append(nextGame.name()).withStyle(ChatFormatting.GREEN),
+                        nextGame.subtitle(), 10, 40, 10);
                 return true;
             }
-            LOGGER.error("Failed to start micro-game {} - {}", gameConfig.id().toString(), gamePhaseGameResult.getError().getString());
+            LOGGER.error("Failed to start micro-game {} - {}", nextGame.id().toString(), result.getError().getString());
             return false;
         });
     }
