@@ -39,6 +39,7 @@ import com.lovetropics.minigames.common.core.command.*;
 import com.lovetropics.minigames.common.core.command.game.CancelGameCommand;
 import com.lovetropics.minigames.common.core.command.game.ExecuteAtRegionCommand;
 import com.lovetropics.minigames.common.core.command.game.FinishGameCommand;
+import com.lovetropics.minigames.common.core.command.game.GameActionCommand;
 import com.lovetropics.minigames.common.core.command.game.GameControlCommand;
 import com.lovetropics.minigames.common.core.command.game.GamePackageCommand;
 import com.lovetropics.minigames.common.core.command.game.JoinGameCommand;
@@ -225,6 +226,7 @@ public class LoveTropics {
         ParticleLineCommand.register(event.getBuildContext(), dispatcher);
         ChatCommand.register(dispatcher);
         ExecuteAtRegionCommand.register(dispatcher);
+        GameActionCommand.register(dispatcher);
     }
 
     private void onServerAboutToStart(final ServerAboutToStartEvent event) {
