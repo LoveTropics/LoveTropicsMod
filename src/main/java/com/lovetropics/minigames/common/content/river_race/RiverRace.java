@@ -17,6 +17,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -38,8 +39,11 @@ public class RiverRace {
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate((ctx, prox) -> {
-                prox.simpleBlock(ctx.get());
+            .blockstate((ctx, prov) -> {
+                BlockModelBuilder model = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
+                        .texture("all", prov.modLoc("block/" + ctx.getName()))
+                        .texture("glow", prov.modLoc("block/trivia_glow"));
+                prov.simpleBlock(ctx.get(), model);
             })
             .simpleItem()
             .register();
@@ -47,8 +51,11 @@ public class RiverRace {
             .block("trivia_collectable", TriviaBlock.CollectableTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate((ctx, prox) -> {
-                prox.simpleBlock(ctx.get());
+            .blockstate((ctx, prov) -> {
+                BlockModelBuilder model = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
+                        .texture("all", prov.modLoc("block/" + ctx.getName()))
+                        .texture("glow", prov.modLoc("block/trivia_glow"));
+                prov.simpleBlock(ctx.get(), model);
             })
             .simpleItem()
             .register();
@@ -56,8 +63,11 @@ public class RiverRace {
             .block("trivia_victory", TriviaBlock.VictoryTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate((ctx, prox) -> {
-                prox.simpleBlock(ctx.get());
+            .blockstate((ctx, prov) -> {
+				BlockModelBuilder model = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
+                        .texture("all", prov.modLoc("block/" + ctx.getName()))
+                        .texture("glow", prov.modLoc("block/trivia_glow"));
+                prov.simpleBlock(ctx.get(), model);
             })
             .simpleItem()
             .register();

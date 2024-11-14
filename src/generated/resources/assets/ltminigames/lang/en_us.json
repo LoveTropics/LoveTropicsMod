@@ -75,7 +75,6 @@
   "ltminigames.commands.gamedata.storage.modified": "Modified %s in %s",
   "ltminigames.commands.gamedata.storage.query": "Gamedata for %s in %s has the following contents: %s",
   "ltminigames.container.triviaChest": "Trivia Chest",
-  "ltminigames.container.triviaChestDouble": "Large Trivia Chest",
   "ltminigames.minigame.arcade_turtle_race": "Arcade Turtle Race",
   "ltminigames.minigame.biodiversity_blitz": "Biodiversity Blitz",
   "ltminigames.minigame.biodiversity_blitz.can_only_place_plants": "You can only place plants you got from the shop!",
