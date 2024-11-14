@@ -104,7 +104,7 @@ public class MultiGameManager implements IGameManager {
 	@Override
 	public IGamePhase getGamePhaseFor(Player player) {
 		GameLobby lobby = getLobbyFor(player);
-		return lobby != null ? lobby.getCurrentPhase() : null;
+		return lobby != null ? lobby.getActivePhase() : null;
 	}
 
 	@Nullable
@@ -297,7 +297,12 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	private static boolean canTravelBetweenPhases(@Nullable IGamePhase from, @Nullable IGamePhase to) {
-		return to == null || from == to;
+		if (to == null) {
+			return true;
+		} else if (from == null) {
+			return false;
+		}
+		return from.lobby() == to.lobby();
 	}
 
 	@SubscribeEvent

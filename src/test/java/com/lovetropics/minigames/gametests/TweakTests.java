@@ -59,7 +59,7 @@ public class TweakTests implements MinigameTest {
         helper.startSequence()
                 .thenExecute(helper.startGame(lobby))
                 .thenIdle(5)
-                .thenExecute(() -> lobby.getCurrentPhase().setPlayerRole(player, PlayerRole.PARTICIPANT))
+                .thenExecute(() -> lobby.getActivePhase().setPlayerRole(player, PlayerRole.PARTICIPANT))
                 .thenIdle(5)
                 .thenExecute(() -> helper.assertEntityMaxHealth(player, 30f))
                 .thenSucceed();
@@ -122,7 +122,7 @@ public class TweakTests implements MinigameTest {
         helper.startSequence()
                 .thenExecute(helper.startGame(lobby))
                 .thenIdle(5)
-                .thenExecute(() -> lobby.getCurrentPhase().setPlayerRole(player, PlayerRole.PARTICIPANT))
+                .thenExecute(() -> lobby.getActivePhase().setPlayerRole(player, PlayerRole.PARTICIPANT))
 
                 .thenExecuteFor(50, player::jumpFromGround)
                 .thenIdle(5)

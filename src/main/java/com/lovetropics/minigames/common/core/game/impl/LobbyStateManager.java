@@ -23,7 +23,7 @@ final class LobbyStateManager {
 	}
 
 	@Nullable
-	public GamePhase getPhase() {
+	public GamePhase getTopPhase() {
 		return state.phase;
 	}
 

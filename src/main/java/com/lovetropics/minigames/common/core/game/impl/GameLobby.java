@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
@@ -21,18 +20,15 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
-import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 
 // TODO: do we want a different game lobby implementation for something like carnival games?
 /**
@@ -95,8 +91,9 @@ final class GameLobby implements IGameLobby {
 
 	@Nullable
 	@Override
-	public IGamePhase getCurrentPhase() {
-		return state.getPhase();
+	public IGamePhase getActivePhase() {
+		GamePhase phase = state.getTopPhase();
+		return phase != null ? phase.getActivePhase() : null;
 	}
 
 	@Nullable
@@ -242,16 +239,16 @@ final class GameLobby implements IGameLobby {
 
 		stateListener.onPlayerJoin(this, player);
 
-		GamePhase phase = state.getPhase();
+		GamePhase phase = state.getTopPhase();
 		if (phase != null) {
-			phase.onPlayerJoin(player);
+			phase.onPlayerJoin(player, false);
 		}
 
 		management.onPlayersChanged();
 	}
 
 	void onPlayerLeave(ServerPlayer player, boolean loggingOut) {
-		GamePhase phase = state.getPhase();
+		GamePhase phase = state.getTopPhase();
 		if (phase != null) {
 			player = phase.onPlayerLeave(player, loggingOut);
 		}
@@ -305,7 +302,7 @@ final class GameLobby implements IGameLobby {
 	static final class ChatNotifyListener implements LobbyStateListener {
 		@Override
 		public void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
-			IGamePhase currentPhase = lobby.getCurrentPhase();
+			IGamePhase currentPhase = lobby.getActivePhase();
 			if (currentPhase != null && currentPhase.phaseType() == GamePhaseType.WAITING) {
 				onPlayerJoinGame(lobby, currentPhase);
 			}
@@ -313,7 +310,7 @@ final class GameLobby implements IGameLobby {
 
 		@Override
 		public void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
-			IGamePhase currentPhase = lobby.getCurrentPhase();
+			IGamePhase currentPhase = lobby.getActivePhase();
 			if (currentPhase != null && currentPhase.phaseType() == GamePhaseType.WAITING) {
 				onPlayerLeaveGame(lobby, currentPhase);
 			}

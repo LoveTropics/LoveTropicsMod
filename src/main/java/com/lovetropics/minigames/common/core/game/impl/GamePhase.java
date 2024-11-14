@@ -255,12 +255,14 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	void onPlayerJoin(ServerPlayer player) {
+	ServerPlayer onPlayerJoin(ServerPlayer player, boolean savePlayerDataToMemory) {
 		try {
-			ServerPlayer newPlayer = addAndSpawnPlayer(player, null, false);
+			ServerPlayer newPlayer = addAndSpawnPlayer(player, getRoleFor(player), savePlayerDataToMemory);
 			invoker(GamePlayerEvents.JOIN).onAdd(newPlayer);
+			return newPlayer;
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
+			return player;
 		}
 	}
 
@@ -282,6 +284,18 @@ public class GamePhase implements IGamePhase {
 			return player;
 		}
 		return PlayerIsolation.INSTANCE.restore(player);
+	}
+
+	void removePlayer(ServerPlayer player) {
+		addedPlayers.remove(player.getUUID());
+		for (PlayerRole role : PlayerRole.ROLES) {
+			roles.get(role).remove(player);
+		}
+		try {
+			invoker(GamePlayerEvents.REMOVE).onRemove(player);
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
+		}
 	}
 
 	public void cancelWithError(Exception exception) {
@@ -358,5 +372,9 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public long ticks() {
 		return level().getGameTime() - startTime;
+	}
+
+	public IGamePhase getActivePhase() {
+		return this;
 	}
 }

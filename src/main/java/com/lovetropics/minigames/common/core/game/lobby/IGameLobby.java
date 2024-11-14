@@ -23,22 +23,22 @@ public interface IGameLobby {
 
 	@Nullable
 	default IGame getCurrentGame() {
-		IGamePhase phase = getCurrentPhase();
+		IGamePhase phase = getActivePhase();
 		return phase != null ? phase.game() : null;
 	}
 
 	@Nullable
 	default IGameDefinition getCurrentGameDefinition() {
-		IGamePhase phase = getCurrentPhase();
+		IGamePhase phase = getActivePhase();
 		return phase != null ? phase.definition() : null;
 	}
 
 	@Nullable
-	IGamePhase getCurrentPhase();
+	IGamePhase getActivePhase();
 
 	@Nullable
 	default ClientCurrentGame getClientCurrentGame() {
-		IGamePhase phase = getCurrentPhase();
+		IGamePhase phase = getActivePhase();
 		return phase != null ? ClientCurrentGame.create(phase) : null;
 	}
 

@@ -48,8 +48,8 @@ public record TestGameLobby(IGameLobby delegate) implements IGameLobby {
 
     @Override
     @Nullable
-    public IGamePhase getCurrentPhase() {
-        return delegate.getCurrentPhase();
+    public IGamePhase getActivePhase() {
+        return delegate.getActivePhase();
     }
 
     @Override

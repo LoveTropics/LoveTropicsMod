@@ -20,7 +20,7 @@ public final class ClientLobbyPlayer {
 	}
 
 	public static ClientLobbyPlayer from(IGameLobby lobby, ServerPlayer player) {
-		IGamePhase currentPhase = lobby.getCurrentPhase();
+		IGamePhase currentPhase = lobby.getActivePhase();
 		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
 		return new ClientLobbyPlayer(player.getUUID(), playingRole);
 	}

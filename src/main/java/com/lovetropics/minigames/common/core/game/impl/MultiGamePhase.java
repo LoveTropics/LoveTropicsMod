@@ -3,69 +3,78 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
-import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Unit;
-import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
 public class MultiGamePhase extends GamePhase {
 
     private static final Logger LOGGER = LogManager.getLogger(MultiGamePhase.class);
 
+    private final Queue<GameConfig> subPhaseQueue = new ArrayDeque<>();
     @Nullable
-    private GamePhase activePhase = null;
-    private final List<GameConfig> subPhaseGames = new ArrayList<>();
+    private GamePhase subPhase;
+
+    // TODO: Big hack - can we do something better by splitting what we expose to game impls vs what we expose to the outside?
+    //       Some behaviors such as spectator_chase check the spectator list when the player is removed - but that spectator list didn't get the player removed
+    private boolean hideRoles;
 
     protected MultiGamePhase(GameInstance game, IGameDefinition gameDefinition, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
         super(game, gameDefinition, definition, phaseType, map, behaviors);
     }
 
     public void startSubPhase(GamePhase subPhase, final boolean saveInventory) {
-        activePhase = subPhase;
-        subPhase.assignRolesFrom(this);
-        for (ServerPlayer player : allPlayers()) {
-            invoker(GamePlayerEvents.REMOVE).onRemove(player);
-        }
-        addedPlayers.clear();
+        this.subPhase = subPhase;
         MultiGameManager.INSTANCE.addGamePhaseToDimension(subPhase.dimension(), subPhase);
+        subPhase.assignRolesFrom(this);
+        hideRoles = true;
+        for (ServerPlayer player : allPlayers()) {
+            movePlayerToSubPhase(player);
+        }
+        hideRoles = false;
         subPhase.start(saveInventory);
     }
 
-    public void returnHere(){
+    private void movePlayerToSubPhase(ServerPlayer player) {
+        invoker(GamePlayerEvents.REMOVE).onRemove(player);
+        addedPlayers.remove(player.getUUID());
+    }
+
+    private void returnHere(GamePhase fromSubPhase) {
         List<ServerPlayer> shuffledPlayers = Lists.newArrayList(allPlayers());
         Collections.shuffle(shuffledPlayers);
-
         for (ServerPlayer player : shuffledPlayers) {
-            returnPlayerToParentPhase(player, getRoleFor(player));
+            returnPlayerToParentPhase(fromSubPhase, player);
         }
     }
 
-    private void returnPlayerToParentPhase(ServerPlayer player, @Nullable PlayerRole role) {
-        // [Cojo] Added this event just in case we want to know when a player returns from a microgame, can remove if there's no usecase for it
+    private ServerPlayer returnPlayerToParentPhase(GamePhase fromSubPhase, ServerPlayer player) {
+        fromSubPhase.removePlayer(player);
+        addedPlayers.add(player.getUUID());
+
+        PlayerRole role = getRoleFor(player);
         invoker(GamePlayerEvents.RETURN).onReturn(player.getUUID(), role);
 
         ServerPlayer newPlayer = PlayerIsolation.INSTANCE.reloadPlayerFromMemory(game, player);
@@ -73,24 +82,7 @@ public class MultiGamePhase extends GamePhase {
         invoker(GamePlayerEvents.ADD).onAdd(newPlayer);
         invoker(GamePlayerEvents.SET_ROLE).onSetRole(newPlayer, role, null);
 
-        addedPlayers.add(player.getUUID());
-    }
-
-    @Override
-    public ResourceKey<Level> dimension() {
-        if(activePhase != null){
-            return activePhase.dimension();
-        }
-        return super.dimension();
-    }
-
-    @Override
-    public <T> T invoker(GameEventType<T> type) {
-        // Figure out what our sub-game phase is active and do that instead
-        if(activePhase != null){
-            return activePhase.invoker(type);
-        }
-        return events.invoker(type);
+        return newPlayer;
     }
 
     @Override
@@ -98,90 +90,89 @@ public class MultiGamePhase extends GamePhase {
         return game;
     }
 
+    @Override
+    public IGamePhase getActivePhase() {
+        return Objects.requireNonNullElse(subPhase, this);
+    }
+
     @Nullable
     @Override
     GameStopReason tick() {
-        // Also tick our current sub-game phase
-        if(activePhase != null){
-            if(activePhase.tick() != null){
-                MultiGameManager.INSTANCE.removeGamePhaseFromDimension(activePhase.dimension(), activePhase);
-                activePhase.destroy();
-                activePhase = null;
+        if (subPhase != null) {
+            if (subPhase.tick() != null) {
+                GamePhase lastPhase = subPhase;
+                destroySubGame();
                 startNextQueuedMicrogame(false).whenComplete((newGame, throwable) -> {
-                    if(!newGame){
-                        returnHere();
+                    if (throwable != null || !newGame) {
+                        returnHere(lastPhase);
                     }
-                    if(throwable != null){
-                        LOGGER.info("Failed to start next queued micro-game {}", throwable.getMessage());
+                    if (throwable != null) {
+                        LOGGER.error("Failed to start next queued micro-game", throwable);
                     }
                 });
+                return null;
             }
-        } else {
-            return super.tick();
         }
-        return null;
+        return super.tick();
     }
 
     @Override
-    public GameResult<Unit> requestStop(GameStopReason reason) {
-        if(activePhase != null){
-            if(reason.isFinished()){
-                return activePhase.requestStop(GameStopReason.canceled());
-            }
-            return activePhase.requestStop(reason);
+    ServerPlayer onPlayerJoin(ServerPlayer player, boolean savePlayerDataToMemory) {
+        player = super.onPlayerJoin(player, savePlayerDataToMemory);
+        if (subPhase != null) {
+            // Let the top-level game decide how the player can join, and then just pass them along
+            subPhase.assignRolesFrom(this);
+            movePlayerToSubPhase(player);
+            return subPhase.onPlayerJoin(player, true);
         }
-        return super.requestStop(reason);
+        return player;
     }
 
     @Override
-    public MapRegions mapRegions() {
-        if(activePhase != null){
-            return activePhase.mapRegions();
-        }
-        return super.mapRegions();
+    ServerPlayer onPlayerLeave(ServerPlayer player, boolean loggingOut) {
+		if (subPhase != null) {
+            // To ensure that the top-level game gets notified properly, we need to pull the player out step-by-step
+            player = returnPlayerToParentPhase(subPhase, player);
+		}
+        return super.onPlayerLeave(player, loggingOut);
     }
 
-
-    @Override
-    public ServerLevel level() {
-        if(activePhase != null){
-            return activePhase.level();
+    private void destroySubGame() {
+        if (subPhase != null) {
+            subPhase.destroy();
+            MultiGameManager.INSTANCE.removeGamePhaseFromDimension(subPhase.dimension(), subPhase);
+            subPhase = null;
         }
-        return super.level();
-    }
-
-    @Override
-    public GameStateMap state() {
-        if(activePhase != null){
-            return activePhase.state();
-        }
-        return super.state();
     }
 
     @Override
     void destroy() {
-        if(activePhase != null){
-            activePhase.destroy();
-            activePhase = null;
-            return;
-        }
+        destroySubGame();
         super.destroy();
     }
 
+    @Override
+    public PlayerSet getPlayersWithRole(PlayerRole role) {
+        if (hideRoles) {
+            return PlayerSet.EMPTY;
+        }
+        return super.getPlayersWithRole(role);
+    }
+
     public void clearQueuedGames() {
-        subPhaseGames.clear();
+        subPhaseQueue.clear();
     }
 
     public void queueGames(List<GameConfig> games) {
-        subPhaseGames.addAll(games);
+        subPhaseQueue.addAll(games);
     }
 
     public CompletableFuture<Boolean> startNextQueuedMicrogame(final boolean saveInventory) {
         // No queued games left
-        if (subPhaseGames.isEmpty()) {
+        if (subPhaseQueue.isEmpty()) {
             return CompletableFuture.completedFuture(false);
         }
-        final GameConfig nextGame = subPhaseGames.removeFirst();
+        final GameConfig nextGame = subPhaseQueue.remove();
         return GamePhase.create(game(), nextGame, nextGame.getPlayingPhase(), GamePhaseType.PLAYING).thenApply(result -> {
             if (result.isOk()) {
 				startSubPhase(result.getOk(), saveInventory);
