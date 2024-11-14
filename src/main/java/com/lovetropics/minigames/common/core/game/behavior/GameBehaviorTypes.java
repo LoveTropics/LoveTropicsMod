@@ -44,6 +44,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Exti
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.IncrementStatisticAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RemoveCollidersAction;
@@ -279,6 +280,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<CancelPlayerAttacksBehavior> CANCEL_PLAYER_ATTACKS = register("cancel_player_attacks", CancelPlayerAttacksBehavior.CODEC);
 	public static final GameBehaviorEntry<AddCollidersAction> ADD_COLLIDERS = register("add_colliders", AddCollidersAction.CODEC);
 	public static final GameBehaviorEntry<RemoveCollidersAction> REMOVE_COLLIDERS = register("remove_colliders", RemoveCollidersAction.CODEC);
+	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
