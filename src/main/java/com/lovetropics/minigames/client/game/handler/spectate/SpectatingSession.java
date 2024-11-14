@@ -62,6 +62,9 @@ class SpectatingSession {
 	}
 
 	void applyState(SpectatingState state) {
+		if (state.equals(this.state)) {
+			return;
+		}
 		this.state = state;
 		SpectatingState.StateApplicator applicator = state.apply(CLIENT, this);
 		stateApplicator = applicator.isApplied() ? null : applicator;

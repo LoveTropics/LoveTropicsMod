@@ -50,7 +50,7 @@ public final class SpectatingUi {
 
 	private final SpectatingSession session;
 	private List<Entry> entries;
-	private Object2ObjectMap<UUID, PlayerEvent> events;
+	private final Object2ObjectMap<UUID, PlayerEvent> events = new Object2ObjectOpenHashMap<>();
 
 	private int selectedEntryIndex;
 	private int highlightedEntryIndex;
@@ -62,7 +62,6 @@ public final class SpectatingUi {
 	SpectatingUi(SpectatingSession session) {
 		this.session = session;
 		entries = createEntriesFor(session.players);
-		events = new Object2ObjectOpenHashMap<>();
 	}
 
 	@SubscribeEvent
@@ -220,17 +219,17 @@ public final class SpectatingUi {
 	}
 
 	void updatePlayers(List<UUID> players) {
-		Entry selectedEntry = entries.get(selectedEntryIndex);
-		Entry highlightedEntry = entries.get(highlightedEntryIndex);
+		Entry oldSelectedEntry = entries.get(selectedEntryIndex);
+		Entry oldHighlightedEntry = entries.get(highlightedEntryIndex);
 
 		entries = createEntriesFor(players);
 
-		int newSelectedEntry = getSelectedEntryIndex(selectedEntry.selectionState);
+		int newSelectedEntry = getSelectedEntryIndex(oldSelectedEntry.selectionState);
 		newSelectedEntry = newSelectedEntry != -1 ? newSelectedEntry : 0;
 
 		selectEntry(newSelectedEntry);
 
-		int newHighlightedEntry = getSelectedEntryIndex(highlightedEntry.selectionState);
+		int newHighlightedEntry = getSelectedEntryIndex(oldHighlightedEntry.selectionState);
 		highlightedEntryIndex = newHighlightedEntry != -1 ? newHighlightedEntry : selectedEntryIndex;
 
 		updateEventsMap(players);
@@ -276,13 +275,7 @@ public final class SpectatingUi {
 	}
 
 	void updateEventsMap(List<UUID> players) {
-		Object2ObjectMap<UUID, PlayerEvent> events = new Object2ObjectOpenHashMap<>();
-		for (var entry : this.events.entrySet()) {
-			if (players.contains(entry.getKey())) {
-				events.put(entry.getKey(), entry.getValue());
-			}
-		}
-		this.events = events;
+		events.keySet().removeIf(id -> !players.contains(id));
 	}
 
 	@Nullable

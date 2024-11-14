@@ -6,9 +6,9 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -32,10 +32,7 @@ interface SpectatingState {
 
 	boolean allowsZoom();
 
-	class FreeCamera implements SpectatingState {
-		FreeCamera() {
-		}
-
+	record FreeCamera() implements SpectatingState {
 		@Override
 		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			client.options.smoothCamera = false;
@@ -65,13 +62,7 @@ interface SpectatingState {
 		}
 	}
 
-	class SelectedPlayer implements SpectatingState {
-		final UUID spectatedId;
-
-		public SelectedPlayer(UUID spectatedId) {
-			this.spectatedId = spectatedId;
-		}
-
+	record SelectedPlayer(UUID spectatedId) implements SpectatingState {
 		@Override
 		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			return new StateApplicator(
@@ -136,11 +127,8 @@ interface SpectatingState {
 				event.setPitch(pitch);
 				camera.setRotation(yaw, pitch);
 
-				camera.setPosition(
-						Mth.lerp(partialTicks, focusEntity.xo, focusEntity.getX()),
-						Mth.lerp(partialTicks, focusEntity.yo, focusEntity.getY()) + focusEntity.getEyeHeight(),
-						Mth.lerp(partialTicks, focusEntity.zo, focusEntity.getZ())
-				);
+				Vec3 origin = focusEntity.getEyePosition(partialTicks);
+				camera.setPosition(origin.x, origin.y, origin.z);
 
 				float distance = (float) (zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE);
 				camera.move(-camera.getMaxZoom(distance), 0.0f, 0.0f);
@@ -150,17 +138,6 @@ interface SpectatingState {
 		@Override
 		public boolean allowsZoom() {
 			return true;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-
-			if (obj instanceof SelectedPlayer state) {
-                return spectatedId.equals(state.spectatedId);
-			}
-
-			return false;
 		}
 	}
 
