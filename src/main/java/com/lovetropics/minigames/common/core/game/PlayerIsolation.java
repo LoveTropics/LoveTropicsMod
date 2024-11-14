@@ -6,7 +6,6 @@ import com.lovetropics.minigames.common.util.LTGameTestFakePlayer;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
@@ -21,8 +20,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -152,8 +152,7 @@ public final class PlayerIsolation {
 		newPlayer.setHealth(newPlayer.getHealth());
 		newPlayer.connection.send(new ClientboundSetHealthPacket(newPlayer.getHealth(), newPlayer.getFoodData().getFoodLevel(), newPlayer.getFoodData().getSaturationLevel()));
 		// It's not possible to specify to the client to drop its base attributes anymore - so just resync everything
-		newPlayer.connection.send(new ClientboundUpdateAttributesPacket(newPlayer.getId(), newPlayer.getAttributes().getSyncableAttributes()));
-		newPlayer.getAttributes().getAttributesToSync().clear();
+		resyncAttributes(oldPlayer, newPlayer);
 
 		((PlayerListAccess) playerList).ltminigames$add(newPlayer);
 
@@ -169,6 +168,19 @@ public final class PlayerIsolation {
 		reloadingPlayers.remove(newPlayer.getUUID());
 
 		return newPlayer;
+	}
+
+	private static void resyncAttributes(ServerPlayer oldPlayer, ServerPlayer newPlayer) {
+		AttributeMap oldAttributes = oldPlayer.getAttributes();
+		AttributeMap newAttributes = newPlayer.getAttributes();
+
+		// We need to initialize the attributes before we can synchronize them
+		for (AttributeInstance instance : oldAttributes.getSyncableAttributes()) {
+			newAttributes.getInstance(instance.getAttribute());
+		}
+
+		newPlayer.connection.send(new ClientboundUpdateAttributesPacket(newPlayer.getId(), newAttributes.getSyncableAttributes()));
+		newAttributes.getAttributesToSync().clear();
 	}
 
 	private static ServerPlayer recreatePlayer(final ServerPlayer oldPlayer) {
