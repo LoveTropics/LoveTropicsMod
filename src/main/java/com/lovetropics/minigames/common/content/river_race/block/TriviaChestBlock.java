@@ -48,11 +48,12 @@ public class TriviaChestBlock extends AbstractChestBlock<ChestBlockEntity> {
 	private static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 	private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	private static final EnumProperty<ChestType> TYPE = BlockStateProperties.CHEST_TYPE;
+	public static final BooleanProperty ANSWERED = TriviaBlock.ANSWERED;
 	private static final VoxelShape AABB = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0);
 
 	public TriviaChestBlock(Properties properties) {
 		super(properties, RiverRace.TRIVIA_CHEST_BLOCK_ENTITY::get);
-		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(TYPE, ChestType.SINGLE));
+		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(ANSWERED, false).setValue(TYPE, ChestType.SINGLE));
 	}
 
 	@Override
@@ -144,7 +145,7 @@ public class TriviaChestBlock extends AbstractChestBlock<ChestBlockEntity> {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FACING, WATERLOGGED, TYPE);
+		builder.add(FACING, WATERLOGGED, TYPE, ANSWERED);
 	}
 
 	@Override

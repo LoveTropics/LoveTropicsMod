@@ -36,11 +36,9 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final String TAG_QUESTION = "question";
     public static final String TAG_UNLOCKS_AT = "unlocksAt";
-    public static final String TAG_ANSWERED = "answered";
     @Nullable
     private TriviaBehaviour.TriviaQuestion question;
     private long unlocksAt;
-    private boolean answered;
     private final TriviaType triviaType;
 
     public TriviaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
@@ -61,7 +59,6 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
         if (unlocksAt > 0) {
             tag.putLong(TAG_UNLOCKS_AT, unlocksAt);
         }
-        tag.putBoolean(TAG_ANSWERED, answered);
     }
 
     @Override
@@ -75,9 +72,6 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
         if(tag.contains(TAG_UNLOCKS_AT)) {
             unlocksAt = tag.getLong(TAG_UNLOCKS_AT);
         }
-        if (tag.contains(TAG_ANSWERED)) {
-            answered = tag.getBoolean(TAG_ANSWERED);
-        }
     }
 
     @Override
@@ -86,7 +80,6 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
         if(unlocksAt > 0) {
             tag.putLong(TAG_UNLOCKS_AT, unlocksAt);
         }
-        tag.putBoolean(TAG_ANSWERED, answered);
         return tag;
     }
 
@@ -101,9 +94,6 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
         if (tag.contains(TAG_UNLOCKS_AT)) {
             unlocksAt = tag.getLong(TAG_UNLOCKS_AT);
-        }
-        if (tag.contains(TAG_ANSWERED)) {
-            answered = tag.getBoolean(TAG_ANSWERED);
         }
     }
 
@@ -147,19 +137,20 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     }
 
     @Override
-	public boolean markAsCorrect(){
-        if (answered) {
+	public boolean markAsCorrect() {
+		if (getBlockState().getValue(TriviaBlock.ANSWERED)) {
             return false;
         }
-        answered = true;
+        level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(TriviaBlock.ANSWERED, true));
         markUpdated();
         return true;
     }
 
     @Override
-	public TriviaBlockState getState(){
+    public TriviaBlockState getState() {
+        boolean answered = getBlockState().getValue(TriviaBlock.ANSWERED);
         Optional<String> correctAnswer = Optional.empty();
-        if(answered){
+        if (answered) {
             correctAnswer = Optional.of(question.answers().stream().filter(TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer::correct).findFirst().get().text());
         }
         return new TriviaBlockState(answered, correctAnswer, unlocksAt > 0, unlocksAt);

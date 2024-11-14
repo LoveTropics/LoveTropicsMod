@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client.render.block;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -17,6 +18,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class TriviaChestRenderer implements BlockEntityRenderer<TriviaChestBlockEntity> {
 	private static final Material MATERIAL = new Material(Sheets.CHEST_SHEET, LoveTropics.location("entity/chest/trivia"));
@@ -35,8 +37,10 @@ public class TriviaChestRenderer implements BlockEntityRenderer<TriviaChestBlock
 
 	@Override
 	public void render(TriviaChestBlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+		BlockState blockState = blockEntity.getBlockState();
+
 		poseStack.pushPose();
-		float rotation = blockEntity.hasLevel() ? blockEntity.getBlockState().getOptionalValue(ChestBlock.FACING).orElse(Direction.NORTH).toYRot() : Direction.SOUTH.toYRot();
+		float rotation = blockEntity.hasLevel() ? blockState.getOptionalValue(ChestBlock.FACING).orElse(Direction.NORTH).toYRot() : Direction.SOUTH.toYRot();
 		poseStack.translate(0.5f, 0.5f, 0.5f);
 		poseStack.mulPose(Axis.YP.rotationDegrees(-rotation));
 		poseStack.translate(-0.5f, -0.5f, -0.5f);
@@ -46,7 +50,9 @@ public class TriviaChestRenderer implements BlockEntityRenderer<TriviaChestBlock
 		openness = 1.0f - openness * openness * openness;
 
 		render(poseStack, MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, packedLight, packedOverlay);
-		render(poseStack, GLOW_MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, LightTexture.FULL_BRIGHT, packedOverlay);
+		if (!blockState.getValue(TriviaChestBlock.ANSWERED)) {
+			render(poseStack, GLOW_MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, LightTexture.FULL_BRIGHT, packedOverlay);
+		}
 
 		poseStack.popPose();
 	}

@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "answered=false": {
+      "model": "ltminigames:block/trivia_victory_active"
+    },
+    "answered=true": {
       "model": "ltminigames:block/trivia_victory"
     }
   }

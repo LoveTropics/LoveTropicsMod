@@ -9,15 +9,20 @@ import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBloc
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
+import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -39,38 +44,35 @@ public class RiverRace {
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate((ctx, prov) -> {
-                BlockModelBuilder model = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
-                        .texture("all", prov.modLoc("block/" + ctx.getName()))
-                        .texture("glow", prov.modLoc("block/trivia_glow"));
-                prov.simpleBlock(ctx.get(), model);
-            })
+            .blockstate(RiverRace::triviaBlockModel)
             .simpleItem()
             .register();
+
     public static final BlockEntry<TriviaBlock.CollectableTriviaBlock> TRIVIA_COLLECTABLE = REGISTRATE
             .block("trivia_collectable", TriviaBlock.CollectableTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate((ctx, prov) -> {
-                BlockModelBuilder model = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
-                        .texture("all", prov.modLoc("block/" + ctx.getName()))
-                        .texture("glow", prov.modLoc("block/trivia_glow"));
-                prov.simpleBlock(ctx.get(), model);
-            })
+            .blockstate(RiverRace::triviaBlockModel)
             .simpleItem()
             .register();
     public static final BlockEntry<TriviaBlock.VictoryTriviaBlock> TRIVIA_VICTORY = REGISTRATE
             .block("trivia_victory", TriviaBlock.VictoryTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate((ctx, prov) -> {
-				BlockModelBuilder model = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
-                        .texture("all", prov.modLoc("block/" + ctx.getName()))
-                        .texture("glow", prov.modLoc("block/trivia_glow"));
-                prov.simpleBlock(ctx.get(), model);
-            })
+            .blockstate(RiverRace::triviaBlockModel)
             .simpleItem()
             .register();
+
+    private static void triviaBlockModel(DataGenContext<Block, ?> ctx, RegistrateBlockstateProvider prov) {
+        ResourceLocation baseTexture = prov.modLoc("block/" + ctx.getName());
+        BlockModelBuilder activeModel = prov.models().withExistingParent(ctx.getName() + "_active", prov.modLoc("block/cube_glow"))
+                .texture("all", baseTexture)
+                .texture("glow", prov.modLoc("block/trivia_glow"));
+        BlockModelBuilder inactiveModel = prov.models().cubeAll(ctx.getName(), baseTexture);
+        prov.getVariantBuilder(ctx.get())
+                .partialState().with(TriviaBlock.ANSWERED, false).setModels(new ConfiguredModel(activeModel))
+                .partialState().with(TriviaBlock.ANSWERED, true).setModels(new ConfiguredModel(inactiveModel));
+    }
 
     public static final BlockEntry<TriviaChestBlock> TRIVIA_CHEST = REGISTRATE
             .block("trivia_chest", TriviaChestBlock::new)

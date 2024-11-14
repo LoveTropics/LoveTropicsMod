@@ -23,7 +23,6 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
     @Nullable
     private TriviaBehaviour.TriviaQuestion question;
     private long unlocksAt;
-    private boolean answered;
 
     public TriviaChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
@@ -56,9 +55,6 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
         if(tag.contains(TriviaBlockEntity.TAG_UNLOCKS_AT)) {
             unlocksAt = tag.getLong(TriviaBlockEntity.TAG_UNLOCKS_AT);
         }
-        if (tag.contains(TriviaBlockEntity.TAG_ANSWERED)) {
-            answered = tag.getBoolean(TriviaBlockEntity.TAG_ANSWERED);
-        }
     }
 
     @Override
@@ -70,7 +66,6 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
         if(unlocksAt > 0){
             tag.putLong(TriviaBlockEntity.TAG_UNLOCKS_AT, unlocksAt);
         }
-        tag.putBoolean(TriviaBlockEntity.TAG_ANSWERED, answered);
     }
 
     private void markUpdated() {
@@ -110,18 +105,19 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
 
     @Override
     public boolean markAsCorrect() {
-        if (answered) {
+        if (getBlockState().getValue(TriviaBlock.ANSWERED)) {
             return false;
         }
-        answered = true;
+        level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(TriviaBlock.ANSWERED, true));
         markUpdated();
         return true;
     }
 
     @Override
     public TriviaBlockEntity.TriviaBlockState getState() {
+        boolean answered = getBlockState().getValue(TriviaBlock.ANSWERED);
         Optional<String> correctAnswer = Optional.empty();
-        if(answered){
+        if (answered) {
             correctAnswer = Optional.of(question.answers().stream().filter(TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer::correct).findFirst().get().text());
         }
         return new TriviaBlockEntity.TriviaBlockState(answered, correctAnswer, unlocksAt > 0, unlocksAt);

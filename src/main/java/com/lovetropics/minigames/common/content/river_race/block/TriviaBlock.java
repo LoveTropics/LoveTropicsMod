@@ -6,6 +6,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.Nullable;
 
 public class TriviaBlock extends Block implements EntityBlock {
@@ -32,11 +34,20 @@ public class TriviaBlock extends Block implements EntityBlock {
         }
     }
 
+    public static final BooleanProperty ANSWERED = BooleanProperty.create("answered");
+
     private final TriviaType type;
 
-    public TriviaBlock(Properties properties, TriviaType blockType) {
+    public TriviaBlock(Properties properties, TriviaType type) {
         super(properties);
-        this.type = blockType;
+        this.type = type;
+        registerDefaultState(getStateDefinition().any().setValue(ANSWERED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(ANSWERED);
     }
 
     @Nullable
