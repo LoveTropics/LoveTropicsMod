@@ -9,6 +9,7 @@ import com.lovetropics.lib.backend.BackendProxy;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -106,8 +107,8 @@ public final class BackendIntegrations {
 		}
 	}
 
-	public GameInstanceIntegrations openGame(IGamePhase game) {
-		GameInstanceIntegrations instance = new GameInstanceIntegrations(game, this);
+	public GameInstanceIntegrations getOrOpen(GameStateMap instanceState, IGamePhase game) {
+		GameInstanceIntegrations instance = instanceState.getOrRegister(GameInstanceIntegrations.KEY, new GameInstanceIntegrations(game, this));
 		liveInstance = instance;
 		return instance;
 	}

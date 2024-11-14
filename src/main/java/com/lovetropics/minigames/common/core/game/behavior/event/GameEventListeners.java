@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class GameEventListeners implements EventRegistrar {
 	private final Reference2ObjectMap<GameEventType<?>, List<Object>> listeners = new Reference2ObjectOpenHashMap<>();
@@ -37,6 +38,20 @@ public final class GameEventListeners implements EventRegistrar {
 		return (T) invokers.getOrDefault(type, type.empty());
 	}
 
+	public void forEach(ForEachHandler handler) {
+		for (Map.Entry<GameEventType<?>, List<Object>> entry : listeners.entrySet()) {
+			for (Object listener : entry.getValue()) {
+				acceptUnchecked(handler, entry.getKey(), listener);
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> void acceptUnchecked(ForEachHandler handler, GameEventType<T> type, Object listener) {
+		handler.accept(type, (T) listener);
+	}
+
+	@Override
 	public void addAll(GameEventListeners listeners) {
 		listeners.listeners.forEach((type, list) -> {
 			this.listeners.computeIfAbsent(type, e -> new ArrayList<>()).addAll(list);
@@ -44,6 +59,7 @@ public final class GameEventListeners implements EventRegistrar {
 		});
 	}
 
+	@Override
 	public void removeAll(GameEventListeners listeners) {
 		listeners.listeners.forEach((type, list) -> {
 			List<Object> targetList = this.listeners.get(type);
@@ -56,5 +72,9 @@ public final class GameEventListeners implements EventRegistrar {
 
 	public boolean hasListeners(GameEventType<?> type) {
 		return !listeners.getOrDefault(type, List.of()).isEmpty();
+	}
+
+	public interface ForEachHandler {
+		<T> void accept(GameEventType<T> type, T listener);
 	}
 }

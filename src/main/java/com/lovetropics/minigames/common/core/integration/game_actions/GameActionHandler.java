@@ -18,16 +18,14 @@ import java.util.concurrent.PriorityBlockingQueue;
 public final class GameActionHandler {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	private final IGamePhase game;
 	private final GameInstanceIntegrations integrations;
 	private final Map<GameActionType, ActionsQueue> queues = new EnumMap<>(GameActionType.class);
 
-	public GameActionHandler(IGamePhase game, GameInstanceIntegrations integrations) {
+	public GameActionHandler(GameInstanceIntegrations integrations) {
 		this.integrations = integrations;
-		this.game = game;
 	}
 
-	public void pollGameActions(final int tick) {
+	public void pollGameActions(IGamePhase game, int tick) {
 		for (ActionsQueue queue : queues.values()) {
 			GameActionRequest request = queue.tryHandle(game, tick);
 			if (request != null && request.type().sendsAcknowledgement()) {

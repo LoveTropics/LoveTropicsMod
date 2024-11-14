@@ -8,6 +8,14 @@ public interface EventRegistrar {
 
 	<T> void unlisten(GameEventType<T> type, T listener);
 
+	default void addAll(GameEventListeners listeners) {
+		listeners.forEach(this::listen);
+	}
+
+	default void removeAll(GameEventListeners listeners) {
+		listeners.forEach(this::unlisten);
+	}
+
 	default EventRegistrar redirect(Predicate<GameEventType<?>> predicate, EventRegistrar redirect) {
 		return mapping(type -> predicate.test(type) ? redirect : this);
 	}

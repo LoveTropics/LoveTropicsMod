@@ -29,8 +29,7 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 			if (!BackendIntegrations.get().isConnected()) {
 				throw new GameException(GameTexts.Status.integrationsNotConnected());
 			}
-
-			integrations = instanceState.register(GameInstanceIntegrations.KEY, BackendIntegrations.get().openGame(game));
+			integrations = BackendIntegrations.get().getOrOpen(instanceState, game);
 		}
 	}
 
@@ -40,12 +39,12 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 			return;
 		}
 
-		events.listen(GamePhaseEvents.START, () -> integrations.start(events));
+		events.listen(GamePhaseEvents.START, () -> integrations.start(game, events));
 
 		AtomicBoolean finished = new AtomicBoolean();
 		events.listen(GameLogicEvents.GAME_OVER, winner -> {
 			if (finished.compareAndSet(false, true)) {
-				integrations.finish(game.statistics());
+				integrations.finish(game);
 			}
 		});
 
@@ -54,9 +53,9 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 				return;
 			}
 			if (reason == GameStopReason.finished()) {
-				integrations.finish(game.statistics());
+				integrations.finish(game);
 			} else {
-				integrations.cancel();
+				integrations.cancel(game);
 			}
 		});
 	}

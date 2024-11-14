@@ -64,6 +64,7 @@ public class ConfigLT {
         public final ConfigValue<String> minigameEndEndpoint;
         public final ConfigValue<String> minigameCancelEndpoint;
         public final ConfigValue<String> minigamePlayerUpdateEndpoint;
+        public final ConfigValue<String> minigameUpdatePackagesEndpoint;
         public final ConfigValue<String> actionResolvedEndpoint;
         public final ConfigValue<String> pendingActionsEndpoint;
         public final ConfigValue<String> authToken;
@@ -94,6 +95,9 @@ public class ConfigLT {
             minigamePlayerUpdateEndpoint = COMMON_BUILDER
                     .comment("Endpoint used to update a player's status during a minigame")
                     .define("minigamePlayerUpdateEndpoint", "minigame/playerupdate");
+            minigameUpdatePackagesEndpoint = COMMON_BUILDER
+                    .comment("Endpoint used to update the packages used in a minigame")
+                    .define("minigameUpdatePackagesEndpoint", "minigame/updatepackages");
             actionResolvedEndpoint = COMMON_BUILDER
                     .comment("Endpoint used to notify the backend an action was received and resolved")
                     .define("actionResolvedEndpoint", "minigame/actionresolved");

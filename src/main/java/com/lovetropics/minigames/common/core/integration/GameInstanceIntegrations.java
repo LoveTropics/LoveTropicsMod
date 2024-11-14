@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
@@ -19,7 +20,6 @@ import com.lovetropics.minigames.common.core.integration.game_actions.GameAction
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionRequest;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -27,6 +27,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,70 +40,107 @@ public final class GameInstanceIntegrations implements IGameState {
 			.xmap(DonationPackageData.Payload::data, DonationPackageData::asPayload)
 			.listOf();
 
-	private final IGamePhase game;
+	private final IGamePhase topLevelGame;
+	private final Deque<IGamePhase> gameStack = new ArrayDeque<>();
+
 	private final BackendIntegrations integrations;
 
-	private final PlayerKey initiator;
+	private final GameEventListeners phaseListeners = new GameEventListeners();
 
 	private final GameActionHandler actions;
 
 	private boolean closed;
 
-	public GameInstanceIntegrations(IGamePhase game, BackendIntegrations integrations) {
-		this.game = game;
+	public GameInstanceIntegrations(IGamePhase topLevelGame, BackendIntegrations integrations) {
+		this.topLevelGame = topLevelGame;
 		this.integrations = integrations;
-		initiator = game.initiator();
+		actions = new GameActionHandler(this);
 
-		actions = new GameActionHandler(this.game, this);
+		phaseListeners.listen(GamePlayerEvents.LEAVE, p -> sendParticipantsList());
+		phaseListeners.listen(GamePlayerEvents.SET_ROLE, (p, r, lr) -> sendParticipantsList());
 	}
 
 	public UUID getUuid() {
-		return game.gameUuid();
+		return topLevelGame.gameUuid();
 	}
 
-	public void start(EventRegistrar events) {
+	public void start(IGamePhase phase, EventRegistrar events) {
+		gameStack.addLast(phase);
+
+		if (phase == topLevelGame) {
+			sendMinigameStart();
+			requestQueuedActions();
+		} else {
+			sendPackagesUpdate();
+		}
+
+		events.addAll(phaseListeners);
+	}
+
+	private void sendMinigameStart() {
 		JsonObject payload = new JsonObject();
-		payload.add("initiator", initiator.serializeProfile());
+		payload.add("initiator", topLevelGame.initiator().serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
 		addGameDefinitionData(payload);
 
 		postImportant(ConfigLT.INTEGRATIONS.minigameStartEndpoint.get(), payload);
+	}
 
-		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
-		events.listen(GamePlayerEvents.SET_ROLE, (p, r, lr) -> sendParticipantsList());
-
-		requestQueuedActions();
+	private void sendPackagesUpdate() {
+		JsonObject payload = new JsonObject();
+		addGameDefinitionData(payload);
+		postImportant(ConfigLT.INTEGRATIONS.minigameUpdatePackagesEndpoint.get(), payload);
 	}
 
 	private void addGameDefinitionData(JsonObject payload) {
-		IGameDefinition definition = game.definition();
+		IGameDefinition definition = topLevelGame.definition();
 		payload.add("name", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, definition.name()).getOrThrow());
 		Component subtitle = definition.subtitle();
 		if (subtitle != null) {
 			payload.add("subtitle", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, subtitle).getOrThrow());
 		}
 
-		GamePackageState packageState = game.state().getOrNull(GamePackageState.KEY);
+		IGamePhase activeGame = gameStack.getLast();
+		GamePackageState packageState = activeGame.state().getOrNull(GamePackageState.KEY);
 		if (packageState != null) {
 			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
 			payload.add("packages", PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList).getOrThrow());
 		}
 	}
 
-	public void finish(GameStatistics statistics) {
-		JsonObject payload = new JsonObject();
-		payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
-		payload.add("statistics", statistics.serialize());
-		payload.add("participants", serializeParticipantsArray());
+	public void finish(IGamePhase phase) {
+		if (gameStack.peekLast() != phase) {
+			return;
+		}
+		gameStack.removeLast();
 
-		postImportant(ConfigLT.INTEGRATIONS.minigameEndEndpoint.get(), payload);
+		if (gameStack.isEmpty()) {
+			JsonObject payload = new JsonObject();
+			payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
+			payload.add("statistics", phase.statistics().serialize());
+			payload.add("participants", serializeParticipantsArray());
 
-		close();
+			postImportant(ConfigLT.INTEGRATIONS.minigameEndEndpoint.get(), payload);
+
+			close();
+		} else {
+			sendPackagesUpdate();
+		}
 	}
 
-	public void cancel() {
-		postImportant(ConfigLT.INTEGRATIONS.minigameCancelEndpoint.get(), new JsonObject());
-		close();
+	public void cancel(IGamePhase phase) {
+		if (gameStack.peekLast() != phase) {
+			return;
+		}
+		gameStack.removeLast();
+		phase.events().removeAll(phaseListeners);
+
+		if (gameStack.isEmpty()) {
+			postImportant(ConfigLT.INTEGRATIONS.minigameCancelEndpoint.get(), new JsonObject());
+			close();
+		} else {
+			sendPackagesUpdate();
+		}
 	}
 
 	public void acknowledgeActionDelivery(final GameActionRequest request) {
@@ -131,13 +170,12 @@ public final class GameInstanceIntegrations implements IGameState {
 	private void sendParticipantsList() {
 		JsonObject payload = new JsonObject();
 		payload.add("participants", serializeParticipantsArray());
-
 		post(ConfigLT.INTEGRATIONS.minigamePlayerUpdateEndpoint.get(), payload);
 	}
 
 	private JsonArray serializeParticipantsArray() {
 		JsonArray participantsArray = new JsonArray();
-		for (ServerPlayer participant : game.participants()) {
+		for (ServerPlayer participant : gameStack.getLast().participants()) {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;
@@ -160,9 +198,9 @@ public final class GameInstanceIntegrations implements IGameState {
 			return;
 		}
 
-		payload.addProperty("id", game.gameUuid().toString());
+		payload.addProperty("id", topLevelGame.gameUuid().toString());
 
-		IGameDefinition definition = game.definition();
+		IGameDefinition definition = topLevelGame.definition();
 		JsonObject game = new JsonObject();
 		game.addProperty("id", definition.backendId().toString());
 		game.addProperty("telemetry_key", definition.statisticsKey());
@@ -182,21 +220,20 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	void tick(MinecraftServer server) {
-		actions.pollGameActions(server.getTickCount());
+		actions.pollGameActions(gameStack.getLast(), server.getTickCount());
 	}
 
 	void handlePayload(JsonObject object, String type, Crud crud) {
 		if ("poll".equals(type)) {
-			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
+			gameStack.getLast().invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
 		} else if (crud == Crud.CREATE) {
 			Optional<GameActionType> actionType = GameActionType.getFromId(type);
 			if (actionType.isPresent()) {
 				// TODO: Fallback because format is inconsistent
 				JsonObject payload = object.has("payload") ? object.getAsJsonObject("payload") : object;
-				DataResult<GameActionRequest> parseResult = actionType.get().getCodec().parse(JsonOps.INSTANCE, payload);
-
-				parseResult.result().ifPresent(actions::enqueue);
-				parseResult.error().ifPresent(error -> LoveTropics.LOGGER.warn("Received invalid game action of type {}: {}", type, error));
+				actionType.get().getCodec().parse(JsonOps.INSTANCE, payload)
+						.ifSuccess(actions::enqueue)
+						.ifError(error -> LoveTropics.LOGGER.warn("Received invalid game action of type {}: {}", type, error.error()));
 			} else {
 				LoveTropics.LOGGER.debug("Received create event with unrecognised action type: {}", type);
 			}
