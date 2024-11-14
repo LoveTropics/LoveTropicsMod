@@ -69,9 +69,9 @@ public record PointsSidebarBehavior(
 		final Placement.Score<?, Integer> placement;
 		final TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 		if (teams == null) {
-			placement = Placement.fromPlayerScore(PlacementOrder.MAX, game, statistic, false);
+			placement = Placement.fromPlayerScore(order, game, statistic, false);
 		} else {
-			placement = Placement.fromTeamScore(PlacementOrder.MAX, game, statistic, 0);
+			placement = Placement.fromTeamScore(order, game, statistic, 0);
 		}
 		placement.addToSidebar(sidebar, count);
 
