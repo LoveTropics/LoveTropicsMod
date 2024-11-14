@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.river_race.event;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,6 +28,12 @@ public class RiverRaceEvents {
         }
     });
 
+    public static final GameEventType<UnlockZone> UNLOCK_ZONE = GameEventType.create(UnlockZone.class, listeners -> (team, id) -> {
+        for (UnlockZone listener : listeners) {
+            listener.onUnlockZone(team, id);
+        }
+    });
+
     public interface AnswerTriviaQuestion {
         void onAnswer(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos);
     }
@@ -37,5 +44,9 @@ public class RiverRaceEvents {
 
     public interface MicrogameStarted {
         void onMicrogameStarted(MultiGamePhase game);
+    }
+
+    public interface UnlockZone {
+        void onUnlockZone(GameTeam team, String id);
     }
 }

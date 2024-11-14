@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -45,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public final class CollectablesBehaviour implements IGameBehavior, IGameState {
@@ -161,6 +163,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                 countdown = null;
             });
         }
+        collectable.unlocksZone.ifPresent(zone -> game.invoker(RiverRaceEvents.UNLOCK_ZONE).onUnlockZone(team, zone));
         game.statistics().forTeam(team.key()).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
         FireworkPalette.DYE_COLORS.spawn(slotPos.above(), game.level());
         return InteractionResult.PASS;
@@ -215,11 +218,12 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         }
     }
 
-    public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
+    public record Collectable(String zone, Optional<String> unlocksZone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions,
                               int victoryPoints, GameActionList<Void> onCompleteAction) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
+                Codec.STRING.optionalFieldOf("unlocks_zone").forGetter(Collectable::unlocksZone),
                 Codec.STRING.fieldOf("zone_display_name").forGetter(Collectable::zoneDisplayName),
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),

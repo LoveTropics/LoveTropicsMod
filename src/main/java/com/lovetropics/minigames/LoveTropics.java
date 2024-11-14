@@ -25,6 +25,7 @@ import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
+import com.lovetropics.minigames.common.content.river_race.render.RiverRaceBarRenderer;
 import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
@@ -188,6 +189,7 @@ public class LoveTropics {
             GameSidebarRenderer.registerOverlays(event);
             SpectatingUi.registerOverlays(event);
             BbClientRenderEffects.registerOverlays(event);
+            RiverRaceBarRenderer.registerOverlays(event);
         });
     }
 

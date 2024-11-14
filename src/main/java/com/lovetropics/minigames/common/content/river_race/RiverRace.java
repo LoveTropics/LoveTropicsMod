@@ -7,7 +7,9 @@ import com.lovetropics.minigames.common.content.river_race.block.TriviaBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlock;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
+import com.lovetropics.minigames.common.content.river_race.client_state.RiverRaceClientBarState;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -16,7 +18,6 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -39,6 +40,10 @@ public class RiverRace {
     public static final GameBehaviorEntry<ProgressBehaviour> RIVER_RACE_PROGRESS_BEHAVIOUR = REGISTRATE.object("river_race_progress").behavior(ProgressBehaviour.CODEC).register();
     public static final GameBehaviorEntry<CollectablesBehaviour> COLLECTABLES_BEHAVIOUR = REGISTRATE.object("river_race_collectables").behavior(CollectablesBehaviour.CODEC).register();
     public static final GameBehaviorEntry<PreventBreakBehaviour> PREVENT_BREAK_BEHAVIOUR = REGISTRATE.object("prevent_break").behavior(PreventBreakBehaviour.CODEC).register();
+
+    public static final GameClientTweakEntry<RiverRaceClientBarState> BAR_STATE = REGISTRATE.object("river_race_bar")
+            .clientState(RiverRaceClientBarState.CODEC).streamCodec(RiverRaceClientBarState.STREAM_CODEC)
+            .register();
 
     public static final BlockEntry<TriviaBlock.GateTriviaBlock> TRIVIA_GATE = REGISTRATE
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
