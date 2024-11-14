@@ -9,28 +9,14 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public class TriviaChestRenderer extends ChestRenderer<TriviaChestBlockEntity> {
+	private static final Material MATERIAL = new Material(Sheets.CHEST_SHEET, LoveTropics.location("entity/chest/trivia"));
 
-    public static final Material TRIVIA_CHEST_MATERIAL = getChestMaterial("trivia");
-    public static final Material TRIVIA_CHEST_LEFT_MATERIAL = getChestMaterial("trivia_left");
-    public static final Material TRIVIA_CHEST_RIGHT_MATERIAL = getChestMaterial("trivia_right");
+	public TriviaChestRenderer(BlockEntityRendererProvider.Context context) {
+		super(context);
+	}
 
-    private static Material getChestMaterial(ChestType chestType) {
-        return switch (chestType) {
-            case LEFT -> TriviaChestRenderer.TRIVIA_CHEST_LEFT_MATERIAL;
-            case RIGHT -> TriviaChestRenderer.TRIVIA_CHEST_RIGHT_MATERIAL;
-            default -> TriviaChestRenderer.TRIVIA_CHEST_MATERIAL;
-        };
-    }
-
-    private static Material getChestMaterial(String chestName) {
-        return new Material(Sheets.CHEST_SHEET, LoveTropics.location("entity/chest/" + chestName));
-    }
-    public TriviaChestRenderer(BlockEntityRendererProvider.Context context) {
-        super(context);
-    }
-
-    @Override
+	@Override
 	protected Material getMaterial(TriviaChestBlockEntity tileEntity, ChestType chestType) {
-        return getChestMaterial(chestType);
-    }
+		return MATERIAL;
+	}
 }

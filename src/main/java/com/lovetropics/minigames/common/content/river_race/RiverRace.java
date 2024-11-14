@@ -74,10 +74,7 @@ public class RiverRace {
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/chest")
                     .texture("particle", prov.modLoc("block/trivia_victory")))
             .build()
-            .addMiscData(ProviderType.LANG, prov -> {
-                prov.add(LoveTropics.ID + ".container.triviaChest", "Trivia Chest");
-                prov.add(LoveTropics.ID + ".container.triviaChestDouble", "Large Trivia Chest");
-            })
+            .addMiscData(ProviderType.LANG, prov -> prov.add(LoveTropics.ID + ".container.triviaChest", "Trivia Chest"))
             .register();
 
     public static final BlockEntityEntry<TriviaBlockEntity> TRIVIA_BLOCK_ENTITY =
