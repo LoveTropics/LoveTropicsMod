@@ -1,7 +1,0 @@
-{
-  "parent": "ltminigames:block/cube_glow",
-  "textures": {
-    "all": "ltminigames:block/trivia_victory",
-    "glow": "ltminigames:block/trivia_glow"
-  }
-}

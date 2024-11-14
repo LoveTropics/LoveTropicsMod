@@ -64,11 +64,10 @@ public class RiverRace {
             .register();
 
     private static void triviaBlockModel(DataGenContext<Block, ?> ctx, RegistrateBlockstateProvider prov) {
-        ResourceLocation baseTexture = prov.modLoc("block/" + ctx.getName());
-        BlockModelBuilder activeModel = prov.models().withExistingParent(ctx.getName() + "_active", prov.modLoc("block/cube_glow"))
-                .texture("all", baseTexture)
+		BlockModelBuilder activeModel = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
+                .texture("all", prov.modLoc("block/" + ctx.getName()))
                 .texture("glow", prov.modLoc("block/trivia_glow"));
-        BlockModelBuilder inactiveModel = prov.models().cubeAll(ctx.getName(), baseTexture);
+        BlockModelBuilder inactiveModel = prov.models().cubeAll(ctx.getName() + "_inactive", prov.modLoc("block/trivia_inactive"));
         prov.getVariantBuilder(ctx.get())
                 .partialState().with(TriviaBlock.ANSWERED, false).setModels(new ConfiguredModel(activeModel))
                 .partialState().with(TriviaBlock.ANSWERED, true).setModels(new ConfiguredModel(inactiveModel));

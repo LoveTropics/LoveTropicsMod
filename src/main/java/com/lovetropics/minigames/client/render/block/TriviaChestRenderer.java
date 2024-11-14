@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TriviaChestRenderer implements BlockEntityRenderer<TriviaChestBlockEntity> {
 	private static final Material MATERIAL = new Material(Sheets.CHEST_SHEET, LoveTropics.location("entity/chest/trivia"));
 	private static final Material GLOW_MATERIAL = new Material(Sheets.CHEST_SHEET, LoveTropics.location("entity/chest/trivia_glow"));
+	private static final Material INACTIVE_MATERIAL = new Material(Sheets.CHEST_SHEET, LoveTropics.location("entity/chest/trivia_inactive"));
 
 	private final ModelPart lid;
 	private final ModelPart bottom;
@@ -49,9 +50,11 @@ public class TriviaChestRenderer implements BlockEntityRenderer<TriviaChestBlock
 		openness = 1.0f - openness;
 		openness = 1.0f - openness * openness * openness;
 
-		render(poseStack, MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, packedLight, packedOverlay);
 		if (!blockState.getValue(TriviaChestBlock.ANSWERED)) {
+			render(poseStack, MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, packedLight, packedOverlay);
 			render(poseStack, GLOW_MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, LightTexture.FULL_BRIGHT, packedOverlay);
+		} else {
+			render(poseStack, INACTIVE_MATERIAL.buffer(bufferSource, RenderType::entityCutout), lid, lock, bottom, openness, packedLight, packedOverlay);
 		}
 
 		poseStack.popPose();
