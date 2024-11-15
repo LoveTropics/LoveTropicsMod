@@ -204,13 +204,17 @@ public class CraftingBeeBehavior implements IGameBehavior {
         var teamTasks = tasks.get(team);
         var task = teamTasks.stream().filter(c -> ItemStack.isSameItemSameComponents(crafted, c.output)).findFirst().orElse(null);
 
-        crafted.set(CraftingBee.CRAFTED_USING, ItemContainerContents.fromItems(IntStream.range(0, container.getContainerSize())
+        ItemContainerContents usedItems = ItemContainerContents.fromItems(IntStream.range(0, container.getContainerSize())
                 .mapToObj(container::getItem)
                 .filter(Predicate.not(ItemStack::isEmpty))
                 .map(s -> s.copyWithCount(1))
                 // .peek(s -> s.remove(CraftingBee.CRAFTED_USING)) // TODO - should we keep this?
                 .sorted(Comparator.comparing(s -> s.getItemHolder().getRegisteredName()))
-                .toList()));
+                .toList());
+        crafted.set(CraftingBee.CRAFTED_USING, new CraftedUsing(
+                crafted.getCount(),
+                usedItems
+        ));
 
         if (task == null || task.done) return;
 
@@ -294,10 +298,16 @@ public class CraftingBeeBehavior implements IGameBehavior {
             return InteractionResult.FAIL;
         } else if (recyclingRegion.contains(pos)) {
             var item = player.getItemInHand(hand);
-            if (item.isEmpty() || !item.has(CraftingBee.CRAFTED_USING)) return InteractionResult.PASS;
+            CraftedUsing craftedUsing = item.get(CraftingBee.CRAFTED_USING);
+            if (craftedUsing == null) {
+                return InteractionResult.FAIL;
+            }
+            if (item.getCount() < craftedUsing.count()) {
+                return InteractionResult.FAIL;
+            }
 
-            item.get(CraftingBee.CRAFTED_USING).stream().forEach(s -> player.addItem(s.copyWithCount(1)));
-            item.shrink(1);
+            item.shrink(craftedUsing.count());
+            craftedUsing.items().stream().forEach(player::addItem);
 
             timerBars.get(teams.getTeamForPlayer(player))
                     .state().increaseRemaining(-recyclingPenalty);

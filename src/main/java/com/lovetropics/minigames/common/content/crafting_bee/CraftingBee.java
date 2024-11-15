@@ -5,7 +5,6 @@ import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.component.ItemContainerContents;
 
 import java.util.function.Supplier;
 
@@ -16,12 +15,12 @@ public class CraftingBee {
             .behavior(CraftingBeeBehavior.CODEC)
             .register();
 
-    public static final Supplier<DataComponentType<ItemContainerContents>> CRAFTED_USING = REGISTRATE.simple(
+    public static final Supplier<DataComponentType<CraftedUsing>> CRAFTED_USING = REGISTRATE.simple(
             "crafted_using",
             Registries.DATA_COMPONENT_TYPE,
-            () -> DataComponentType.<ItemContainerContents>builder()
-                    .networkSynchronized(ItemContainerContents.STREAM_CODEC)
-                    .persistent(ItemContainerContents.CODEC)
+            () -> DataComponentType.<CraftedUsing>builder()
+                    .networkSynchronized(CraftedUsing.STREAM_CODEC)
+                    .persistent(CraftedUsing.CODEC)
                     .cacheEncoding()
                     .build()
     );
