@@ -24,6 +24,9 @@ public final class GameSidebarRenderer {
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
 		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("minigame_sidebar"), (graphics, deltaTracker) -> {
+			if (Minecraft.getInstance().options.hideGui) {
+				return;
+			}
 			SidebarClientState sidebar = ClientGameStateManager.getOrNull(GameClientStateTypes.SIDEBAR);
 			if (sidebar != null) {
 				renderSidebar(graphics, sidebar);

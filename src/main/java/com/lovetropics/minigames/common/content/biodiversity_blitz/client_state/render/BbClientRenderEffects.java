@@ -23,6 +23,9 @@ public final class BbClientRenderEffects {
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
 		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("biodiversity_blitz"), (graphics, deltaTracker) -> {
+			if (Minecraft.getInstance().options.hideGui) {
+				return;
+			}
 			ClientBbSelfState selfState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SELF_STATE);
 			if (selfState != null) {
 				CurrencyTargetState currencyTarget = ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_TARGET);

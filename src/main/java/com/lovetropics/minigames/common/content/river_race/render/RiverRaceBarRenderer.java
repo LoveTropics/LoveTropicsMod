@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.client_state.RiverRaceClientBarState;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
@@ -32,7 +33,10 @@ public final class RiverRaceBarRenderer {
 	private static final ResourceLocation LOCKED_SPRITE = LoveTropics.location("minigames/river_race/locked");
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
-		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("river_race_bar"), (graphics, deltaTracker) -> {
+		event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, LoveTropics.location("river_race_bar"), (graphics, deltaTracker) -> {
+			if (Minecraft.getInstance().options.hideGui) {
+				return;
+			}
 			RiverRaceClientBarState barState = ClientGameStateManager.getOrNull(RiverRace.BAR_STATE);
 			if (barState != null) {
 				render(graphics, barState);

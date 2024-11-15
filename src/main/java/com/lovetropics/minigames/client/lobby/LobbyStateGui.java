@@ -54,6 +54,9 @@ public class LobbyStateGui {
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
 		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("minigame_lobby"), (graphics, deltaTracker) -> {
+			if (Minecraft.getInstance().options.hideGui) {
+				return;
+			}
 			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
 			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
 			if (!lobbies.isEmpty()) {

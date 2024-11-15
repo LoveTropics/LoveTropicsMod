@@ -180,6 +180,9 @@ public final class SpectatingUi {
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
 		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("minigame_spectator"), (graphics, deltaTracker) -> {
+			if (Minecraft.getInstance().options.hideGui) {
+				return;
+			}
 			SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 			if (session != null) {
 				session.ui.renderChasePlayerList(graphics);
