@@ -50,7 +50,7 @@ public class RiverRace {
             .block("trivia_gate", TriviaBlock.GateTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate(RiverRace::triviaBlockModel)
+            .blockstate((ctx, prov) -> triviaBlockModel(ctx, prov, true))
             .simpleItem()
             .register();
 
@@ -58,22 +58,22 @@ public class RiverRace {
             .block("trivia_collectable", TriviaBlock.CollectableTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate(RiverRace::triviaBlockModel)
+            .blockstate((ctx, prov) -> triviaBlockModel(ctx, prov, false))
             .simpleItem()
             .register();
     public static final BlockEntry<TriviaBlock.VictoryTriviaBlock> TRIVIA_VICTORY = REGISTRATE
             .block("trivia_victory", TriviaBlock.VictoryTriviaBlock::new)
             .initialProperties(() -> Blocks.BEDROCK)
             .properties(BlockBehaviour.Properties::noLootTable)
-            .blockstate(RiverRace::triviaBlockModel)
+            .blockstate((ctx, prov) -> triviaBlockModel(ctx, prov, true))
             .simpleItem()
             .register();
 
-    private static void triviaBlockModel(DataGenContext<Block, ?> ctx, RegistrateBlockstateProvider prov) {
+    private static void triviaBlockModel(DataGenContext<Block, ?> ctx, RegistrateBlockstateProvider prov, boolean useInactiveTexture) {
 		BlockModelBuilder activeModel = prov.models().withExistingParent(ctx.getName(), prov.modLoc("block/cube_glow"))
                 .texture("all", prov.modLoc("block/" + ctx.getName()))
                 .texture("glow", prov.modLoc("block/trivia_glow"));
-        BlockModelBuilder inactiveModel = prov.models().cubeAll(ctx.getName() + "_inactive", prov.modLoc("block/trivia_inactive"));
+        BlockModelBuilder inactiveModel = prov.models().cubeAll(ctx.getName() + "_inactive", prov.modLoc(useInactiveTexture ? "block/trivia_inactive" : "block/" + ctx.getName()));
         prov.getVariantBuilder(ctx.get())
                 .partialState().with(TriviaBlock.ANSWERED, false).setModels(new ConfiguredModel(activeModel))
                 .partialState().with(TriviaBlock.ANSWERED, true).setModels(new ConfiguredModel(inactiveModel));
