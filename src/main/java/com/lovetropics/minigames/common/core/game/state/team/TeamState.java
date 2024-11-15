@@ -104,6 +104,14 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return players != null ? players : PlayerSet.EMPTY;
 	}
 
+	public PlayerSet getPlayersOnSameTeam(ServerPlayer player) {
+		GameTeamKey team = getTeamForPlayer(player);
+		if (team == null) {
+			return PlayerSet.of(player);
+		}
+		return getPlayersForTeam(team);
+	}
+
 	private MutablePlayerSet getPlayersForTeamMutable(MinecraftServer server, GameTeamKey team) {
 		MutablePlayerSet players = playersByKey.get(team);
 		if (players == null) {

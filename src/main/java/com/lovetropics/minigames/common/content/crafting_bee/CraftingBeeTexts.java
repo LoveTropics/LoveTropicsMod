@@ -12,4 +12,8 @@ public final class CraftingBeeTexts {
 	public static final Component DONT_CHEAT = KEYS.add("dont_cheat", "Don't cheat!").withStyle(ChatFormatting.RED);
 	public static final Component HINT = KEYS.add("hint", "Click to show a hint, displaying the position of a random number of ingredients");
 	public static final TranslationCollector.Fun1 HINTS_LEFT = KEYS.add1("hints_left", "You have %s hints left");
+	public static final Component CANNOT_RECYCLE = KEYS.add("cannot_recycle", "You can only recycle items that you have crafted!").withStyle(ChatFormatting.RED);
+	public static final Component TIME_UP = KEYS.add("time_up", "Time's up!").withStyle(ChatFormatting.GOLD);
+	public static final TranslationCollector.Fun2 NOT_ENOUGH_TO_RECYCLE = KEYS.add2("not_enough_to_recycle", "You need at least %s %s to recycle this").withStyle(ChatFormatting.RED);
+	public static final TranslationCollector.Fun1 TIME_PENALTY = KEYS.add1("time_penalty", "-%s seconds").withStyle(ChatFormatting.RED);
 }

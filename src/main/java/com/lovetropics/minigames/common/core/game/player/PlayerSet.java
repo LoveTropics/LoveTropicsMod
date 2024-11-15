@@ -96,6 +96,31 @@ public interface PlayerSet extends PlayerIterable {
 		};
 	}
 
+	static PlayerSet of(ServerPlayer player) {
+		return new PlayerSet() {
+			@Override
+			public boolean contains(UUID id) {
+				return id.equals(player.getUUID());
+			}
+
+			@Override
+			@Nullable
+			public ServerPlayer getPlayerBy(UUID id) {
+				return contains(id) ? player : null;
+			}
+
+			@Override
+			public int size() {
+				return 1;
+			}
+
+			@Override
+			public Iterator<ServerPlayer> iterator() {
+				return Collections.singletonList(player).iterator();
+			}
+		};
+	}
+
 	static PlayerSet intersection(PlayerSet left, PlayerSet right) {
 		return new PlayerSet() {
 			@Override
@@ -116,18 +141,37 @@ public interface PlayerSet extends PlayerIterable {
 
 			@Override
 			public int size() {
-				int size = 0;
-				for (ServerPlayer player : left) {
-					if (right.contains(player)) {
-						size++;
-					}
-				}
-				return size;
+				return Iterators.size(iterator());
 			}
 
 			@Override
 			public Iterator<ServerPlayer> iterator() {
 				return Iterators.filter(left.iterator(), right::contains);
+			}
+		};
+	}
+
+	static PlayerSet difference(PlayerSet first, PlayerSet second) {
+		return new PlayerSet() {
+			@Override
+			public boolean contains(UUID id) {
+				return first.contains(id) && !second.contains(id);
+			}
+
+			@Override
+			@Nullable
+			public ServerPlayer getPlayerBy(UUID id) {
+				return !second.contains(id) ? first.getPlayerBy(id) : null;
+			}
+
+			@Override
+			public int size() {
+				return Iterators.size(iterator());
+			}
+
+			@Override
+			public Iterator<ServerPlayer> iterator() {
+				return Iterators.filter(first.iterator(), player -> !second.contains(player));
 			}
 		};
 	}

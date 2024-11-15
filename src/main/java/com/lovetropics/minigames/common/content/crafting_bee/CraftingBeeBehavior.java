@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.crafting_bee;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.crafting_bee.ingredient.IngredientDecomposer;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -38,6 +39,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -60,10 +64,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class CraftingBeeBehavior implements IGameBehavior {
@@ -201,6 +203,11 @@ public class CraftingBeeBehavior implements IGameBehavior {
     }
 
     private ItemStack modifyCraftResult(ServerPlayer player, ItemStack result, CraftingInput craftingInput, CraftingRecipe recipe) {
+        GameTeamKey team = teams.getTeamForPlayer(player);
+        if (team == null || teamsWithoutTime.contains(team)) {
+            // Don't allow players to use their inventory to craft, either!
+            return ItemStack.EMPTY;
+        }
         ItemContainerContents usedItems = ItemContainerContents.fromItems(craftingInput.items().stream()
                 .filter(stack -> !stack.isEmpty())
                 .map(stack -> stack.copyWithCount(1))
@@ -219,7 +226,10 @@ public class CraftingBeeBehavior implements IGameBehavior {
         if (team == null || done) return;
 
         var teamTasks = tasks.get(team);
-        var task = teamTasks.stream().filter(c -> ItemStack.isSameItemSameComponents(crafted, c.output)).findFirst().orElse(null);
+
+        var craftedStackToCompare = crafted.copy();
+        craftedStackToCompare.remove(CraftingBee.CRAFTED_USING);
+        var task = teamTasks.stream().filter(c -> ItemStack.isSameItemSameComponents(craftedStackToCompare, c.output)).findFirst().orElse(null);
 
         if (task == null || task.done) return;
 
@@ -234,16 +244,45 @@ public class CraftingBeeBehavior implements IGameBehavior {
         game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), completed, teamTasks.size()));
         taskBars.get(team).setProgress(completed / (float) teamTasks.size());
 
+        PlayerSet teamPlayers = teams.getPlayersForTeam(team);
+        teamPlayers.playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.PLAYERS, 1.0f, 1.0f);
+        game.spectators().playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.PLAYERS, 1.0f, 1.0f);
+
+        PlayerSet otherPlayers = PlayerSet.difference(game.participants(), teamPlayers);
+        otherPlayers.playSound(SoundEvents.GHAST_SCREAM, SoundSource.PLAYERS, 0.5f, 0.5f);
+
         if (completed == teamTasks.size()) {
-            game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
-
-            done = true;
-
-            game.allPlayers().forEach(ServerPlayer::closeContainer);
-
-            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
-            game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
+            triggerGameOver(new GameWinner.Team(gameTeam));
         }
+    }
+
+    private void triggerGameOver(GameWinner winner) {
+        done = true;
+        game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
+        game.allPlayers().forEach(ServerPlayer::closeContainer);
+
+        game.scheduler().runAfterSeconds(1.5f, () -> {
+            game.allPlayers().playSound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
+
+            if (winner instanceof GameWinner.Team(GameTeam team)) {
+                for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
+                    applyWinningPlayerEffects(winningPlayer, team);
+                }
+                game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(team.config().styledName()).withStyle(ChatFormatting.GREEN), true);
+            } else {
+                game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true);
+            }
+        });
+
+        game.scheduler().runAfterSeconds(8, () -> game.requestStop(GameStopReason.finished()));
+    }
+
+    private void applyWinningPlayerEffects(ServerPlayer winningPlayer, GameTeam team) {
+        game.scheduler().runAfterSeconds(game.random().nextFloat(), () -> {
+            BlockPos fireworksPos = BlockPos.containing(winningPlayer.getEyePosition()).above();
+            FireworkPalette.forDye(team.config().dye()).spawn(fireworksPos, game.level());
+        });
+        winningPlayer.setGlowingTag(true);
     }
 
     private void tickRunning(IGamePhase game) {
@@ -261,7 +300,11 @@ public class CraftingBeeBehavior implements IGameBehavior {
                     bar.bar.setProgress(0);
 
                     teamsWithoutTime.add(team);
-                    teams.getPlayersForTeam(team).forEach(ServerPlayer::closeContainer);
+
+                    PlayerSet playersInTeam = teams.getPlayersForTeam(team);
+                    playersInTeam.forEach(ServerPlayer::closeContainer);
+                    playersInTeam.playSound(SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.5f, 0.25f);
+                    playersInTeam.showTitle(CraftingBeeTexts.TIME_UP, null, 10, SharedConstants.TICKS_PER_SECOND * 2, 10);
 
                     if (teamsWithoutTime.size() == tasks.asMap().size()) {
                         int mx = tasks.asMap().values().stream().mapToInt(craftingTasks -> (int) craftingTasks.stream().filter(c -> c.done).count())
@@ -269,19 +312,11 @@ public class CraftingBeeBehavior implements IGameBehavior {
                         var withMax = tasks.asMap().entrySet().stream().filter(e -> e.getValue().stream().filter(c -> c.done).count() == mx)
                                         .toList();
                         if (withMax.size() != 1) {
-                            game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
-
-                            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
+                            triggerGameOver(new GameWinner.Nobody());
                         } else {
                             var gameTeam = teams.getTeamByKey(withMax.getFirst().getKey());
-                            var teamConfig = gameTeam.config();
-                            game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
-
-                            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(teamConfig.styledName()).withStyle(ChatFormatting.GREEN), true));
+                            triggerGameOver(new GameWinner.Team(gameTeam));
                         }
-
-                        done = true;
-                        game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
                     }
                 }
             }
@@ -301,25 +336,42 @@ public class CraftingBeeBehavior implements IGameBehavior {
         // don't allow players to use the crafting table after the game was won
         if (world.getBlockState(pos).is(Blocks.CRAFTING_TABLE) && (done || teamsWithoutTime.contains(teams.getTeamForPlayer(player)))) {
             return InteractionResult.FAIL;
-        } else if (recyclingRegion.contains(pos)) {
-            var item = player.getItemInHand(hand);
-            CraftedUsing craftedUsing = item.get(CraftingBee.CRAFTED_USING);
-            if (craftedUsing == null) {
-                return InteractionResult.FAIL;
-            }
-            if (item.getCount() < craftedUsing.count()) {
-                return InteractionResult.FAIL;
-            }
-
-            item.shrink(craftedUsing.count());
-            craftedUsing.items().stream().forEach(player::addItem);
-
-            timerBars.get(teams.getTeamForPlayer(player))
-                    .state().increaseRemaining(-recyclingPenalty);
-
-            return InteractionResult.SUCCESS;
+        }
+        ItemStack itemInHand = player.getItemInHand(hand);
+        if (recyclingRegion.contains(pos) && !itemInHand.isEmpty()) {
+            return useRecycler(player, itemInHand);
         }
         return InteractionResult.PASS;
+    }
+
+    private InteractionResult useRecycler(ServerPlayer player, ItemStack itemToRecycle) {
+        CraftedUsing craftedUsing = itemToRecycle.get(CraftingBee.CRAFTED_USING);
+        if (craftedUsing == null) {
+            player.sendSystemMessage(CraftingBeeTexts.CANNOT_RECYCLE, true);
+            player.playNotifySound(SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            return InteractionResult.FAIL;
+        }
+        if (itemToRecycle.getCount() < craftedUsing.count()) {
+            player.sendSystemMessage(CraftingBeeTexts.NOT_ENOUGH_TO_RECYCLE.apply(craftedUsing.count(), itemToRecycle.getHoverName()), true);
+            player.playNotifySound(SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            return InteractionResult.FAIL;
+        }
+
+        itemToRecycle.shrink(craftedUsing.count());
+        craftedUsing.items().stream().forEach(player::addItem);
+
+        applyTimePenalty(player, recyclingPenalty);
+        player.playNotifySound(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0f, 1.0f);
+
+        return InteractionResult.SUCCESS;
+    }
+
+    private void applyTimePenalty(ServerPlayer player, int penalty) {
+        timerBars.get(teams.getTeamForPlayer(player))
+                .state().increaseRemaining(-penalty);
+
+        Component subtitle = CraftingBeeTexts.TIME_PENALTY.apply(Mth.positiveCeilDiv(penalty, SharedConstants.TICKS_PER_SECOND));
+        teams.getPlayersOnSameTeam(player).showTitle(null, subtitle, 10, 20, 10);
     }
 
     private void sync(GameTeamKey team) {
