@@ -46,7 +46,7 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 		Placement.Score<PlayerKey, Integer> playerPlacement = Placement.fromPlayerScore(order, game, statistic);
 		playerPlacement.placeInto(StatisticKey.PLACEMENT);
 
-		Placement.Score<GameTeamKey, Integer> teamPlacement = Placement.fromTeamScore(order, game, statistic, 0);
+		Placement.Score<GameTeamKey, Integer> teamPlacement = Placement.fromTeamScore(order, game, statistic);
 		teamPlacement.placeInto(StatisticKey.PLACEMENT);
 
 		PlayerKey winningPlayerKey = playerPlacement.getWinner();

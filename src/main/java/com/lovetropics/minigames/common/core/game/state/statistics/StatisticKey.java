@@ -79,6 +79,8 @@ public final class StatisticKey<T> {
 	private final String key;
 	private final Function<T, JsonElement> serializer;
 	private Function<T, String> display = simple();
+	@Nullable
+	private T defaultValue;
 
 	private StatisticKey(Class<T> type, String key, Function<T, JsonElement> serializer) {
 		this.type = type;
@@ -93,15 +95,15 @@ public final class StatisticKey<T> {
 	}
 
 	public static StatisticKey<Integer> ofInt(String key) {
-		return StatisticKey.register(Integer.class, key, JsonPrimitive::new);
+		return StatisticKey.register(Integer.class, key, JsonPrimitive::new).defaultValue(0);
 	}
 
 	public static StatisticKey<Float> ofFloat(String key) {
-		return StatisticKey.register(Float.class, key, JsonPrimitive::new);
+		return StatisticKey.register(Float.class, key, JsonPrimitive::new).defaultValue(0.0f);
 	}
 
 	public static StatisticKey<Boolean> ofBool(String key) {
-		return StatisticKey.register(Boolean.class, key, JsonPrimitive::new);
+		return StatisticKey.register(Boolean.class, key, JsonPrimitive::new).defaultValue(false);
 	}
 
 	public static StatisticKey<String> ofString(String key) {
@@ -151,8 +153,18 @@ public final class StatisticKey<T> {
 		return this;
 	}
 
+	public StatisticKey<T> defaultValue(T defaultValue) {
+		this.defaultValue = defaultValue;
+		return this;
+	}
+
 	public String getKey() {
 		return key;
+	}
+
+	@Nullable
+	public T defaultValue() {
+		return defaultValue;
 	}
 
 	public JsonElement serialize(T value) {

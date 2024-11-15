@@ -71,7 +71,7 @@ public record PointsSidebarBehavior(
 		if (teams == null) {
 			placement = Placement.fromPlayerScore(order, game, statistic, false);
 		} else {
-			placement = Placement.fromTeamScore(order, game, statistic, 0);
+			placement = Placement.fromTeamScore(order, game, statistic);
 		}
 		placement.addToSidebar(sidebar, count);
 
