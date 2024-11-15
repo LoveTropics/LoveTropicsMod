@@ -38,6 +38,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
@@ -267,9 +268,12 @@ public final class TriviaBehaviour implements IGameBehavior {
     }
 
     public record TriviaQuestion(String question, List<TriviaQuestionAnswer> answers, TriviaDifficulty difficulty) {
+        private static final Codec<List<TriviaQuestionAnswer>> SHUFFLED_ANSWERS_CODEC = ExtraCodecs.nonEmptyList(TriviaQuestionAnswer.CODEC.listOf())
+                .xmap(TriviaQuestion::shuffle, TriviaQuestion::shuffle);
+
         public static final Codec<TriviaQuestion> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("question").forGetter(TriviaQuestion::question),
-                ExtraCodecs.nonEmptyList(TriviaQuestionAnswer.CODEC.listOf()).fieldOf("answers").forGetter(TriviaQuestion::answers),
+                SHUFFLED_ANSWERS_CODEC.fieldOf("answers").forGetter(TriviaQuestion::answers),
                 TriviaDifficulty.CODEC.fieldOf("difficulty").forGetter(TriviaQuestion::difficulty)
         ).apply(i, TriviaQuestion::new));
 
@@ -279,6 +283,12 @@ public final class TriviaBehaviour implements IGameBehavior {
                 TriviaDifficulty.STREAM_CODEC, TriviaQuestion::difficulty,
                 TriviaQuestion::new
         );
+
+        private static <T> List<T> shuffle(List<T> values) {
+            List<T> result = new ArrayList<>(values);
+            Util.shuffle(result, RandomSource.create());
+            return result;
+        }
 
         public record TriviaQuestionAnswer(String text, boolean correct) {
             public static final StreamCodec<ByteBuf, TriviaQuestionAnswer> STREAM_CODEC = StreamCodec.composite(
