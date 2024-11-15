@@ -221,7 +221,7 @@ public class ConnectFourBehavior implements IGameBehavior {
             game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true);
         }
 
-        game.scheduler().runAfterSeconds(8, () -> game.requestStop(GameStopReason.finished()));
+        game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
     }
 
     private void applyWinningPlayerEffects(ServerPlayer winningPlayer, GameTeam team) {

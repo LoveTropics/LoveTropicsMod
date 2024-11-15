@@ -4,31 +4,35 @@ import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehav
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.core.network.trivia.RequestTriviaStateUpdateMessage;
 import com.lovetropics.minigames.common.core.network.trivia.SelectTriviaAnswerMessage;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.AbstractStringWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.FocusableTextWidget;
+import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
-import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public class TriviaQuestionScreen extends Screen {
-
     public static class AutoUpdatingTextWidget extends AbstractStringWidget {
-        private float alignX;
         private final Supplier<Component> messageSupplier;
 
         public AutoUpdatingTextWidget(Supplier<Component> message, Font font) {
             super(0, 0, 0, 0, Component.empty(), font);
-            this.messageSupplier = message;
+            messageSupplier = message;
         }
 
         @Override
@@ -37,32 +41,11 @@ public class TriviaQuestionScreen extends Screen {
             return this;
         }
 
-        private AutoUpdatingTextWidget horizontalAlignment(float pHorizontalAlignment) {
-            this.alignX = pHorizontalAlignment;
-            return this;
-        }
-
-        public AutoUpdatingTextWidget alignLeft() {
-            return this.horizontalAlignment(0.0F);
-        }
-
-        public AutoUpdatingTextWidget alignCenter() {
-            return this.horizontalAlignment(0.5F);
-        }
-
-        public AutoUpdatingTextWidget alignRight() {
-            return this.horizontalAlignment(1.0F);
-        }
-
         @Override
-        protected void renderWidget(GuiGraphics guiGraphics, int i, int i1, float v) {
+        protected void renderWidget(GuiGraphics graphics, int i, int i1, float v) {
             Component component = messageSupplier.get();
-            Font font = this.getFont();
-            MultiLineLabel label = MultiLineLabel.create(font, component);
-            int x = this.getX();
-            int y = this.getY();
-            label.renderCentered(guiGraphics, x, y, 9, getColor());
-//            guiGraphics.drawString(font, component, x, totalY, this.getColor());
+			MultiLineLabel label = MultiLineLabel.create(getFont(), component);
+			label.renderCentered(graphics, getX(), getY(), 9, getColor());
         }
     }
 
@@ -90,41 +73,60 @@ public class TriviaQuestionScreen extends Screen {
     private final TriviaBehaviour.TriviaQuestion question;
     private final BlockPos triviaBlockPos;
     private TriviaBlockEntity.TriviaBlockState triviaBlockState;
-    private final GridLayout layout = new GridLayout().spacing(25);
-    private String selected = null;
+    private final LinearLayout layout = LinearLayout.vertical().spacing(25);
     private final Set<AnswerButton> buttons = new HashSet<>();
 
     public TriviaQuestionScreen(BlockPos triviaBlockPos, TriviaBehaviour.TriviaQuestion question, TriviaBlockEntity.TriviaBlockState blockState) {
         super(Component.literal("Answer Trivia Question"));
         this.triviaBlockPos = triviaBlockPos;
         this.question = question;
-        this.triviaBlockState = blockState;
+        triviaBlockState = blockState;
     }
 
     @Override
     protected void init() {
+        int maxWidth = Window.BASE_WIDTH - 40;
+
         buttons.clear();
-        GridLayout.RowHelper helper = layout.createRowHelper(1);
         layout.defaultCellSetting().alignHorizontallyCenter();
-        helper.addChild(new AutoUpdatingTextWidget(() -> {
+        layout.addChild(new AutoUpdatingTextWidget(() -> {
             if(triviaBlockState.lockedOut()) {
-                return Component.literal("LOCKED OUT!\n")
-                        .append(Component.literal("Unlocks in " + (triviaBlockState.unlocksAt() - Minecraft.getInstance().level.getGameTime()) / 20 + "s"))
+                long remainingSeconds = (triviaBlockState.unlocksAt() - Minecraft.getInstance().level.getGameTime()) / SharedConstants.TICKS_PER_SECOND;
+                return Component.literal("LOCKED OUT!\nUnlocks in ")
+                        .append(Component.literal(remainingSeconds + "s").withStyle(ChatFormatting.GOLD))
                         .withStyle(ChatFormatting.RED);
             } else if(triviaBlockState.correctAnswer().isPresent()){
                 return Component.literal("Answered Correctly!").withStyle(ChatFormatting.GREEN);
             }
             return Component.empty();
-        }, font).alignCenter(), 1);
-        helper.addChild(new MultiLineTextWidget(Component.literal(question.question()), font).setCentered(true), 1);
+        }, font));
+        layout.addChild(new FocusableTextWidget(maxWidth, Component.literal(question.question()), font));
+
+        char ordinal = 'a';
+        int ordinalWidth = 30;
         for (TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer answer : question.answers()) {
-            AnswerButton button = new AnswerButton(Button.builder(Component.literal(answer.text()), this::handleAnswerClick));
+            LinearLayout answerLayout = LinearLayout.horizontal();
+            answerLayout.defaultCellSetting().alignVerticallyMiddle();
+
+            answerLayout.addChild(new StringWidget(Component.literal(ordinal + ") "), font));
+
+			AnswerButton button = new AnswerButton(Button.builder(Component.literal(answer.text()), b -> handleAnswerClick(answer)).width(maxWidth - ordinalWidth));
+            ordinal++;
             button.setActive(getButtonState(answer.text()));
             buttons.add(button);
-            helper.addChild(button, 1);
+            answerLayout.addChild(button, answerLayout.newCellSettings().alignHorizontallyRight());
+
+            layout.addChild(answerLayout);
         }
+
         repositionElements();
         layout.visitWidgets(this::addRenderableWidget);
+    }
+
+    @Override
+    protected void repositionElements() {
+        layout.arrangeElements();
+        FrameLayout.centerInRectangle(layout, 0, 0, width, height);
     }
 
     private boolean getButtonState(String answerText){
@@ -145,21 +147,18 @@ public class TriviaQuestionScreen extends Screen {
     public void tick() {
         super.tick();
         if(!Minecraft.getInstance().player.canInteractWithBlock(triviaBlockPos, 4.0)){
-            this.onClose();
+            onClose();
         }
         if(triviaBlockState.lockedOut() && triviaBlockState.unlocksAt() <= Minecraft.getInstance().level.getGameTime()){
             PacketDistributor.sendToServer(new RequestTriviaStateUpdateMessage(triviaBlockPos));
         }
     }
 
-    private void handleAnswerClick(Button clickedButton){
-        if(triviaBlockState.isAnswered()){
-            return;
-        }
-        String selectedAnswer = clickedButton.getMessage().getString();
-        selected = selectedAnswer;
-        PacketDistributor.sendToServer(new SelectTriviaAnswerMessage(triviaBlockPos, selectedAnswer));
-    }
+    private void handleAnswerClick(TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer answer) {
+		if (!triviaBlockState.isAnswered()) {
+			PacketDistributor.sendToServer(new SelectTriviaAnswerMessage(triviaBlockPos, answer.text()));
+		}
+	}
 
     public void handleAnswerResponse(TriviaBlockEntity.TriviaBlockState triviaBlockState){
         this.triviaBlockState = triviaBlockState;
@@ -167,14 +166,8 @@ public class TriviaQuestionScreen extends Screen {
             button.setActive(getButtonState(button.getMessage().getString()));
         }
         if(triviaBlockState.isAnswered()){
-            this.onClose();
+            onClose();
         }
-    }
-
-    @Override
-    protected void repositionElements() {
-        layout.arrangeElements();
-        FrameLayout.centerInRectangle(layout, 0, 0, width, height);
     }
 
     @Override
