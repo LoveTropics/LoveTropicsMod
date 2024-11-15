@@ -4,6 +4,7 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaChestBlockEntity;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaDifficulty;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
@@ -163,6 +164,11 @@ public final class TriviaBehaviour implements IGameBehavior {
                     findNeighboursOfTypeAndDestroy(game.scheduler(), game.level(), triviaPos, null);
                 }
                 case COLLECTABLE -> spawnCollectableFromBlock(game, triviaPos);
+                case REWARD -> {
+					if (game.level().getBlockEntity(triviaPos) instanceof TriviaChestBlockEntity chest) {
+                        player.openMenu(chest);
+                    }
+                }
             }
         });
     }
