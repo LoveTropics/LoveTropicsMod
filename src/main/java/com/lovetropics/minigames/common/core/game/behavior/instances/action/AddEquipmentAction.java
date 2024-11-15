@@ -25,13 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet, boolean clear, boolean colorByTeam, Map<GameTeamKey, ItemStack> hotbarTeamItems) implements IGameBehavior {
+public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet, ItemStack offhand, boolean clear, boolean colorByTeam, Map<GameTeamKey, ItemStack> hotbarTeamItems) implements IGameBehavior {
 	public static final MapCodec<AddEquipmentAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.ITEM_STACK.listOf().optionalFieldOf("items", List.of()).forGetter(AddEquipmentAction::items),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("head", ItemStack.EMPTY).forGetter(AddEquipmentAction::head),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("chest", ItemStack.EMPTY).forGetter(AddEquipmentAction::chest),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("legs", ItemStack.EMPTY).forGetter(AddEquipmentAction::legs),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("feet", ItemStack.EMPTY).forGetter(AddEquipmentAction::feet),
+			MoreCodecs.ITEM_STACK.optionalFieldOf("offhand", ItemStack.EMPTY).forGetter(AddEquipmentAction::offhand),
 			Codec.BOOL.optionalFieldOf("clear", false).forGetter(AddEquipmentAction::clear),
 			Codec.BOOL.optionalFieldOf("color_by_team", false).forGetter(AddEquipmentAction::colorByTeam),
 			Codec.unboundedMap(GameTeamKey.CODEC, MoreCodecs.ITEM_STACK).optionalFieldOf("hotbar_team_items", Map.of()).forGetter(AddEquipmentAction::hotbarTeamItems)
@@ -51,6 +52,7 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 			player.setItemSlot(EquipmentSlot.CHEST, copyAndModify(player, teams, chest));
 			player.setItemSlot(EquipmentSlot.LEGS, copyAndModify(player, teams, legs));
 			player.setItemSlot(EquipmentSlot.FEET, copyAndModify(player, teams, feet));
+			addOrReplaceInSlot(player, EquipmentSlot.OFFHAND, copyAndModify(player, teams, offhand));
 			if (teams != null) {
 				final GameTeamKey teamKey = teams.getTeamForPlayer(player);
 				final ItemStack hotbarItem = hotbarTeamItems.get(teamKey);
@@ -60,6 +62,25 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 			}
 			return true;
 		});
+	}
+
+	private void addOrReplaceInSlot(ServerPlayer player, EquipmentSlot slot, ItemStack itemStack) {
+		ItemStack oldStack = player.getItemBySlot(slot);
+		if (oldStack.isEmpty()) {
+			player.setItemSlot(slot, itemStack);
+			return;
+		}
+
+		// Try to include items from the old stack if we can merge them
+		if (ItemStack.isSameItemSameComponents(oldStack, itemStack)) {
+			int maxSize = itemStack.getMaxStackSize();
+			int transferCount = Math.min(itemStack.getCount() + oldStack.getCount(), maxSize) - itemStack.getCount();
+			itemStack.grow(transferCount);
+			oldStack.shrink(transferCount);
+		}
+
+		player.setItemSlot(slot, itemStack);
+		player.getInventory().add(oldStack);
 	}
 
 	private ItemStack copyAndModify(final ServerPlayer player, @Nullable final TeamState teams, final ItemStack item) {
