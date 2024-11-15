@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.block_party;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -15,11 +16,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
-import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
-import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -30,11 +26,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -45,10 +42,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class BlockPartyBehavior implements IGameBehavior {
 	public static final MapCodec<BlockPartyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -125,6 +118,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				message = MinigameTexts.PLAYER_WON.apply(winner.name()).withStyle(ChatFormatting.GREEN);
 			}
 			game.allPlayers().sendMessage(message);
+			game.allPlayers().playSound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
+			game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
 
 			state = new Ending(game.ticks() + SharedConstants.TICKS_PER_SECOND * 5);
 		});
@@ -142,8 +137,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	private void onStateChange(State oldState, @Nullable State newState) {
 		if (hasKnockback(newState) && !hasKnockback(oldState)) {
 			PlayerSet allPlayers = game.allPlayers();
-			allPlayers.sendMessage(BlockPartyTexts.KNOCKBACK_ENABLED);
-			allPlayers.playSound(SoundEvents.GRASS_BREAK, SoundSource.PLAYERS, 1.0f, 1.0f);
+			allPlayers.showTitle(BlockPartyTexts.KNOCKBACK_ENABLED_TITLE, BlockPartyTexts.KNOCKBACK_ENABLED_SUBTITLE, 10, 40, 10);
+			allPlayers.playSound(SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 1.0f, 1.0f);
 		}
 	}
 
@@ -168,6 +163,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			double y = player.getY();
 			if (y < player.level().getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
 				game.setPlayerRole(player, PlayerRole.SPECTATOR);
+				game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
 				game.allPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
 			}
 		}
@@ -183,9 +179,9 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		ItemStack targetStack = new ItemStack(target);
 		targetStack.setCount(64);
 
-		Component name = BlockPartyTexts.STAND_ON_BLOCK.apply(targetStack.getDisplayName())
-				.withStyle(style -> style.withBold(true).withItalic(false));
-		targetStack.set(DataComponents.CUSTOM_NAME, name);
+		Component name = BlockPartyTexts.STAND_ON_BLOCK.apply(targetStack.getHoverName())
+				.withStyle(style -> style.withBold(true));
+		targetStack.set(DataComponents.ITEM_NAME, name);
 
 		for (ServerPlayer player : game.participants()) {
 			player.getInventory().clearContent();
@@ -212,6 +208,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	}
 
 	final class CountingDown implements State {
+		private static final int FINAL_COUNTDOWN_SECONDS = 3;
+
 		private final int round;
 		private final long breakAt;
 
@@ -225,18 +223,29 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 		@Override
 		public State tick(IGamePhase game) {
+			PlayerSet players = game.allPlayers();
 			long time = game.ticks();
 
-			if (time % 10 == 0) {
-				for (ServerPlayer player : game.allPlayers()) {
-					long remainingTicks = breakAt - time;
-					Component message = BlockPartyTexts.BREAK_IN_SECONDS.apply(remainingTicks / SharedConstants.TICKS_PER_SECOND).withStyle(ChatFormatting.GOLD);
-					player.displayClientMessage(message, true);
-				}
+			long ticksLeft = breakAt - time;
+			if (ticksLeft <= 0) {
+				players.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.PLAYERS, 1.0f, 2.0f);
+				return startInterval(round, floor);
 			}
 
-			if (time > breakAt) {
-				return startInterval(round, floor);
+			long secondsLeft = ticksLeft / SharedConstants.TICKS_PER_SECOND;
+			if (ticksLeft % 10 == 0) {
+				Component message = BlockPartyTexts.BREAK_IN_SECONDS.apply(secondsLeft).withStyle(ChatFormatting.GOLD);
+				players.sendMessage(message, true);
+			}
+
+			if (secondsLeft <= FINAL_COUNTDOWN_SECONDS && ticksLeft % SharedConstants.TICKS_PER_SECOND == 0) {
+				players.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.PLAYERS, 1.0f, 1.0f);
+				int color = FastColor.ARGB32.lerp(
+						Mth.inverseLerp(secondsLeft, FINAL_COUNTDOWN_SECONDS, 1),
+						0x55ff55, 0xffaa00
+				);
+				Component title = Component.literal(".." + secondsLeft).withStyle(Style.EMPTY.withColor(color));
+				players.showTitle(title, 4, SharedConstants.TICKS_PER_SECOND, 4);
 			}
 
 			return this;
@@ -277,6 +286,12 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		public State tick(IGamePhase game) {
 			if (game.ticks() > endAt) {
 				return null;
+			}
+			for (ServerPlayer player : game.participants()) {
+				if (!player.isSpectator() && game.random().nextInt(10) == 0) {
+					BlockPos fireworksPos = BlockPos.containing(player.getEyePosition()).above();
+					FireworkPalette.DYE_COLORS.spawn(fireworksPos, game.level());
+				}
 			}
 			return this;
 		}

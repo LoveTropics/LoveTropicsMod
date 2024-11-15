@@ -263,6 +263,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
         game.scheduler().runAfterSeconds(1.5f, () -> {
             game.allPlayers().playSound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
+            game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
 
             if (winner instanceof GameWinner.Team(GameTeam team)) {
                 for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
