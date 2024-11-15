@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.connect4;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -14,7 +15,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -23,19 +23,24 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -77,7 +82,7 @@ public class ConnectFourBehavior implements IGameBehavior {
     private TeamState teams;
     private BlockBox placingRegion;
 
-    private GameTeamKey[][] pieces;
+    private PlacedPiece[][] pieces;
     private int placedPieces;
 
     @Override
@@ -86,7 +91,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         placingRegion = game.mapRegions().getOrThrow(placingRegionKey);
         teams = game.instanceState().getOrThrow(TeamState.KEY);
 
-        pieces = new GameTeamKey[width][height];
+        pieces = new PlacedPiece[width][height];
         placedPieces = 0;
 
         events.listen(GamePhaseEvents.START, this::onStart);
@@ -127,9 +132,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         return InteractionResult.PASS;
     }
 
-    private void onBlockLanded(Level level, BlockPos pos, BlockState state) {
-        if (level.isClientSide) return;
-
+    private void onBlockLanded(ServerLevel level, BlockPos pos, BlockState state) {
         var expected = teamBlocks.get(playingTeams.current().key);
 
         if (!state.is(expected.powder)) return;
@@ -147,15 +150,12 @@ public class ConnectFourBehavior implements IGameBehavior {
             level.setBlock(pos.above(3), blocker, Block.UPDATE_ALL);
         }
 
-        int x = (pos.getX() - Math.min(placingRegion.min().getX(), placingRegion.max().getX())) / 2;
-        if (placingRegion.min().getX() == placingRegion.max().getX()) {
-            x = (pos.getZ() - Math.min(placingRegion.min().getZ(), placingRegion.max().getZ())) / 2;
-        }
+        int x = blockToGridX(pos);
         var column = pieces[x];
         int y;
         for (y = 0; y < column.length; y++) {
             if (column[y] == null) {
-                column[y] = playingTeams.current().key();
+                column[y] = new PlacedPiece(pos, playingTeams.current().key());
                 break;
             }
         }
@@ -165,24 +165,71 @@ public class ConnectFourBehavior implements IGameBehavior {
 
         game.allPlayers().getPlayerBy(playingTeams.current().players().current()).setGlowingTag(false);
 
-        if (checkWin(x, y, team)) {
+        Line winningLine = checkWin(x, y, team);
+        if (winningLine != null) {
+            showBlinkingLine(level, team, winningLine);
             GameTeam gameTeam = teams.getTeamByKey(team);
-            game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
-
-            game.allPlayers().forEach(ServerPlayer::closeContainer);
-
-            game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(gameTeam.config().styledName()).withStyle(ChatFormatting.GREEN), true));
-            game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
+            triggerGameOver(new GameWinner.Team(gameTeam));
         } else {
             if (placedPieces == width * height) {
-                game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
-
-                game.scheduler().runAfterSeconds(1.5f, () -> game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true));
-                game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
+                triggerGameOver(new GameWinner.Nobody());
             } else {
                 nextPlayer();
             }
         }
+    }
+
+    private int blockToGridX(BlockPos pos) {
+        if (placingRegion.min().getX() == placingRegion.max().getX()) {
+            return (pos.getZ() - Math.min(placingRegion.min().getZ(), placingRegion.max().getZ())) / 2;
+        } else {
+            return (pos.getX() - Math.min(placingRegion.min().getX(), placingRegion.max().getX())) / 2;
+        }
+    }
+
+    private void showBlinkingLine(ServerLevel level, GameTeamKey team, Line winningLine) {
+        GameBlock teamBlocks = this.teamBlocks.get(team);
+        MutableBoolean blink = new MutableBoolean(true);
+        game.scheduler().runPeriodic(0, SharedConstants.TICKS_PER_SECOND / 2,() -> {
+            BlockState blockState = blink.getValue() ? teamBlocks.highlighted().defaultBlockState() : teamBlocks.solid().defaultBlockState();
+            fillLine(level, winningLine, blockState);
+            blink.setValue(!blink.getValue());
+        });
+    }
+
+    private void fillLine(ServerLevel level, Line line, BlockState blockState) {
+        for (int i = 0; i < connectAmount; i++) {
+            PlacedPiece piece = pieces[line.x(i)][line.y(i)];
+            if (piece != null) {
+                level.setBlockAndUpdate(piece.pos(), blockState);
+            }
+        }
+    }
+
+    private void triggerGameOver(GameWinner winner) {
+        game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
+
+        game.allPlayers().playSound(SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.5f, 1.0f);
+        game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
+
+        if (winner instanceof GameWinner.Team(GameTeam team)) {
+            for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
+                applyWinningPlayerEffects(winningPlayer, team);
+            }
+            game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(team.config().styledName()).withStyle(ChatFormatting.GREEN), true);
+        } else {
+            game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true);
+        }
+
+        game.scheduler().runAfterSeconds(8, () -> game.requestStop(GameStopReason.finished()));
+    }
+
+    private void applyWinningPlayerEffects(ServerPlayer winningPlayer, GameTeam team) {
+        game.scheduler().runAfterSeconds(game.random().nextFloat(), () -> {
+            BlockPos fireworksPos = BlockPos.containing(winningPlayer.getEyePosition()).above();
+            FireworkPalette.forDye(team.config().dye()).spawn(fireworksPos, game.level());
+        });
+        winningPlayer.setGlowingTag(true);
     }
 
     private void nextPlayer() {
@@ -196,56 +243,62 @@ public class ConnectFourBehavior implements IGameBehavior {
 
         player.setGlowingTag(true);
         player.displayClientMessage(ConnectFourTexts.IT_IS_YOUR_TURN.copy().withStyle(ChatFormatting.GOLD), true);
+        player.playNotifySound(SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.0f, 1.0f);
     }
 
-    private boolean checkWin(int x, int y, GameTeamKey team) {
-        if (checkLine(x, y, 0, -1, team)) { // vertical
-            return true;
-        }
-
+    @Nullable
+    private Line checkWin(int x, int y, GameTeamKey team) {
+        List<Line> possibleLines = new ArrayList<>();
+        possibleLines.add(new Line(x, y, 0, -1)); // vertical
         for (int offset = 0; offset < connectAmount; offset++) {
-            if (checkLine(x - (connectAmount - 1) + offset, y, 1, 0, team)) { // horizontal
-                return true;
-            }
-
-            if (checkLine(x - (connectAmount - 1) + offset, y + (connectAmount - 1) - offset, 1, -1, team)) { // leading diagonal
-                return true;
-            }
-
-            if (checkLine(x - (connectAmount - 1) + offset, y - (connectAmount - 1) + offset, 1, 1, team)) { // trailing diagonal
-                return true;
+            possibleLines.add(new Line(x - (connectAmount - 1) + offset, y, 1, 0)); // horizontal
+            possibleLines.add(new Line(x - (connectAmount - 1) + offset, y + (connectAmount - 1) - offset, 1, -1)); // leading diagonal
+            possibleLines.add(new Line(x - (connectAmount - 1) + offset, y - (connectAmount - 1) + offset, 1, 1)); // trailing diagonal
+        }
+        for (Line line : possibleLines) {
+            if (checkLine(line, team)) {
+                return line;
             }
         }
-
-        return false;
+        return null;
     }
 
-
-    private boolean checkLine(int xs, int ys, int dx, int dy, GameTeamKey team) {
+    private boolean checkLine(Line line, GameTeamKey team) {
         for (int i = 0; i < connectAmount; i++) {
-            int x = xs + (dx * i);
-            int y = ys + (dy * i);
-
+            int x = line.x(i);
+            int y = line.y(i);
             if (x < 0 || x > pieces.length - 1) {
                 return false;
             }
-
             if (y < 0 || y > pieces[x].length - 1) {
                 return false;
             }
-
-            if (team != pieces[x][y]) {
+            PlacedPiece piece = pieces[x][y];
+            if (piece == null || team != piece.team) {
                 return false;
             }
         }
-
         return true;
     }
 
-    private record GameBlock(Block powder, Block solid) {
+    private record Line(int xs, int ys, int dx, int dy) {
+        public int x(int i) {
+            return xs + dx * i;
+        }
+
+        public int y(int i) {
+            return ys + dy * i;
+        }
+    }
+
+    private record PlacedPiece(BlockPos pos, GameTeamKey team) {
+    }
+
+    private record GameBlock(Block powder, Block solid, Block highlighted) {
         public static final MapCodec<GameBlock> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
                 BuiltInRegistries.BLOCK.byNameCodec().fieldOf("powder").forGetter(GameBlock::powder),
-                BuiltInRegistries.BLOCK.byNameCodec().fieldOf("solid").forGetter(GameBlock::solid)
+                BuiltInRegistries.BLOCK.byNameCodec().fieldOf("solid").forGetter(GameBlock::solid),
+                BuiltInRegistries.BLOCK.byNameCodec().fieldOf("highlighted").forGetter(GameBlock::highlighted)
         ).apply(in, GameBlock::new));
     }
 

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
@@ -69,6 +70,6 @@ public final class GameWorldEvents {
 	}
 
 	public interface BlockLanded {
-		void onBlockLanded(Level level, BlockPos pos, BlockState state);
+		void onBlockLanded(ServerLevel level, BlockPos pos, BlockState state);
 	}
 }
