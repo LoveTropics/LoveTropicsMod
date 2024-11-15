@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
 import com.lovetropics.minigames.common.core.game.datagen.GameProvider;
 import com.lovetropics.minigames.common.core.game.map.InlineMapProvider;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
 import com.lovetropics.minigames.gametests.api.LTGameTestHelper;
 import com.lovetropics.minigames.gametests.api.MinigameTest;
 import com.lovetropics.minigames.gametests.api.RegisterMinigameTest;
@@ -39,7 +40,7 @@ public class TweakTests implements MinigameTest {
 
         generator.builder(gameId("cancel_damage"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
-                        .withBehavior(new CancelPlayerDamageBehavior(false, Optional.empty())));
+                        .withBehavior(new CancelPlayerDamageBehavior(false, ProgressChannel.MAIN, Optional.empty())));
 
         generator.builder(gameId("scale_damage"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder

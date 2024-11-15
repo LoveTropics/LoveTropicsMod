@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
-import com.lovetropics.minigames.common.core.game.state.DiscreteProgressionMap;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.DiscreteProgressionMap;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -50,7 +50,7 @@ public class SurviveTheTideWeatherConfig {
 		this.snowstormMaxStackable = snowstormMaxStackable;
 	}
 
-	private float getEventChance(WeatherEventType event, GameProgressionState progression) {
+	private float getEventChance(WeatherEventType event, ProgressHolder progression) {
 		DiscreteProgressionMap<Float> chances = eventChancesByTime.get(event);
 		if (chances == null) {
 			return 0.0f;
@@ -62,27 +62,27 @@ public class SurviveTheTideWeatherConfig {
 		return eventTimers.getOrDefault(event, Timers.DEFAULT);
 	}
 
-	public float getRainHeavyChance(GameProgressionState progression) {
+	public float getRainHeavyChance(ProgressHolder progression) {
 		return getEventChance(WeatherEventType.HEAVY_RAIN, progression);
 	}
 
-	public float getRainAcidChance(GameProgressionState progression) {
+	public float getRainAcidChance(ProgressHolder progression) {
 		return getEventChance(WeatherEventType.ACID_RAIN, progression);
 	}
 
-	public float getHailChance(GameProgressionState progression) {
+	public float getHailChance(ProgressHolder progression) {
 		return getEventChance(WeatherEventType.HAIL, progression);
 	}
 
-	public float getHeatwaveChance(GameProgressionState progression) {
+	public float getHeatwaveChance(ProgressHolder progression) {
 		return getEventChance(WeatherEventType.HEATWAVE, progression);
 	}
 
-	public float getSandstormChance(GameProgressionState progression) {
+	public float getSandstormChance(ProgressHolder progression) {
 		return getEventChance(WeatherEventType.SANDSTORM, progression);
 	}
 
-	public float getSnowstormChance(GameProgressionState progression) {
+	public float getSnowstormChance(ProgressHolder progression) {
 		return getEventChance(WeatherEventType.SNOWSTORM, progression);
 	}
 
@@ -127,7 +127,7 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	// TODO: This is not a good way to do things at all
-	public boolean halveEventTime(GameProgressionState progression) {
+	public boolean halveEventTime(ProgressHolder progression) {
 		return progression.is(halveEventTime);
 	}
 

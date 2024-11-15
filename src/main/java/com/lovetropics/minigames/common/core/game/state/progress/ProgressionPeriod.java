@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.state;
+package com.lovetropics.minigames.common.core.game.state.progress;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
@@ -21,16 +21,8 @@ public record ProgressionPeriod(ProgressionPoint start, ProgressionPoint end) {
 
 	public static final Codec<ProgressionPeriod> CODEC = Codec.withAlternative(MAP_CODEC.codec(), TUPLE_CODEC);
 
-	public BooleanSupplier createPredicate(final IGamePhase game) {
-		final GameProgressionState progression = game.state().getOrNull(GameProgressionState.KEY);
-		if (progression == null) {
-			final int start = this.start.resolve(null);
-			final int end = this.end.resolve(null);
-			return () -> {
-				final long ticks = game.ticks();
-				return ticks >= start && ticks <= end;
-			};
-		}
-		return () -> progression.is(this);
+	public BooleanSupplier createPredicate(final IGamePhase game, final ProgressChannel channel) {
+		final ProgressHolder holder = channel.getOrThrow(game);
+		return () -> holder.is(this);
 	}
 }

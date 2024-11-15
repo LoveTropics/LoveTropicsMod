@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.state;
+package com.lovetropics.minigames.common.core.game.state.progress;
 
 import com.mojang.serialization.Codec;
 
@@ -19,7 +19,7 @@ public class DiscreteProgressionMap<V> {
 
 	// TODO: Terribly inefficient
 	@Nullable
-	public V get(GameProgressionState progression) {
+	public V get(ProgressHolder progression) {
 		int lastTime = Integer.MIN_VALUE;
 		V lastValue = null;
 		for (Map.Entry<ProgressionPoint, V> entry : values.entrySet()) {
@@ -32,7 +32,7 @@ public class DiscreteProgressionMap<V> {
 		return lastValue;
 	}
 
-	public V getOrDefault(GameProgressionState progression, V fallback) {
+	public V getOrDefault(ProgressHolder progression, V fallback) {
 		return Objects.requireNonNullElse(get(progression), fallback);
 	}
 }

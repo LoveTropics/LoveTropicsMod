@@ -6,8 +6,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
@@ -32,22 +33,25 @@ public class ProgressBarBehavior implements IGameBehavior {
 	private static final int UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
 
 	public static final MapCodec<ProgressBarBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(b -> b.channel),
 			Entry.CODEC.listOf().fieldOf("entries").forGetter(b -> b.entries)
 	).apply(i, ProgressBarBehavior::new));
 
+	private final ProgressChannel channel;
 	private final List<Entry> entries;
 
 	@Nullable
 	private GameBossBar bossBar;
-	private GameProgressionState progression;
+	private ProgressHolder progression;
 
-	public ProgressBarBehavior(List<Entry> entries) {
+	public ProgressBarBehavior(ProgressChannel channel, List<Entry> entries) {
+		this.channel = channel;
 		this.entries = entries;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		progression = game.state().getOrThrow(GameProgressionState.KEY);
+		progression = channel.getOrThrow(game);
 
 		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 

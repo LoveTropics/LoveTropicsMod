@@ -11,8 +11,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.state.BeaconState;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -31,6 +32,7 @@ import java.util.List;
 public class WorldBorderGameBehavior implements IGameBehavior {
 	public static final MapCodec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(c -> c.channel),
 			ProgressionPeriod.CODEC.fieldOf("period").forGetter(c -> c.period),
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
 			Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
@@ -39,6 +41,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	).apply(i, WorldBorderGameBehavior::new));
 
 	private final String worldBorderCenterKey;
+	private final ProgressChannel channel;
 	private final ProgressionPeriod period;
 	private final int particleHeight;
 	private final int damageRateDelay;
@@ -47,13 +50,14 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
-	private GameProgressionState phases;
+	private ProgressHolder phases;
 
 	private boolean addedBeacon;
 
-	public WorldBorderGameBehavior(final String worldBorderCenterKey, final ProgressionPeriod period,
+	public WorldBorderGameBehavior(final String worldBorderCenterKey, final ProgressChannel channel, final ProgressionPeriod period,
 								   final int particleHeight, final int damageRateDelay, final int damageAmount, final List<ParticleType> borderParticles) {
 		this.worldBorderCenterKey = worldBorderCenterKey;
+		this.channel = channel;
 		this.period = period;
 		this.particleHeight = particleHeight;
 		this.damageRateDelay = damageRateDelay;
@@ -63,7 +67,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		phases = game.state().getOrThrow(GameProgressionState.KEY);
+		phases = channel.getOrThrow(game);
 
 		List<BlockBox> regions = new ArrayList<>(game.mapRegions().get(worldBorderCenterKey));
 

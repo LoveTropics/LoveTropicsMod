@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.state;
+package com.lovetropics.minigames.common.core.game.state.progress;
 
 import com.lovetropics.minigames.common.util.LinearSpline;
 import com.mojang.serialization.Codec;
@@ -15,10 +15,13 @@ public class ProgressionSpline {
 		this.entries = entries;
 	}
 
-	public LinearSpline resolve(GameProgressionState progression) {
+	public LinearSpline resolve(ProgressHolder progression) {
 		LinearSpline.Builder spline = LinearSpline.builder();
 		for (Entry entry : entries) {
 			int point = entry.point().resolve(progression);
+			if (point == ProgressionPoint.UNRESOLVED) {
+				throw new IllegalStateException("Could not resolve point: " + entry.point);
+			}
 			float value = entry.value();
 			spline.point(point, value);
 		}

@@ -10,7 +10,8 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPoint;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -24,9 +25,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 // TODO ideally this would use a void target.. but we have too many uses using a player
-public record ScheduledActionsTrigger(PlayerActionTarget target, Map<ProgressionPoint, GameActionList<ServerPlayer>> scheduledActions) implements IGameBehavior {
+public record ScheduledActionsTrigger(PlayerActionTarget target, ProgressChannel channel, Map<ProgressionPoint, GameActionList<ServerPlayer>> scheduledActions) implements IGameBehavior {
 	public static final MapCodec<ScheduledActionsTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlayerActionTarget.Target.CODEC.xmap(PlayerActionTarget::new, PlayerActionTarget::target).optionalFieldOf("target", PlayerActionTarget.SOURCE).forGetter(ScheduledActionsTrigger::target),
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(ScheduledActionsTrigger::channel),
 			Codec.unboundedMap(ProgressionPoint.STRING_CODEC, GameActionList.PLAYER_CODEC).fieldOf("actions").forGetter(ScheduledActionsTrigger::scheduledActions)
 	).apply(i, ScheduledActionsTrigger::new));
 
@@ -37,7 +39,7 @@ public record ScheduledActionsTrigger(PlayerActionTarget target, Map<Progression
 		}
 
 		final List<Pair<BooleanSupplier, GameActionList<ServerPlayer>>> actions = scheduledActions.entrySet().stream()
-				.map(entry -> Pair.of(entry.getKey().createPredicate(game), entry.getValue()))
+				.map(entry -> Pair.of(entry.getKey().createPredicate(game, channel), entry.getValue()))
 				.collect(Collectors.toList());
 
 		events.listen(GamePhaseEvents.TICK, () -> actions.removeIf(entry -> {

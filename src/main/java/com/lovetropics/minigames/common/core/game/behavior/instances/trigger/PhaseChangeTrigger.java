@@ -6,22 +6,25 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPoint;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-public record PhaseChangeTrigger(Map<ProgressionPoint, GameActionList<Void>> phases) implements IGameBehavior {
-	public static final MapCodec<PhaseChangeTrigger> CODEC = Codec.unboundedMap(ProgressionPoint.CODEC, GameActionList.VOID_CODEC)
-			.xmap(PhaseChangeTrigger::new, PhaseChangeTrigger::phases)
-			.fieldOf("phases");
+public record PhaseChangeTrigger(ProgressChannel channel, Map<ProgressionPoint, GameActionList<Void>> phases) implements IGameBehavior {
+	public static final MapCodec<PhaseChangeTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(PhaseChangeTrigger::channel),
+			Codec.unboundedMap(ProgressionPoint.CODEC, GameActionList.VOID_CODEC).fieldOf("phases").forGetter(PhaseChangeTrigger::phases)
+	).apply(i, PhaseChangeTrigger::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
+		ProgressHolder progression = channel.getOrThrow(game);
 
 		for (var actions : phases.values()) {
 			actions.register(game, events);

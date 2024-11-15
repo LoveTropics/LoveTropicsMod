@@ -7,8 +7,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPoint;
 import com.lovetropics.minigames.common.util.LinearSpline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -25,8 +26,9 @@ import net.minecraft.util.Mth;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, SoundEvent sound, float volume, int startColor, int endColor, LinearSpline pitch, boolean showTitle) implements IGameBehavior {
+public record CountdownEffectsBehavior(ProgressChannel channel, ProgressionPoint target, int seconds, SoundEvent sound, float volume, int startColor, int endColor, LinearSpline pitch, boolean showTitle) implements IGameBehavior {
 	public static final MapCodec<CountdownEffectsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(CountdownEffectsBehavior::channel),
 			ProgressionPoint.CODEC.fieldOf("target").forGetter(CountdownEffectsBehavior::target),
 			Codec.INT.fieldOf("seconds").forGetter(CountdownEffectsBehavior::seconds),
 			BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("sound").forGetter(CountdownEffectsBehavior::sound),
@@ -42,7 +44,7 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
+		final ProgressHolder progression = channel.getOrThrow(game);
 
 		final AtomicInteger countdownTo = new AtomicInteger(WAITING_FOR_COUNTDOWN);
 		events.listen(GamePhaseEvents.TICK, () -> {
@@ -63,7 +65,7 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 		});
 	}
 
-	private boolean shouldStart(final GameProgressionState progression, final int targetTick) {
+	private boolean shouldStart(final ProgressHolder progression, final int targetTick) {
 		final int startTick = targetTick - seconds * SharedConstants.TICKS_PER_SECOND;
 		return progression.time() >= startTick;
 	}

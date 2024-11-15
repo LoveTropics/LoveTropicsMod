@@ -4,8 +4,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
@@ -19,21 +20,19 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
-public class PhasedWeatherControlBehavior implements IGameBehavior {
+public record PhasedWeatherControlBehavior(
+		ProgressChannel channel,
+		List<Period> periods
+) implements IGameBehavior {
 	public static final MapCodec<PhasedWeatherControlBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Period.CODEC.listOf().fieldOf("periods").forGetter(b -> b.periods)
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(PhasedWeatherControlBehavior::channel),
+			Period.CODEC.listOf().fieldOf("periods").forGetter(PhasedWeatherControlBehavior::periods)
 	).apply(i, PhasedWeatherControlBehavior::new));
-
-	private final List<Period> periods;
-
-	public PhasedWeatherControlBehavior(final List<Period> periods) {
-		this.periods = periods;
-	}
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		final GameWeatherState weather = game.state().getOrThrow(GameWeatherState.KEY);
-		final GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
+		final ProgressHolder progression = channel.getOrThrow(game);
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			final ServerLevel level = game.level();
@@ -43,7 +42,7 @@ public class PhasedWeatherControlBehavior implements IGameBehavior {
 		});
 	}
 
-	private void tick(final GameWeatherState weather, final GameProgressionState progression) {
+	private void tick(final GameWeatherState weather, final ProgressHolder progression) {
 		final WeatherEventType weatherType = getCurrentWeather(progression);
 		if (Objects.equals(weatherType, weather.getEventType())) {
 			return;
@@ -56,7 +55,7 @@ public class PhasedWeatherControlBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private WeatherEventType getCurrentWeather(final GameProgressionState progression) {
+	private WeatherEventType getCurrentWeather(final ProgressHolder progression) {
 		for (final Period period : periods) {
 			if (progression.is(period.period())) {
 				return period.weather();

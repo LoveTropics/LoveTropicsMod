@@ -8,8 +8,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
@@ -39,7 +40,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 	private GameSidebar sidebar;
 
 	private IGamePhase game;
-	private GameProgressionState progression;
+	private ProgressHolder progression;
 	private GameWeatherState weather;
 
 	private int initialPlayerCount;
@@ -59,7 +60,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 		this.game = game;
 		widgets = GlobalGameWidgets.registerTo(game, events);
 
-		progression = game.state().getOrThrow(GameProgressionState.KEY);
+		progression = ProgressChannel.MAIN.getOrThrow(game);
 		weather = game.state().getOrThrow(GameWeatherState.KEY);
 
 		events.listen(GamePhaseEvents.START, () -> {

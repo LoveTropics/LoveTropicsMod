@@ -113,6 +113,8 @@ public class GamePhase implements IGamePhase {
 			behaviors.registerTo(this, events);
 		} catch (GameException e) {
 			return GameResult.error(e.getTextMessage());
+		} catch (Exception e) {
+			return GameResult.error(Component.literal(e.getMessage()));
 		}
 
 		final String mapName = map.name();

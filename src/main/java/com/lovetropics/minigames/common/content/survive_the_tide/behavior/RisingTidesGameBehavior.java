@@ -9,9 +9,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
-import com.lovetropics.minigames.common.core.game.state.ProgressionSpline;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionSpline;
 import com.lovetropics.minigames.common.core.network.RiseTideMessage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -78,7 +79,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final LongSet lowPriorityUpdates = new LongLinkedOpenHashSet();
 	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
 
-	private GameProgressionState progression;
+	private ProgressHolder progression;
 
 	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final Optional<ProgressionPeriod> icebergGrowthPeriod, final int maxIcebergGrowthSteps) {
 		this.tideAreaKey = tideAreaKey;
@@ -116,7 +117,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			));
 		}
 
-		progression = game.state().getOrThrow(GameProgressionState.KEY);
+		progression = ProgressChannel.MAIN.getOrThrow(game);
 
 		waterLevelByTime = waterLevels.resolve(progression);
 

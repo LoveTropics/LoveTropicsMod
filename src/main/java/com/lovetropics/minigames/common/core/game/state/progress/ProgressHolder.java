@@ -1,11 +1,9 @@
-package com.lovetropics.minigames.common.core.game.state;
+package com.lovetropics.minigames.common.core.game.state.progress;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-public final class GameProgressionState implements IGameState {
-	public static final GameStateKey<GameProgressionState> KEY = GameStateKey.create("Game Progression");
-
+public final class ProgressHolder implements ProgressionPoint.NamedResolver {
 	private final Object2IntMap<String> namedPoints = new Object2IntOpenHashMap<>();
 	private int time;
 
@@ -58,6 +56,7 @@ public final class GameProgressionState implements IGameState {
 		return value != ProgressionPoint.UNRESOLVED && time >= value;
 	}
 
+	@Override
 	public int getNamedPoint(String name) {
 		return namedPoints.getOrDefault(name, ProgressionPoint.UNRESOLVED);
 	}

@@ -5,10 +5,11 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPoint;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.util.LinearSpline;
 import com.mojang.serialization.Codec;
@@ -23,14 +24,16 @@ import java.util.Map;
 
 public class GameProgressionBehavior implements IGameBehavior {
 	public static final MapCodec<GameProgressionBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(b -> b.channel),
 			Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("named_points", Map.of()).forGetter(b -> b.namedPoints),
 			Codec.INT.optionalFieldOf("max_time_step", 1).forGetter(b -> b.maxTimeStep),
 			MoreCodecs.listOrUnit(ProgressionPeriod.CODEC).optionalFieldOf("fixed_time_step", List.of()).forGetter(b -> b.fixedTimeStep),
 			PlayerConstraint.CODEC.listOf().optionalFieldOf("time_by_player_count", List.of()).forGetter(b -> b.playerConstraints)
 	).apply(i, GameProgressionBehavior::new));
 
-	private GameProgressionState progressionState;
+	private ProgressHolder progressHolder;
 
+	private final ProgressChannel channel;
 	private final Map<String, Float> namedPoints;
 	private final int maxTimeStep;
 	private final List<ProgressionPeriod> fixedTimeStep;
@@ -40,7 +43,8 @@ public class GameProgressionBehavior implements IGameBehavior {
 
 	private int debugTimeMultiplier = 1;
 
-	public GameProgressionBehavior(Map<String, Float> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints) {
+	public GameProgressionBehavior(ProgressChannel channel, Map<String, Float> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints) {
+		this.channel = channel;
 		this.namedPoints = namedPoints;
 		this.maxTimeStep = maxTimeStep;
 		this.fixedTimeStep = fixedTimeStep;
@@ -49,21 +53,21 @@ public class GameProgressionBehavior implements IGameBehavior {
 
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-		progressionState = phaseState.register(GameProgressionState.KEY, new GameProgressionState());
-		namedPoints.forEach((name, value) -> progressionState.addNamedPoint(name, Math.round(value * SharedConstants.TICKS_PER_SECOND)));
+		progressHolder = channel.registerTo(game);
+		namedPoints.forEach((name, value) -> progressHolder.addNamedPoint(name, Math.round(value * SharedConstants.TICKS_PER_SECOND)));
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> {
 			if (!playerConstraints.isEmpty()) {
-				playerCountToTime = resolvePlayerConstraints(playerConstraints, game.participants().size(), progressionState);
+				playerCountToTime = resolvePlayerConstraints(playerConstraints, game.participants().size(), progressHolder);
 			}
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			int newTime = tickTime(game, progressionState.time());
-			progressionState.set(newTime);
+			int newTime = tickTime(game, progressHolder.time());
+			progressHolder.set(newTime);
 		});
 
 		game.controlCommands().add("pause", ControlCommand.forInitiator(source -> debugTimeMultiplier = 0));
@@ -72,7 +76,7 @@ public class GameProgressionBehavior implements IGameBehavior {
 	}
 
 	private int tickTime(IGamePhase game, int time) {
-		if (progressionState.is(fixedTimeStep)) {
+		if (progressHolder.is(fixedTimeStep)) {
 			return time + debugTimeMultiplier;
 		}
 
@@ -87,7 +91,7 @@ public class GameProgressionBehavior implements IGameBehavior {
 		}
 	}
 
-	private static Float2FloatFunction resolvePlayerConstraints(List<PlayerConstraint> constraints, int initialPlayerCount, GameProgressionState progression) {
+	private static Float2FloatFunction resolvePlayerConstraints(List<PlayerConstraint> constraints, int initialPlayerCount, ProgressHolder progression) {
 		LinearSpline.Builder spline = LinearSpline.builder();
 		for (PlayerConstraint constraint : constraints) {
 			spline.point(constraint.count().resolve(initialPlayerCount), constraint.point().resolve(progression));

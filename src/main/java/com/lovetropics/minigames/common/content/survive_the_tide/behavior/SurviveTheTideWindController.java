@@ -4,8 +4,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.DiscreteProgressionMap;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.progress.DiscreteProgressionMap;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
@@ -24,7 +25,7 @@ public class SurviveTheTideWindController implements IGameBehavior {
 	private final DiscreteProgressionMap<Float> windSpeedByTime;
 
 	@Nullable
-	protected GameProgressionState progression;
+	protected ProgressHolder progression;
 	protected GameWeatherState weather;
 
 	public SurviveTheTideWindController(DiscreteProgressionMap<Float> windSpeedByTime) {
@@ -34,7 +35,7 @@ public class SurviveTheTideWindController implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		weather = game.state().getOrThrow(GameWeatherState.KEY);
-		progression = game.state().getOrNull(GameProgressionState.KEY);
+		progression = ProgressChannel.MAIN.getOrThrow(game);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 

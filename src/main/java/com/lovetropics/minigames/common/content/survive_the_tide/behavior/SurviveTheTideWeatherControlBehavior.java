@@ -5,7 +5,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.mojang.serialization.MapCodec;
@@ -65,7 +66,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
      */
 
     @Nullable
-    protected GameProgressionState progression;
+    protected ProgressHolder progression;
     protected GameWeatherState weather;
 
     public SurviveTheTideWeatherControlBehavior(final SurviveTheTideWeatherConfig config) {
@@ -78,7 +79,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
-        progression = game.state().getOrNull(GameProgressionState.KEY);
+        progression = ProgressChannel.MAIN.getOrThrow(game);
     }
 
     private void tick(final IGamePhase game) {
@@ -107,7 +108,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
     }
 
     // TODO phase names
-    private void heavyRainfallStart(GameProgressionState progression) {
+    private void heavyRainfallStart(ProgressHolder progression) {
         int time = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
@@ -115,7 +116,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.heavyRain(time));
     }
 
-    private void acidRainStart(GameProgressionState progression) {
+    private void acidRainStart(ProgressHolder progression) {
         int time = config.getRainAcidMinTime() + random.nextInt(config.getRainAcidExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
@@ -123,7 +124,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.acidRain(time));
     }
 
-    private void hailStart(GameProgressionState progression) {
+    private void hailStart(ProgressHolder progression) {
         int time = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
@@ -131,7 +132,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.hail(time));
     }
 
-    private void heatwaveStart(GameProgressionState progression) {
+    private void heatwaveStart(ProgressHolder progression) {
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
@@ -139,7 +140,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.heatwave(time));
     }
 
-    private void sandstormStart(GameProgressionState progression) {
+    private void sandstormStart(ProgressHolder progression) {
         //TODO: more config
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
         if (config.halveEventTime(progression)) {
@@ -148,7 +149,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
     }
 
-    private void snowstormStart(GameProgressionState progression) {
+    private void snowstormStart(ProgressHolder progression) {
         //TODO: more config
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
         if (config.halveEventTime(progression)) {

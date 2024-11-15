@@ -10,15 +10,17 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntit
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public record OnlyTickInPeriodBehavior(ProgressionPeriod period, IGameBehavior behavior) implements IGameBehavior {
+public record OnlyTickInPeriodBehavior(ProgressChannel channel, ProgressionPeriod period, IGameBehavior behavior) implements IGameBehavior {
 	public static final MapCodec<OnlyTickInPeriodBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(OnlyTickInPeriodBehavior::channel),
 			ProgressionPeriod.CODEC.fieldOf("period").forGetter(OnlyTickInPeriodBehavior::period),
 			IGameBehavior.CODEC.fieldOf("behavior").forGetter(OnlyTickInPeriodBehavior::behavior)
 	).apply(i, OnlyTickInPeriodBehavior::new));
@@ -33,7 +35,7 @@ public record OnlyTickInPeriodBehavior(ProgressionPeriod period, IGameBehavior b
 		final GameEventListeners conditionalEvents = new GameEventListeners();
 		behavior.register(game, events.redirect(type -> type == GamePhaseEvents.TICK || type == GamePlayerEvents.TICK || type == GameLivingEntityEvents.TICK, conditionalEvents));
 
-		final BooleanSupplier predicate = period.createPredicate(game);
+		final BooleanSupplier predicate = period.createPredicate(game, channel);
 		if (conditionalEvents.hasListeners(GamePhaseEvents.TICK)) {
 			events.listen(GamePhaseEvents.TICK, () -> {
 				if (predicate.getAsBoolean()) {

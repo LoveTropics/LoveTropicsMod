@@ -8,7 +8,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -35,11 +36,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
-public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, ProgressionPeriod openAt) implements IGameBehavior {
+public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, ProgressChannel channel, ProgressionPeriod openAt) implements IGameBehavior {
 	public static final MapCodec<LobbyWithPortalBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("portal_region").forGetter(LobbyWithPortalBehavior::portalRegion),
 			Codec.STRING.fieldOf("target_region").forGetter(LobbyWithPortalBehavior::targetRegion),
 			Codec.STRING.fieldOf("point_towards_region").forGetter(LobbyWithPortalBehavior::pointTowardsRegion),
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(LobbyWithPortalBehavior::channel),
 			ProgressionPeriod.CODEC.fieldOf("open_at").forGetter(LobbyWithPortalBehavior::openAt)
 	).apply(i, LobbyWithPortalBehavior::new));
 
@@ -53,7 +55,7 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 
 		final Vec3 pointTowards = game.mapRegions().getOrThrow(pointTowardsRegion).center();
 
-		final BooleanSupplier predicate = openAt.createPredicate(game);
+		final BooleanSupplier predicate = openAt.createPredicate(game, channel);
 		final MutableBoolean portalOpen = new MutableBoolean();
 		events.listen(GamePhaseEvents.TICK, () -> {
 			final boolean shouldOpen = predicate.getAsBoolean();

@@ -7,20 +7,17 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 
 public class SurviveTheTideRulesetBehavior implements IGameBehavior {
@@ -32,7 +29,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	private final ProgressionPeriod safePeriod;
 	private final boolean forceDropItemsOnDeath;
 
-	private GameProgressionState progression;
+	private ProgressHolder progression;
 
 	public SurviveTheTideRulesetBehavior(final ProgressionPeriod safePeriod, final boolean forceDropItemsOnDeath) {
 		this.safePeriod = safePeriod;
@@ -41,7 +38,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		progression = game.state().getOrThrow(GameProgressionState.KEY);
+		progression = ProgressChannel.MAIN.getOrThrow(game);
 
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
