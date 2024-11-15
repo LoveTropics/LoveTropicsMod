@@ -27,7 +27,7 @@ public final class TimedGameState implements IGameState {
 	}
 
 	public void increaseRemaining(long add) {
-		ticksRemaining += add;
+		ticksRemaining = Math.max(ticksRemaining + add, 1);
 	}
 
 	public boolean isPaused() {
