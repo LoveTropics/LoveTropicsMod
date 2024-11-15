@@ -3,12 +3,12 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
-import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -25,8 +25,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -46,8 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     public static final MapCodec<CollectablesBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -55,7 +51,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     ).apply(i, CollectablesBehaviour::new));
 
     public static final GameStateKey<CollectablesBehaviour> COLLECTABLES = GameStateKey.create("collectables");
-    public static final int COUNTDOWN_SECONDS = 45;
     private final List<Collectable> collectables;
 
     public CollectablesBehaviour(List<Collectable> collectables) {
@@ -66,8 +61,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
     private final LongSet placedCollectables = new LongOpenHashSet();
 
     private final Map<String, GameTeamKey> firstTeamToCollect = new HashMap<>();
-    @Nullable
-    private Countdown countdown;
 
     @Nullable
     public Collectable getCollectableForZone(String zone) {
@@ -101,11 +94,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             }
         }
 
-        events.listen(GamePhaseEvents.TICK, () -> {
-            if (countdown != null){
-                countdown.tick(game);
-            }
-        });
         events.listen(GamePhaseEvents.CREATE, () ->
                 monumentSlots.forEach((pos, collectable) -> spawnCollectableDisplay(game, collectable, pos.getCenter()))
         );
@@ -156,25 +144,15 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     private InteractionResult onCollectablePlaced(IGamePhase game, GameTeam team, Collectable collectable, BlockPos slotPos) {
         if (firstTeamToCollect.putIfAbsent(collectable.zone, team.key()) == null) {
-            addEffectsForPlacedCollectable(game, collectable, team);
-            // Start microgames countdown
-            countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
-                collectable.onCompleteAction.apply(game, GameActionContext.EMPTY);
-                collectable.unlocksZone.ifPresent(zone -> game.invoker(RiverRaceEvents.UNLOCK_ZONE).onUnlockZone(zone));
-                countdown = null;
-            });
+            GameActionContext context = GameActionContext.builder()
+                    .set(GameActionParameter.TEAM, team)
+                    .set(GameActionParameter.NAME, Component.literal(collectable.zoneDisplayName()))
+                    .build();
+            collectable.onCompleteAction.apply(game, context, game.allPlayers());
         }
         game.statistics().forTeam(team.key()).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
         FireworkPalette.DYE_COLORS.spawn(slotPos.above(), game.level());
         return InteractionResult.PASS;
-    }
-
-    private static void addEffectsForPlacedCollectable(IGamePhase game, Collectable collectable, GameTeam team) {
-        Component teamName = team.config().styledName();
-        game.allPlayers().showTitle(null, RiverRaceTexts.COLLECTABLE_PLACED_TITLE.apply(teamName, collectable.zoneDisplayName()), 20, 40, 20);
-        game.allPlayers().sendMessage(RiverRaceTexts.COLLECTABLE_PLACED.apply(teamName, collectable.zoneDisplayName(), COUNTDOWN_SECONDS));
-
-        game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.NEUTRAL, 1f, 1);
     }
 
     @Nullable
@@ -191,44 +169,16 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         return collectables;
     }
 
-    private static class Countdown {
-
-        private final long endTicks;
-        private final Consumer<Void> end;
-
-        public Countdown(long endTicks, Consumer<Void> end) {
-            this.endTicks = endTicks;
-            this.end = end;
-        }
-
-        public void tick(IGamePhase game){
-            long ticks = game.ticks();
-            if(ticks >= endTicks){
-                end.accept(null);
-            } else if(ticks % 20 == 0) {
-                long remainingTicks = endTicks - ticks;
-                long remainingSeconds = (remainingTicks / SharedConstants.TICKS_PER_SECOND);
-                if(remainingSeconds == 30 || remainingSeconds == 15 || remainingSeconds == 10) {
-                    game.allPlayers().sendMessage(RiverRaceTexts.GAMES_START_IN.apply(remainingSeconds).withStyle(ChatFormatting.GREEN));
-                } else if((remainingTicks / SharedConstants.TICKS_PER_SECOND) <= 5) {
-                    game.allPlayers().playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.NEUTRAL, 0.2f, 1f);
-                    game.allPlayers().showTitle(Component.literal(remainingTicks / SharedConstants.TICKS_PER_SECOND + "").withStyle(ChatFormatting.GREEN), 10, 20, 10);
-                }
-            }
-        }
-    }
-
-    public record Collectable(String zone, Optional<String> unlocksZone, String zoneDisplayName, ItemStack collectable,
+    public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions,
-                              int victoryPoints, GameActionList<Void> onCompleteAction) {
+                              int victoryPoints, GameActionList<ServerPlayer> onCompleteAction) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
-                Codec.STRING.optionalFieldOf("unlocks_zone").forGetter(Collectable::unlocksZone),
                 Codec.STRING.fieldOf("zone_display_name").forGetter(Collectable::zoneDisplayName),
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
                 Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
-                GameActionList.VOID_CODEC.fieldOf("on_complete").forGetter(Collectable::onCompleteAction)
+                GameActionList.PLAYER_CODEC.fieldOf("on_complete").forGetter(Collectable::onCompleteAction)
         ).apply(i, Collectable::new));
     }
 }

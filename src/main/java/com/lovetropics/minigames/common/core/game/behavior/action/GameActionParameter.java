@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.action;
 
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,6 +17,7 @@ public class GameActionParameter<T> {
     public static final GameActionParameter<Integer> COUNT = GameActionParameter.create();
     public static final GameActionParameter<ItemStack> ITEM = GameActionParameter.create();
     public static final GameActionParameter<GameTeam> TEAM = GameActionParameter.create();
+    public static final GameActionParameter<Component> NAME = GameActionParameter.create();
 
     private GameActionParameter() {
     }

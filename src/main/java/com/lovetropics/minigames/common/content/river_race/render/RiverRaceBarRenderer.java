@@ -5,15 +5,21 @@ import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.client_state.RiverRaceClientBarState;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.item.DyeColor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class RiverRaceBarRenderer {
 	private static final int MAP_TOP = 3;
 
@@ -42,6 +48,22 @@ public final class RiverRaceBarRenderer {
 				render(graphics, barState);
 			}
 		});
+	}
+
+	@SubscribeEvent
+	public static void onRenderLayerPre(RenderGuiLayerEvent.Pre event) {
+		if (event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY) && ClientGameStateManager.getOrNull(RiverRace.BAR_STATE) != null) {
+			PoseStack pose = event.getGuiGraphics().pose();
+			pose.pushPose();
+			pose.translate(0.0f, MAP_HEIGHT + POINTER_SIZE, 0.0f);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onRenderLayerPost(RenderGuiLayerEvent.Post event) {
+		if (event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY) && ClientGameStateManager.getOrNull(RiverRace.BAR_STATE) != null) {
+			event.getGuiGraphics().pose().popPose();
+		}
 	}
 
 	private static void render(GuiGraphics graphics, RiverRaceClientBarState barState) {

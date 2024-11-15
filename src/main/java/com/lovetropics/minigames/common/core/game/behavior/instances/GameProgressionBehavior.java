@@ -28,7 +28,8 @@ public class GameProgressionBehavior implements IGameBehavior {
 			Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("named_points", Map.of()).forGetter(b -> b.namedPoints),
 			Codec.INT.optionalFieldOf("max_time_step", 1).forGetter(b -> b.maxTimeStep),
 			MoreCodecs.listOrUnit(ProgressionPeriod.CODEC).optionalFieldOf("fixed_time_step", List.of()).forGetter(b -> b.fixedTimeStep),
-			PlayerConstraint.CODEC.listOf().optionalFieldOf("time_by_player_count", List.of()).forGetter(b -> b.playerConstraints)
+			PlayerConstraint.CODEC.listOf().optionalFieldOf("time_by_player_count", List.of()).forGetter(b -> b.playerConstraints),
+			Codec.BOOL.optionalFieldOf("start", true).forGetter(b -> b.start)
 	).apply(i, GameProgressionBehavior::new));
 
 	private ProgressHolder progressHolder;
@@ -38,17 +39,19 @@ public class GameProgressionBehavior implements IGameBehavior {
 	private final int maxTimeStep;
 	private final List<ProgressionPeriod> fixedTimeStep;
 	private final List<PlayerConstraint> playerConstraints;
+	private final boolean start;
 
 	private Float2FloatFunction playerCountToTime = key -> 0.0f;
 
 	private int debugTimeMultiplier = 1;
 
-	public GameProgressionBehavior(ProgressChannel channel, Map<String, Float> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints) {
+	public GameProgressionBehavior(ProgressChannel channel, Map<String, Float> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints, boolean start) {
 		this.channel = channel;
 		this.namedPoints = namedPoints;
 		this.maxTimeStep = maxTimeStep;
 		this.fixedTimeStep = fixedTimeStep;
 		this.playerConstraints = playerConstraints;
+		this.start = start;
 	}
 
 	@Override
@@ -63,9 +66,15 @@ public class GameProgressionBehavior implements IGameBehavior {
 			if (!playerConstraints.isEmpty()) {
 				playerCountToTime = resolvePlayerConstraints(playerConstraints, game.participants().size(), progressHolder);
 			}
+			if (start) {
+				progressHolder.start();
+			}
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
+			if (!progressHolder.isStarted()) {
+				return;
+			}
 			int newTime = tickTime(game, progressHolder.time());
 			progressHolder.set(newTime);
 		});

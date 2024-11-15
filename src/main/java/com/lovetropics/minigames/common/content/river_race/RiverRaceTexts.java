@@ -22,14 +22,7 @@ public final class RiverRaceTexts {
 			.withStyle(ChatFormatting.GOLD);
 	public static final Component LOOT_GIVEN = KEYS.add("trivia.loot_given", "Loot has been unlocked!")
 			.withStyle(ChatFormatting.GOLD);
-	public static final TranslationCollector.Fun2 COLLECTABLE_PLACED_TITLE = KEYS.add2("trivia.collectable_placed_title", "%s team are first to place the %s collectable!")
-			.withStyle(ChatFormatting.GREEN);
-	public static final TranslationCollector.Fun3 COLLECTABLE_PLACED = KEYS.add3("trivia.collectable_placed", "%s team are first to place the %s collectable! The micro-games will start in %s seconds.")
-			.withStyle(ChatFormatting.GREEN);
 	public static final TranslationCollector.Fun1 VICTORY_POINT_CHANGE = KEYS.add1("trivia.victory_point_change", "+%s Victory Point(s)")
-			.withStyle(ChatFormatting.GREEN);
-
-	public static final TranslationCollector.Fun1 GAMES_START_IN = KEYS.add1("trivia.games_start_in", "Microgames start in %s second(s)")
 			.withStyle(ChatFormatting.GREEN);
 
 	public static final Component CANT_PLACE_COLLECTABLE = KEYS.add("cant_place_collectable", "Place in the Monument at the end of the correct zone to progress")
@@ -38,8 +31,11 @@ public final class RiverRaceTexts {
 			.withStyle(ChatFormatting.RED);
 
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
-		KEYS.forEach(consumer);
+		KEYS.add("trivia.collectable_placed.title", "Go %team%!");
+		KEYS.add("trivia.collectable_placed.subtitle", "Completed %name% zone");
+		KEYS.add("trivia.games_start_in", "Microgames start in %time%");
 
+		KEYS.forEach(consumer);
 		consumer.accept(LoveTropics.ID + ".minigame.river_race", "River Race");
 	}
 }

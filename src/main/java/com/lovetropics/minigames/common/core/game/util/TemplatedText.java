@@ -34,6 +34,8 @@ public record TemplatedText(Component template) {
 		context.get(GameActionParameter.TARGET).ifPresent(player -> values.put("target", player.getDisplayName()));
 		context.get(GameActionParameter.COUNT).ifPresent(count -> values.put("count", Component.literal(String.valueOf(count))));
 		context.get(GameActionParameter.ITEM).ifPresent(item -> values.put("item", item.getHoverName()));
+		context.get(GameActionParameter.TEAM).ifPresent(team -> values.put("team", team.config().styledName()));
+		context.get(GameActionParameter.NAME).ifPresent(name -> values.put("name", name));
 	}
 
 	public Component apply(Map<String, Component> values) {

@@ -66,6 +66,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Spaw
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SpawnParticlesAroundPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SpawnTornadoAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SpectatorActivityAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.StartProgressChannelAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SwapPlayersAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.TargetPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.TransformPlayerTornadoAction;
@@ -282,6 +283,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<AddCollidersAction> ADD_COLLIDERS = register("add_colliders", AddCollidersAction.CODEC);
 	public static final GameBehaviorEntry<RemoveCollidersAction> REMOVE_COLLIDERS = register("remove_colliders", RemoveCollidersAction.CODEC);
 	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
+	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
