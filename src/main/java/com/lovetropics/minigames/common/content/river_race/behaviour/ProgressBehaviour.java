@@ -66,7 +66,7 @@ public record ProgressBehaviour(
 		events.listen(GamePhaseEvents.TICK, () -> progress.update(mapSpace, teams));
 		events.listen(RiverRaceEvents.UNLOCK_ZONE, progress::unlockZone);
 
-		GameClientState.applyGlobally(events, SharedConstants.TICKS_PER_SECOND, RiverRace.BAR_STATE.get(), player -> {
+		GameClientState.applyGlobally(game, events, SharedConstants.TICKS_PER_SECOND, RiverRace.BAR_STATE.get(), player -> {
 			GameTeamKey team = teams.getTeamForPlayer(player);
 			return progress.build(team);
 		});
