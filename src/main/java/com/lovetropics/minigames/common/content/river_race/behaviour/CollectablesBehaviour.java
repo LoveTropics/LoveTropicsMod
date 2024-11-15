@@ -160,10 +160,10 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             // Start microgames countdown
             countdown = new Countdown(game.ticks() + (SharedConstants.TICKS_PER_SECOND * COUNTDOWN_SECONDS), (unused) -> {
                 collectable.onCompleteAction.apply(game, GameActionContext.EMPTY);
+                collectable.unlocksZone.ifPresent(zone -> game.invoker(RiverRaceEvents.UNLOCK_ZONE).onUnlockZone(zone));
                 countdown = null;
             });
         }
-        collectable.unlocksZone.ifPresent(zone -> game.invoker(RiverRaceEvents.UNLOCK_ZONE).onUnlockZone(team, zone));
         game.statistics().forTeam(team.key()).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
         FireworkPalette.DYE_COLORS.spawn(slotPos.above(), game.level());
         return InteractionResult.PASS;

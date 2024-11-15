@@ -56,16 +56,11 @@ public record ProgressBehaviour(
 				Objects.requireNonNull(teams.getTeamByKey(bottomTeam))
 		);
 
-		Map<String, RiverRaceClientBarState.Zone> lockedZones = new HashMap<>();
-		for (LockedZone lockedZone : this.lockedZones) {
+		for (LockedZone lockedZone : lockedZones) {
 			BlockBox region = game.mapRegions().getOrThrow(lockedZone.id);
 			int start = mapSpace.getPos(region.min());
 			int end = mapSpace.getPos(region.max());
-			lockedZones.put(lockedZone.id, new RiverRaceClientBarState.Zone(start, end - start, lockedZone.color));
-		}
-
-		for (GameTeam team : teams) {
-			progress.lockedZones.put(team.key(), new HashMap<>(lockedZones));
+			progress.lockedZones.put(lockedZone.id, new RiverRaceClientBarState.Zone(start, end - start, lockedZone.color));
 		}
 
 		events.listen(GamePhaseEvents.TICK, () -> progress.update(mapSpace, teams));
@@ -81,20 +76,15 @@ public record ProgressBehaviour(
 		private final TeamProgress topTeam;
 		private final TeamProgress bottomTeam;
 
-		private final Map<GameTeamKey, Map<String, RiverRaceClientBarState.Zone>> lockedZones = new HashMap<>();
-		private final Map<String, RiverRaceClientBarState.Zone> fullyLockedZones = new HashMap<>();
+		private final Map<String, RiverRaceClientBarState.Zone> lockedZones = new HashMap<>();
 
 		private Progress(GameTeam topTeam, GameTeam bottomTeam) {
 			this.topTeam = new TeamProgress(topTeam);
 			this.bottomTeam = new TeamProgress(bottomTeam);
 		}
 
-		public void unlockZone(GameTeam team, String id) {
-			Map<String, RiverRaceClientBarState.Zone> map = lockedZones.get(team.key());
-			if (map != null) {
-				map.remove(id);
-			}
-			fullyLockedZones.remove(id);
+		public void unlockZone(String id) {
+			lockedZones.remove(id);
 		}
 
 		public void update(MapSpace mapSpace, TeamState teams) {
@@ -102,20 +92,14 @@ public record ProgressBehaviour(
 			bottomTeam.update(mapSpace, teams);
 		}
 
+		// Not using per-team localisation, but keeping as we might want to use it
 		public RiverRaceClientBarState build(@Nullable GameTeamKey forTeam) {
 			RiverRaceClientBarState.Team topState = topTeam.build();
 			RiverRaceClientBarState.Team bottomState = bottomTeam.build();
 			return new RiverRaceClientBarState(
 					topState, bottomState,
-					buildLockedZones(forTeam)
+					List.copyOf(lockedZones.values())
 			);
-		}
-
-		private List<RiverRaceClientBarState.Zone> buildLockedZones(@Nullable GameTeamKey forTeam) {
-			if (forTeam != null) {
-				return List.copyOf(lockedZones.getOrDefault(forTeam, Map.of()).values());
-			}
-			return List.copyOf(fullyLockedZones.values());
 		}
 	}
 
