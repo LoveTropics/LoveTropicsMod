@@ -38,6 +38,8 @@ public final class MinigameTexts {
 	public static final Component CONNECT_FOUR = KEYS.add("connect_four", "Connect Four");
 	public static final Component CRAFTING_BEE = KEYS.add("crafting_bee", "Crafting Bee");
 	public static final Component CRAB_HOCKEY = KEYS.add("crab_hockey", "Crab Hockey");
+	public static final Component DE_A_COUDRE = KEYS.add("de_a_coudre", "Dé à Coudre");
+	public static final Component DE_A_COUDRE_TEAMS = KEYS.add("de_a_coudre_teams", "Dé à Coudre (Teams)");
 
 	// TODO: These should move into SurviveTheTideTexts
 	public static final Component[] SURVIVE_THE_TIDE_INTRO = {
@@ -124,6 +126,8 @@ public final class MinigameTexts {
 		KEYS.add("starting_in", "Starting in %time%!");
 		KEYS.add("get_ready", "Get ready!");
 		KEYS.add("go", "Go!");
+
+		KEYS.add("win", "⭐ %winner% won the game!");
 
 		KEYS.add("donation.antidote_package", "Antidote Package");
 		KEYS.add("donation.antidote_package.description", "Help someone avoid bad effects by giving them a Bucket of Milk!");

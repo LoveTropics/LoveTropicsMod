@@ -30,7 +30,7 @@ public record TimedCloseBehavior(ProgressChannel channel, Optional<ProgressionPo
 		final MutableBoolean gameOver = new MutableBoolean();
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (end.isPresent() && !gameOver.getValue() && progression.isAfter(end.get())) {
-				if (!game.invoker(GameLogicEvents.GAME_TIME_RAN_OUT).onGameTimeRanOut()) {
+				if (!game.invoker(GameLogicEvents.REQUEST_GAME_OVER).requestGameOver()) {
 					game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
 				}
 				gameOver.setTrue();

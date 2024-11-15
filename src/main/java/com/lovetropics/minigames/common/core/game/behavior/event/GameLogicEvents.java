@@ -11,9 +11,9 @@ public final class GameLogicEvents {
 		}
 	});
 
-	public static final GameEventType<GameTimeRanOut> GAME_TIME_RAN_OUT = GameEventType.create(GameTimeRanOut.class, listeners -> () -> {
+	public static final GameEventType<GameTimeRanOut> REQUEST_GAME_OVER = GameEventType.create(GameTimeRanOut.class, listeners -> () -> {
 		for (GameTimeRanOut listener : listeners) {
-			if (listener.onGameTimeRanOut()) {
+			if (listener.requestGameOver()) {
 				return true;
 			}
 		}
@@ -24,7 +24,7 @@ public final class GameLogicEvents {
 	}
 
 	public interface GameTimeRanOut {
-		boolean onGameTimeRanOut();
+		boolean requestGameOver();
 	}
 
 	public interface GameOver {

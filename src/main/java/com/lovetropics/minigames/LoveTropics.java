@@ -20,6 +20,7 @@ import com.lovetropics.minigames.common.content.connect4.ConnectFour;
 import com.lovetropics.minigames.common.content.connect4.ConnectFourTexts;
 import com.lovetropics.minigames.common.content.crafting_bee.CraftingBee;
 import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
+import com.lovetropics.minigames.common.content.de_a_coudre.DeACoudre;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
@@ -166,6 +167,7 @@ public class LoveTropics {
         Qottott.init();
         Spleef.init();
         RiverRace.init();
+        DeACoudre.init();
 
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
         PlayerDisguise.ATTACHMENT_TYPES.register(modBus);

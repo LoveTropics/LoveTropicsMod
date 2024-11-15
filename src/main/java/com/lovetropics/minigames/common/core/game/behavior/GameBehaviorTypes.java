@@ -113,6 +113,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.Top
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WeatherChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInInventoryTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInRegionTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameOverTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameReadyTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameTickTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StartGameTrigger;
@@ -169,6 +170,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GameReadyTrigger> GAME_READY = register("phase_triggers/ready", GameReadyTrigger.CODEC);
 	public static final GameBehaviorEntry<GameTickTrigger> GAME_TICK = register("events/game/tick", GameTickTrigger.CODEC);
 	public static final GameBehaviorEntry<PlayerTickTrigger> PLAYER_TICK = register("events/player/tick", PlayerTickTrigger.CODEC);
+	public static final GameBehaviorEntry<GameOverTrigger> GAME_OVER = register("events/game_over", GameOverTrigger.CODEC);
 
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);

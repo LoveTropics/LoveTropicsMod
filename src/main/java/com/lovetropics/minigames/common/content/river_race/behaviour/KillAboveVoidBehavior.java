@@ -42,9 +42,10 @@ public record KillAboveVoidBehavior(int ticks) implements IGameBehavior {
 					lightning.moveTo(player.position());
 					lightning.setVisualOnly(true);
 					player.level().addFreshEntity(lightning);
-				} else if (oldTicks == ticks + 3) {
 					// Now die >:(
-					player.hurt(player.damageSources().outOfBorder(), Float.MAX_VALUE);
+					game.scheduler().runAfterSeconds(0.15f, () ->
+							player.hurt(player.damageSources().outOfBorder(), Float.MAX_VALUE)
+					);
 				}
 			} else {
 				ticksAboveVoid.removeInt(player.getUUID());
