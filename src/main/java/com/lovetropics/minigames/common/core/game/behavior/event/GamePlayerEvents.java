@@ -15,6 +15,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -220,6 +222,13 @@ public final class GamePlayerEvents {
 		}
 	});
 
+	public static final GameEventType<CraftResult> CRAFT_RESULT = GameEventType.create(CraftResult.class, listeners -> (player, crafted, input, recipe) -> {
+		for (CraftResult listener : listeners) {
+			crafted = listener.modifyResult(player, crafted, input, recipe);
+		}
+		return crafted;
+	});
+
 	private GamePlayerEvents() {
 	}
 
@@ -309,5 +318,9 @@ public final class GamePlayerEvents {
 
 	public interface Craft {
 		void onCraft(Player player, ItemStack crafted, Container craftingContainer);
+	}
+
+	public interface CraftResult {
+		ItemStack modifyResult(ServerPlayer player, ItemStack crafted, CraftingInput input, CraftingRecipe recipe);
 	}
 }

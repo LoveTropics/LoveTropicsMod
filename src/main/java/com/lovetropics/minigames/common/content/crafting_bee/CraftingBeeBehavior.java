@@ -45,6 +45,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -125,6 +127,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.DESTROY, () -> timerBars.values().forEach(b -> b.bar().close()));
         events.listen(GamePhaseEvents.STOP, reason -> timerBars.values().forEach(b -> b.bar().close()));
 
+        events.listen(GamePlayerEvents.CRAFT_RESULT, this::modifyCraftResult);
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
         events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
 
@@ -197,24 +200,26 @@ public class CraftingBeeBehavior implements IGameBehavior {
         return Stream.of(ingredient.getItems()[0]);
     }
 
+    private ItemStack modifyCraftResult(ServerPlayer player, ItemStack result, CraftingInput craftingInput, CraftingRecipe recipe) {
+        ItemContainerContents usedItems = ItemContainerContents.fromItems(craftingInput.items().stream()
+                .filter(stack -> !stack.isEmpty())
+                .map(stack -> stack.copyWithCount(1))
+                // .peek(s -> s.remove(CraftingBee.CRAFTED_USING)) // TODO - should we keep this?
+                .sorted(Comparator.comparing(s -> s.getItemHolder().getRegisteredName()))
+                .toList());
+        result.set(CraftingBee.CRAFTED_USING, new CraftedUsing(
+                result.getCount(),
+                usedItems
+        ));
+        return result;
+    }
+
     private void onCraft(Player player, ItemStack crafted, Container container) {
         var team = teams.getTeamForPlayer(player);
         if (team == null || done) return;
 
         var teamTasks = tasks.get(team);
         var task = teamTasks.stream().filter(c -> ItemStack.isSameItemSameComponents(crafted, c.output)).findFirst().orElse(null);
-
-        ItemContainerContents usedItems = ItemContainerContents.fromItems(IntStream.range(0, container.getContainerSize())
-                .mapToObj(container::getItem)
-                .filter(Predicate.not(ItemStack::isEmpty))
-                .map(s -> s.copyWithCount(1))
-                // .peek(s -> s.remove(CraftingBee.CRAFTED_USING)) // TODO - should we keep this?
-                .sorted(Comparator.comparing(s -> s.getItemHolder().getRegisteredName()))
-                .toList());
-        crafted.set(CraftingBee.CRAFTED_USING, new CraftedUsing(
-                crafted.getCount(),
-                usedItems
-        ));
 
         if (task == null || task.done) return;
 
