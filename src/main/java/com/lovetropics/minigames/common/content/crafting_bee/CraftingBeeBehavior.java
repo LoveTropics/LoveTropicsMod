@@ -20,11 +20,11 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.TimedGameState;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -90,7 +90,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
     private ListMultimap<GameTeamKey, CraftingTask> tasks;
     private volatile boolean done;
 
-    private Map<GameTeamKey, BossBar> bars;
+    private final Map<GameTeamKey, GameBossBar> taskBars = new HashMap<>();
+    private Map<GameTeamKey, BossBar> timerBars;
     private Set<GameTeamKey> teamsWithoutTime;
 
     public CraftingBeeBehavior(List<RecipeSelector> selectors, List<IngredientDecomposer> decomposers, int allowedHints, TemplatedText timerBarText, int timePerTeam, int recyclingPenalty, String recyclingRegionKey) {
@@ -115,13 +116,14 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
         recyclingRegion = game.mapRegions().getOrThrow(recyclingRegionKey);
 
-        bars = new HashMap<>();
+        timerBars = new HashMap<>();
         teamsWithoutTime = new HashSet<>();
 
-        events.listen(GamePhaseEvents.START, this::start);
+        GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
+        events.listen(GamePhaseEvents.START, () -> start(widgets));
         events.listen(GamePhaseEvents.TICK, () -> tickRunning(game));
-        events.listen(GamePhaseEvents.DESTROY, () -> bars.values().forEach(b -> b.bar().close()));
-        events.listen(GamePhaseEvents.STOP, reason -> bars.values().forEach(b -> b.bar().close()));
+        events.listen(GamePhaseEvents.DESTROY, () -> timerBars.values().forEach(b -> b.bar().close()));
+        events.listen(GamePhaseEvents.STOP, reason -> timerBars.values().forEach(b -> b.bar().close()));
 
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
         events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
@@ -130,7 +132,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         events.listen(GamePlayerEvents.REMOVE, player -> GameClientState.removeFromPlayer(GameClientStateTypes.CRAFTING_BEE_CRAFTS.get(), player));
     }
 
-    private void start() {
+    private void start(GlobalGameWidgets widgets) {
         for (GameTeam team : teams) {
             var recipes = selectors.stream().map(selector -> selector.select(game.level()))
                     .map(recipe -> new CraftingTask(
@@ -142,11 +144,17 @@ public class CraftingBeeBehavior implements IGameBehavior {
             sync(team.key());
             distributeIngredients(recipes, teams.getPlayersForTeam(team.key()));
 
-            var bar = bars.computeIfAbsent(team.key(), k -> new BossBar(
-                    new GameBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10),
+            var bar = timerBars.computeIfAbsent(team.key(), k -> new BossBar(
+                    new GameBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10),
                     new TimedGameState(timePerTeam, 0)
             ));
             teams.getPlayersForTeam(team.key()).forEach(bar.bar::addPlayer);
+        }
+
+        for (GameTeam team : teams) {
+            GameBossBar bar = widgets.openBossBar(team.config().styledName(), team.config().dye(), BossEvent.BossBarOverlay.PROGRESS);
+            bar.setProgress(0.0f);
+            taskBars.put(team.key(), bar);
         }
     }
 
@@ -215,6 +223,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         var teamConfig = gameTeam.config();
 
         game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), completed, teamTasks.size()));
+        taskBars.get(team).setProgress(completed / (float) teamTasks.size());
 
         if (completed == teamTasks.size()) {
             game.invoker(GameLogicEvents.GAME_OVER).onGameWonBy(gameTeam);
@@ -229,7 +238,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
     }
 
     private void tickRunning(IGamePhase game) {
-        bars.forEach((team, bar) -> {
+        timerBars.forEach((team, bar) -> {
             switch (bar.state.tick(game.ticks())) {
                 case RUNNING -> {
                     long ticksRemaining = bar.state.getTicksRemaining();
@@ -290,7 +299,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
             item.get(CraftingBee.CRAFTED_USING).stream().forEach(s -> player.addItem(s.copyWithCount(1)));
             item.shrink(1);
 
-            bars.get(teams.getTeamForPlayer(player))
+            timerBars.get(teams.getTeamForPlayer(player))
                     .state().increaseRemaining(-recyclingPenalty);
 
             return InteractionResult.SUCCESS;

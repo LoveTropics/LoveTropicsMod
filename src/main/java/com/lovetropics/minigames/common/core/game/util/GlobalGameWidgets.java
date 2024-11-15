@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.item.DyeColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,19 @@ public final class GlobalGameWidgets {
 
 	public GameBossBar openBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
 		return registerWidget(new GameBossBar(title, color, overlay));
+	}
+
+	public GameBossBar openBossBar(Component title, DyeColor color, BossEvent.BossBarOverlay overlay) {
+		BossEvent.BossBarColor bossBarColor = switch (color) {
+			case WHITE, GRAY, LIGHT_GRAY -> BossEvent.BossBarColor.WHITE;
+			case ORANGE, RED -> BossEvent.BossBarColor.RED;
+			case MAGENTA, BLACK, PURPLE -> BossEvent.BossBarColor.PURPLE;
+			case LIGHT_BLUE, BLUE, CYAN -> BossEvent.BossBarColor.BLUE;
+			case YELLOW, BROWN -> BossEvent.BossBarColor.YELLOW;
+			case LIME, GREEN -> BossEvent.BossBarColor.GREEN;
+			case PINK -> BossEvent.BossBarColor.PINK;
+		};
+		return openBossBar(title, bossBarColor, overlay);
 	}
 
 	private <T extends GameWidget> T registerWidget(T widget) {
