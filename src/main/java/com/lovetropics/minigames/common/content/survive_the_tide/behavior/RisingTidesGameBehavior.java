@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
 import com.lovetropics.minigames.common.content.survive_the_tide.TideFiller;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -11,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntit
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
-import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressionSpline;
 import com.lovetropics.minigames.common.core.network.RiseTideMessage;
 import com.mojang.serialization.Codec;
@@ -38,21 +36,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.network.PacketDistributor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
 	public static final MapCodec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
-			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
-			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels),
-			ProgressionPeriod.CODEC.optionalFieldOf("iceberg_growth_period").forGetter(c -> c.icebergGrowthPeriod),
-			Codec.INT.optionalFieldOf("iceberg_growth_steps", 0).forGetter(c -> c.maxIcebergGrowthSteps)
+			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels)
 	).apply(i, RisingTidesGameBehavior::new));
 
 	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 40;
@@ -61,15 +51,10 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private static final int HIGH_PRIORITY_DISTANCE_2 = 64 * 64;
 
 	private final String tideAreaKey;
-	private final String icebergLinesKey;
 	private final ProgressionSpline waterLevels;
-	private final Optional<ProgressionPeriod> icebergGrowthPeriod;
-	private final int maxIcebergGrowthSteps;
 	private int waterLevel;
 
 	private BlockBox tideArea;
-	private final List<IcebergLine> icebergLines = new ArrayList<>();
-	private int icebergGrowthSteps;
 	private Float2FloatFunction waterLevelByTime = time -> 0.0f;
 
 	private ChunkPos minTideChunk;
@@ -81,12 +66,9 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private ProgressHolder progression;
 
-	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final Optional<ProgressionPeriod> icebergGrowthPeriod, final int maxIcebergGrowthSteps) {
+	public RisingTidesGameBehavior(String tideAreaKey, final ProgressionSpline waterLevels) {
 		this.tideAreaKey = tideAreaKey;
-		this.icebergLinesKey = icebergLinesKey;
 		this.waterLevels = waterLevels;
-		this.icebergGrowthPeriod = icebergGrowthPeriod;
-		this.maxIcebergGrowthSteps = maxIcebergGrowthSteps;
 	}
 
 	@Override
@@ -95,27 +77,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		minTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.min().getX()), SectionPos.blockToSectionCoord(tideArea.min().getZ()));
 		maxTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.max().getX()), SectionPos.blockToSectionCoord(tideArea.max().getZ()));
-
-		icebergLines.clear();
-
-		ServerLevel level = game.level();
-		for (BlockBox icebergLine : game.mapRegions().get(icebergLinesKey)) {
-			int startX = icebergLine.min().getX();
-			int startZ = icebergLine.min().getZ();
-			int endX = icebergLine.max().getX();
-			int endZ = icebergLine.max().getZ();
-
-			icebergLines.add(new IcebergLine(
-					new BlockPos(startX, level.getMinBuildHeight(), startZ),
-					new BlockPos(endX, level.getMinBuildHeight(), endZ),
-					10
-			));
-			icebergLines.add(new IcebergLine(
-					new BlockPos(endX, level.getMinBuildHeight(), startZ),
-					new BlockPos(startX, level.getMinBuildHeight(), endZ),
-					10
-			));
-		}
 
 		progression = ProgressChannel.MAIN.getOrThrow(game);
 
@@ -142,18 +103,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private void tick(IGamePhase game) {
 		tickWaterLevel(game);
-
-		icebergGrowthPeriod.ifPresent(period -> {
-			float icebergsProgress = progression.progressIn(period);
-			if (icebergsProgress > 0.0f) {
-				int targetSteps = Math.round(icebergsProgress * maxIcebergGrowthSteps);
-				if (icebergGrowthSteps < targetSteps) {
-					growIcebergs(game.level());
-					icebergGrowthSteps++;
-				}
-			}
-		});
-
 		processRisingTideQueue(game);
 
 		spawnRisingTideParticles(game);
@@ -182,12 +131,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, false, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
 				player.connection.send(packet);
 			}
-		}
-	}
-
-	private void growIcebergs(final Level world) {
-		for (IcebergLine line : icebergLines) {
-			line.generate(world, waterLevel);
 		}
 	}
 

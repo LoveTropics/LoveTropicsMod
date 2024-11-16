@@ -5,6 +5,7 @@ import com.lovetropics.minigames.client.render.block.BigRedButtonBlockEntityRend
 import com.lovetropics.minigames.client.render.entity.DriftwoodRenderer;
 import com.lovetropics.minigames.client.render.entity.LightningArrowRenderer;
 import com.lovetropics.minigames.client.render.entity.PlatformRenderer;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.FormIcebergsGameBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.PhasedWeatherControlBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RevealPlayersBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingPlatformBehavior;
@@ -134,6 +135,9 @@ public final class SurviveTheTide {
 
 	public static final GameBehaviorEntry<RisingTidesGameBehavior> RISING_TIDES = REGISTRATE.object("rising_tides")
 			.behavior(RisingTidesGameBehavior.CODEC)
+			.register();
+	public static final GameBehaviorEntry<FormIcebergsGameBehavior> FORM_ICEBERGS = REGISTRATE.object("form_icebergs")
+			.behavior(FormIcebergsGameBehavior.CODEC)
 			.register();
 	public static final GameBehaviorEntry<SurviveTheTideRulesetBehavior> SURVIVE_THE_TIDE_RULESET = REGISTRATE.object("survive_the_tide_ruleset")
 			.behavior(SurviveTheTideRulesetBehavior.CODEC)

@@ -43,29 +43,29 @@ public class IcebergLine {
 		intervalZ = Math.round((float) diffZ / (float) count);
 	}
 
-	public void generate(Level world, int waterLevel) {
+	public void grow(Level level) {
 		for (int i = 1; i <= count; i++) {
 			int offsetX = getRandOffset(distBetweenEach);
 			int offsetZ = getRandOffset(distBetweenEach);
 
-			BlockPos pos = new BlockPos(start.getX() - (i * intervalX) + offsetX, waterLevel, start.getZ() - (i * intervalZ) + offsetZ);
-
-			setIceWithCheck(world, pos);
+			BlockPos pos = new BlockPos(start.getX() - (i * intervalX) + offsetX, start.getY(), start.getZ() - (i * intervalZ) + offsetZ);
+			setIceWithCheck(level, pos);
 		}
 
-		BlockPos start = new BlockPos(
-				this.start.getX() + getRandOffset(distBetweenEach),
-				waterLevel,
-				this.start.getZ() + getRandOffset(distBetweenEach));
+		BlockPos start = this.start.offset(
+				getRandOffset(distBetweenEach),
+				0,
+				getRandOffset(distBetweenEach)
+		);
 
+		BlockPos end = this.start.offset(
+				getRandOffset(distBetweenEach),
+				0,
+				getRandOffset(distBetweenEach)
+		);
 
-		BlockPos end = new BlockPos(
-				this.start.getX() + getRandOffset(distBetweenEach),
-				waterLevel,
-				this.start.getZ() + getRandOffset(distBetweenEach));
-
-		setIceWithCheck(world, start);
-		setIceWithCheck(world, end);
+		setIceWithCheck(level, start);
+		setIceWithCheck(level, end);
 	}
 
 	private int getRandOffset(int radius) {
