@@ -23,6 +23,7 @@ import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
 import com.lovetropics.minigames.common.content.de_a_coudre.DeACoudre;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.pillars_of_wealth.PillarsOfWealth;
+import com.lovetropics.minigames.common.content.pillars_of_wealth.PillarsOfWealthTexts;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
@@ -131,6 +132,7 @@ public class LoveTropics {
                     MinigameTexts.KEYS.forEach(consumer);
                     BiodiversityBlitzTexts.collectTranslations(consumer);
                     BlockPartyTexts.KEYS.forEach(consumer);
+                    PillarsOfWealthTexts.KEYS.forEach(consumer);
                     CraftingBeeTexts.KEYS.forEach(consumer);
                     ConnectFourTexts.KEYS.forEach(consumer);
                     SurviveTheTideTexts.KEYS.forEach(consumer);

@@ -367,6 +367,7 @@
   "ltminigames.minigame.levitation.intro2": "Use your fishing rod to pull other players down.",
   "ltminigames.minigame.nobody_won": "⭐ Nobody won the game!",
   "ltminigames.minigame.pillars_of_wealth": "Pillars of Wealth",
+  "ltminigames.minigame.pillars_of_wealth.new_item_seconds": "New item in %s seconds",
   "ltminigames.minigame.pillars_of_wealth_teams": "Pillars of Wealth (Teams)",
   "ltminigames.minigame.player_won": "⭐ %s won the game!",
   "ltminigames.minigame.position.1": "first",
