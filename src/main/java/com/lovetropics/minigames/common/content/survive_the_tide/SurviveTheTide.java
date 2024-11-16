@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.behavior.FormIc
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.PhasedWeatherControlBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RevealPlayersBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingPlatformBehavior;
-import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingTidesGameBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingFluidBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttChatBroadcastBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttPetsBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttSidebarBehavior;
@@ -133,8 +133,8 @@ public final class SurviveTheTide {
 			.renderer(() -> PlatformRenderer::new)
 			.register();
 
-	public static final GameBehaviorEntry<RisingTidesGameBehavior> RISING_TIDES = REGISTRATE.object("rising_tides")
-			.behavior(RisingTidesGameBehavior.CODEC)
+	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = REGISTRATE.object("rising_fluid")
+			.behavior(RisingFluidBehavior.CODEC)
 			.register();
 	public static final GameBehaviorEntry<FormIcebergsGameBehavior> FORM_ICEBERGS = REGISTRATE.object("form_icebergs")
 			.behavior(FormIcebergsGameBehavior.CODEC)

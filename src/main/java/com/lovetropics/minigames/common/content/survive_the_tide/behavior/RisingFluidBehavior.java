@@ -15,7 +15,6 @@ import com.lovetropics.minigames.common.core.network.RiseTideMessage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
@@ -39,52 +38,50 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-public class RisingTidesGameBehavior implements IGameBehavior {
-	public static final MapCodec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
-			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels)
-	).apply(i, RisingTidesGameBehavior::new));
+import java.util.function.DoubleSupplier;
+
+public class RisingFluidBehavior implements IGameBehavior {
+	public static final MapCodec<RisingFluidBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Codec.STRING.fieldOf("region").forGetter(c -> c.regionKey),
+			ProgressionSpline.CODEC.fieldOf("fluid_levels").forGetter(c -> c.fluidLevels)
+	).apply(i, RisingFluidBehavior::new));
 
 	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 40;
 	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 8;
 
-	private static final int HIGH_PRIORITY_DISTANCE_2 = 64 * 64;
+	private static final int HIGH_PRIORITY_DISTANCE_SQ = 64 * 64;
 
-	private final String tideAreaKey;
-	private final ProgressionSpline waterLevels;
-	private int waterLevel;
+	private final String regionKey;
+	private final ProgressionSpline fluidLevels;
 
-	private BlockBox tideArea;
-	private Float2FloatFunction waterLevelByTime = time -> 0.0f;
+	private BlockBox region;
+	private DoubleSupplier targetFluidLevel = () -> 0.0;
+	private int fluidLevel;
 
-	private ChunkPos minTideChunk;
-	private ChunkPos maxTideChunk;
+	private ChunkPos minChunk;
+	private ChunkPos maxChunk;
 
 	private final LongSet highPriorityUpdates = new LongLinkedOpenHashSet();
 	private final LongSet lowPriorityUpdates = new LongLinkedOpenHashSet();
-	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
+	private final Long2IntMap fluidLevelByChunk = new Long2IntOpenHashMap();
 
-	private ProgressHolder progression;
-
-	public RisingTidesGameBehavior(String tideAreaKey, final ProgressionSpline waterLevels) {
-		this.tideAreaKey = tideAreaKey;
-		this.waterLevels = waterLevels;
+	public RisingFluidBehavior(String regionKey, ProgressionSpline fluidLevels) {
+		this.regionKey = regionKey;
+		this.fluidLevels = fluidLevels;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		tideArea = game.mapRegions().getOrThrow(tideAreaKey);
+		region = game.mapRegions().getOrThrow(regionKey);
+		minChunk = new ChunkPos(SectionPos.blockToSectionCoord(region.min().getX()), SectionPos.blockToSectionCoord(region.min().getZ()));
+		maxChunk = new ChunkPos(SectionPos.blockToSectionCoord(region.max().getX()), SectionPos.blockToSectionCoord(region.max().getZ()));
 
-		minTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.min().getX()), SectionPos.blockToSectionCoord(tideArea.min().getZ()));
-		maxTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.max().getX()), SectionPos.blockToSectionCoord(tideArea.max().getZ()));
-
-		progression = ProgressChannel.MAIN.getOrThrow(game);
-
-		waterLevelByTime = waterLevels.resolve(progression);
+		ProgressHolder progression = ProgressChannel.MAIN.getOrThrow(game);
+		targetFluidLevel = fluidLevels.resolve(progression);
 
 		events.listen(GamePhaseEvents.START, () -> {
-			waterLevel = Mth.floor(waterLevelByTime.get(progression.time()));
-			chunkWaterLevels.defaultReturnValue(waterLevel);
+			fluidLevel = Mth.floor(targetFluidLevel.getAsDouble());
+			fluidLevelByChunk.defaultReturnValue(fluidLevel);
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
@@ -95,20 +92,19 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
-			if (entity.getY() <= waterLevel + 1 && entity.isInWater() && entity.tickCount % 40 == 0) {
+			if (entity.getY() <= fluidLevel + 1 && entity.isInWater() && entity.tickCount % 40 == 0) {
 				entity.hurt(entity.damageSources().drown(), 2.0F);
 			}
 		}
 	}
 
 	private void tick(IGamePhase game) {
-		tickWaterLevel(game);
-		processRisingTideQueue(game);
-
-		spawnRisingTideParticles(game);
+		tickFluidLevel(game);
+		processUpdates(game);
+		spawnWarningParticles(game);
 	}
 
-	private void spawnRisingTideParticles(IGamePhase game) {
+	private void spawnWarningParticles(IGamePhase game) {
 		ServerLevel world = game.level();
 		RandomSource random = world.random;
 		if (random.nextInt(3) != 0) {
@@ -119,35 +115,35 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		for (ServerPlayer player : game.participants()) {
 			// only attempt to spawn particles if the player is near the water surface
-			if (Math.abs(player.getY() - waterLevel) > 5) {
+			if (Math.abs(player.getY() - fluidLevel) > 5) {
 				continue;
 			}
 
 			int particleX = Mth.floor(player.getX()) - random.nextInt(5) + random.nextInt(5);
 			int particleZ = Mth.floor(player.getZ()) - random.nextInt(5) + random.nextInt(5);
-			mutablePos.set(particleX, waterLevel, particleZ);
+			mutablePos.set(particleX, fluidLevel, particleZ);
 
 			if (!world.isEmptyBlock(mutablePos) && world.isEmptyBlock(mutablePos.move(Direction.UP))) {
-				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, false, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
+				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, false, particleX, fluidLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
 				player.connection.send(packet);
 			}
 		}
 	}
 
-	private void processRisingTideQueue(IGamePhase game) {
+	private void processUpdates(IGamePhase game) {
 		if (highPriorityUpdates.isEmpty() && lowPriorityUpdates.isEmpty()) {
 			return;
 		}
 
-		int count = processUpdates(game, highPriorityUpdates.iterator(), HIGH_PRIORITY_BUDGET_PER_TICK);
+		int count = processUpdateQueue(game, highPriorityUpdates.iterator(), HIGH_PRIORITY_BUDGET_PER_TICK);
 		if (count <= 0) {
-			processUpdates(game, lowPriorityUpdates.iterator(), LOW_PRIORITY_BUDGET_PER_TICK);
+			processUpdateQueue(game, lowPriorityUpdates.iterator(), LOW_PRIORITY_BUDGET_PER_TICK);
 		}
 	}
 
-	private int processUpdates(IGamePhase game, LongIterator iterator, int maxToProcess) {
-		ServerLevel world = game.level();
-		ServerChunkCache chunkProvider = world.getChunkSource();
+	private int processUpdateQueue(IGamePhase game, LongIterator iterator, int maxToProcess) {
+		ServerLevel level = game.level();
+		ServerChunkCache chunkProvider = level.getChunkSource();
 
 		int count = 0;
 
@@ -163,27 +159,25 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			}
 
 			iterator.remove();
-			increaseTideForChunk(world, chunk);
+			increaseInChunk(level, chunk);
 			count++;
 		}
 
 		return count;
 	}
 
-	private void tickWaterLevel(final IGamePhase game) {
-		int targetWaterLevel = Mth.floor(waterLevelByTime.get(progression.time()));
+	private void tickFluidLevel(final IGamePhase game) {
+		int targetFluidLevel = Mth.floor(this.targetFluidLevel.getAsDouble());
 
-		if (waterLevel < targetWaterLevel) {
-			waterLevel++;
-
-			long[] chunks = collectSortedChunks(game);
+		if (fluidLevel < targetFluidLevel) {
+			fluidLevel++;
 
 			boolean close = true;
-			for (long chunkPos : chunks) {
+			for (long chunkPos : collectSortedChunks(game)) {
 				if (close) {
 					highPriorityUpdates.add(chunkPos);
-					int distance2 = getChunkDistance2(game, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
-					if (distance2 >= HIGH_PRIORITY_DISTANCE_2) {
+					int distanceSq = getChunkDistanceSq(game, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+					if (distanceSq >= HIGH_PRIORITY_DISTANCE_SQ) {
 						close = false;
 					}
 				} else {
@@ -195,64 +189,56 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private long[] collectSortedChunks(IGamePhase game) {
 		LongComparator distanceComparator = (pos1, pos2) -> Integer.compare(
-				getChunkDistance2(game, ChunkPos.getX(pos1), ChunkPos.getZ(pos1)),
-				getChunkDistance2(game, ChunkPos.getX(pos2), ChunkPos.getZ(pos2))
+				getChunkDistanceSq(game, ChunkPos.getX(pos1), ChunkPos.getZ(pos1)),
+				getChunkDistanceSq(game, ChunkPos.getX(pos2), ChunkPos.getZ(pos2))
 		);
 
-		int sizeX = maxTideChunk.x - minTideChunk.x + 1;
-		int sizeZ = maxTideChunk.z - minTideChunk.z + 1;
+		int sizeX = maxChunk.x - minChunk.x + 1;
+		int sizeZ = maxChunk.z - minChunk.z + 1;
+
 		long[] chunks = new long[sizeX * sizeZ];
-		int length = 0;
 
-		for (int z = minTideChunk.z; z <= maxTideChunk.z; z++) {
-			for (int x = minTideChunk.x; x <= maxTideChunk.x; x++) {
-				long chunkPos = ChunkPos.asLong(x, z);
-
-				// insertion sort time!
-				int index = LongArrays.binarySearch(chunks, 0, length, chunkPos, distanceComparator);
-				if (index < 0) {
-					index = -index - 1;
-				}
-
-				System.arraycopy(chunks, index, chunks, index + 1, length - index);
-
-				chunks[index] = chunkPos;
-				length++;
+		int i = 0;
+		for (int z = minChunk.z; z <= maxChunk.z; z++) {
+			for (int x = minChunk.x; x <= maxChunk.x; x++) {
+				chunks[i++] = ChunkPos.asLong(x, z);
 			}
 		}
+
+		LongArrays.unstableSort(chunks, distanceComparator);
 
 		return chunks;
 	}
 
-	private int getChunkDistance2(IGamePhase game, int x, int z) {
-		int minDistance2 = Integer.MAX_VALUE;
+	private int getChunkDistanceSq(IGamePhase game, int x, int z) {
+		int minDistanceSq = Integer.MAX_VALUE;
 		int centerX = SectionPos.sectionToBlockCoord(x) + SectionPos.SECTION_HALF_SIZE;
 		int centerZ = SectionPos.sectionToBlockCoord(z) + SectionPos.SECTION_HALF_SIZE;
 		for (ServerPlayer player : game.allPlayers()) {
-			int dx = Mth.floor(player.getX()) - centerX;
-			int dz = Mth.floor(player.getZ()) - centerZ;
-			int distance2 = dx * dx + dz * dz;
-			if (distance2 < minDistance2) {
-				minDistance2 = distance2;
+			int dx = player.getBlockX() - centerX;
+			int dz = player.getBlockZ() - centerZ;
+			int distanceSq = dx * dx + dz * dz;
+			if (distanceSq < minDistanceSq) {
+				minDistanceSq = distanceSq;
 			}
 		}
-		return minDistance2;
+		return minDistanceSq;
 	}
 
-	private long increaseTideForChunk(ServerLevel level, LevelChunk chunk) {
+	private long increaseInChunk(ServerLevel level, LevelChunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 
-		int targetLevel = waterLevel;
-		int lastLevel = chunkWaterLevels.put(chunkPos.toLong(), targetLevel);
+		int targetLevel = fluidLevel;
+		int lastLevel = fluidLevelByChunk.put(chunkPos.toLong(), targetLevel);
 
 		if (targetLevel > lastLevel) {
-			BlockPos tideMin = tideArea.min();
-			BlockPos tideMax = tideArea.max();
-			long count = TideFiller.fillChunk(tideMin.getX(), tideMin.getZ(), tideMax.getX(), tideMax.getZ(), chunk, lastLevel, targetLevel);
+			BlockPos min = region.min();
+			BlockPos max = region.max();
+			long count = TideFiller.fillChunk(min.getX(), min.getZ(), max.getX(), max.getZ(), chunk, lastLevel, targetLevel);
 			if (count > 0) {
 				PacketDistributor.sendToPlayersTrackingChunk(level, chunk.getPos(), new RiseTideMessage(
-						new BlockPos(Math.max(tideMin.getX(), chunkPos.getMinBlockX()), lastLevel, Math.max(tideMin.getZ(), chunkPos.getMinBlockZ())),
-						new BlockPos(Math.min(tideMax.getX(), chunkPos.getMaxBlockX()), targetLevel, Math.min(tideMax.getZ(), chunkPos.getMaxBlockZ()))
+						new BlockPos(Math.max(min.getX(), chunkPos.getMinBlockX()), lastLevel, Math.max(min.getZ(), chunkPos.getMinBlockZ())),
+						new BlockPos(Math.min(max.getX(), chunkPos.getMaxBlockX()), targetLevel, Math.min(max.getZ(), chunkPos.getMaxBlockZ()))
 				));
 			}
 			return count;

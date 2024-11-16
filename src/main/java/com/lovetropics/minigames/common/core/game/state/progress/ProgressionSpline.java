@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.List;
+import java.util.function.DoubleSupplier;
 
 public class ProgressionSpline {
 	public static final Codec<ProgressionSpline> CODEC = Entry.CODEC.listOf().xmap(ProgressionSpline::new, s -> s.entries);
@@ -15,7 +16,7 @@ public class ProgressionSpline {
 		this.entries = entries;
 	}
 
-	public LinearSpline resolve(ProgressHolder progression) {
+	public DoubleSupplier resolve(ProgressHolder progression) {
 		LinearSpline.Builder spline = LinearSpline.builder();
 		for (Entry entry : entries) {
 			int point = entry.point().resolve(progression);
@@ -25,7 +26,8 @@ public class ProgressionSpline {
 			float value = entry.value();
 			spline.point(point, value);
 		}
-		return spline.build();
+		LinearSpline builtSpline = spline.build();
+		return () -> builtSpline.get(progression.time());
 	}
 
 	public record Entry(ProgressionPoint point, float value) {
