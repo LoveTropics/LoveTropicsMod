@@ -126,7 +126,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.Disab
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableThrowingItemsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.PreventBreakBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleDamageFromEntityBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleExplosionKnockbackBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScalePlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.SetDayTimeBehavior;
@@ -183,7 +183,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
 	public static final GameBehaviorEntry<ScalePlayerDamageBehavior> SCALE_PLAYER_DAMAGE = register("scale_player_damage", ScalePlayerDamageBehavior.CODEC);
-	public static final GameBehaviorEntry<ScaleDamageFromEntityBehavior> SCALE_DAMAGE_FROM_ENTITY = register("scale_damage_from_entity", ScaleDamageFromEntityBehavior.CODEC);
+	public static final GameBehaviorEntry<ScaleDamageBehavior> SCALE_DAMAGE = register("scale_damage", ScaleDamageBehavior.CODEC);
 	public static final GameBehaviorEntry<ScaleExplosionKnockbackBehavior> SCALE_EXPLOSION_KNOCKBACK = register("scale_explosion_knockback", ScaleExplosionKnockbackBehavior.CODEC);
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior.CODEC);
 	public static final GameBehaviorEntry<SetupTeamsBehavior> SETUP_TEAMS = register("setup_teams", SetupTeamsBehavior.CODEC);
