@@ -33,6 +33,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideT
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDiveTexts;
+import com.lovetropics.minigames.common.content.treasure_dig.TreasureDig;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRaceTexts;
 import com.lovetropics.minigames.common.core.chat.ChatChannelStore;
@@ -168,6 +169,7 @@ public class LoveTropics {
         Spleef.init();
         RiverRace.init();
         DeACoudre.init();
+        TreasureDig.init();
 
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
         PlayerDisguise.ATTACHMENT_TYPES.register(modBus);

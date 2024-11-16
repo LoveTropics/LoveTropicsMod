@@ -525,6 +525,8 @@
   "ltminigames.minigame.trash_dive.sidebar.instruction": "Pick up trash!",
   "ltminigames.minigame.trash_dive.sidebar.title": "Trash Dive",
   "ltminigames.minigame.trash_dive.sidebar.top_players": "MVPs:",
+  "ltminigames.minigame.treasure_dig": "Treasure Dig",
+  "ltminigames.minigame.treasure_dig_teams": "Treasure Dig (Teams)",
   "ltminigames.minigame.treasure_hunt": "Treasure Hunt",
   "ltminigames.minigame.turtle_race": "Turtle Race",
   "ltminigames.minigame.turtle_race.closing": "The game will finish in %s seconds!",
