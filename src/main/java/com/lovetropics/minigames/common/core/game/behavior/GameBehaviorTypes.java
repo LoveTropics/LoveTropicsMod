@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsTo
 import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.LastRemainingWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.JoinLateWithRoleBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.RisingFluidBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ScoreMobInGoalBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.OnlyTickInPeriodBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PermanentItemBehavior;
@@ -290,6 +291,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetStatisticAction> SET_STATISTIC = register("set_statistic", SetStatisticAction.CODEC);
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
 	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = REGISTRATE.object("prevent_break").behavior(PreventBreakBehavior.CODEC).register();
+	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = REGISTRATE.object("rising_fluid").behavior(RisingFluidBehavior.CODEC).register();
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

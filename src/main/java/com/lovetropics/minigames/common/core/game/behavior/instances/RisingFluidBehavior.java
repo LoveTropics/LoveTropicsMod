@@ -1,7 +1,7 @@
-package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
+package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.common.content.survive_the_tide.TideFiller;
+import com.lovetropics.minigames.common.core.game.util.FluidFiller;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -11,7 +11,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressionSpline;
-import com.lovetropics.minigames.common.core.network.RiseTideMessage;
+import com.lovetropics.minigames.common.core.network.FillFluidPacket;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -43,7 +43,8 @@ import java.util.function.DoubleSupplier;
 public class RisingFluidBehavior implements IGameBehavior {
 	public static final MapCodec<RisingFluidBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("region").forGetter(c -> c.regionKey),
-			ProgressionSpline.CODEC.fieldOf("fluid_levels").forGetter(c -> c.fluidLevels)
+			ProgressionSpline.CODEC.fieldOf("fluid_levels").forGetter(c -> c.fluidLevels),
+			FluidFiller.Type.CODEC.fieldOf("fill_type").forGetter(b -> b.fillType)
 	).apply(i, RisingFluidBehavior::new));
 
 	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 40;
@@ -53,6 +54,7 @@ public class RisingFluidBehavior implements IGameBehavior {
 
 	private final String regionKey;
 	private final ProgressionSpline fluidLevels;
+	private final FluidFiller.Type fillType;
 
 	private BlockBox region;
 	private DoubleSupplier targetFluidLevel = () -> 0.0;
@@ -65,9 +67,10 @@ public class RisingFluidBehavior implements IGameBehavior {
 	private final LongSet lowPriorityUpdates = new LongLinkedOpenHashSet();
 	private final Long2IntMap fluidLevelByChunk = new Long2IntOpenHashMap();
 
-	public RisingFluidBehavior(String regionKey, ProgressionSpline fluidLevels) {
+	public RisingFluidBehavior(String regionKey, ProgressionSpline fluidLevels, FluidFiller.Type fillType) {
 		this.regionKey = regionKey;
 		this.fluidLevels = fluidLevels;
+		this.fillType = fillType;
 	}
 
 	@Override
@@ -84,11 +87,13 @@ public class RisingFluidBehavior implements IGameBehavior {
 			fluidLevelByChunk.defaultReturnValue(fluidLevel);
 		});
 
-		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
+		if (fillType == FluidFiller.Type.WATER) {
+			events.listen(GameLivingEntityEvents.TICK, this::onLivingUpdateInWater);
+		}
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private void onLivingEntityUpdate(LivingEntity entity) {
+	private void onLivingUpdateInWater(LivingEntity entity) {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
@@ -101,7 +106,9 @@ public class RisingFluidBehavior implements IGameBehavior {
 	private void tick(IGamePhase game) {
 		tickFluidLevel(game);
 		processUpdates(game);
-		spawnWarningParticles(game);
+		if (fillType == FluidFiller.Type.WATER) {
+			spawnWarningParticles(game);
+		}
 	}
 
 	private void spawnWarningParticles(IGamePhase game) {
@@ -234,9 +241,10 @@ public class RisingFluidBehavior implements IGameBehavior {
 		if (targetLevel > lastLevel) {
 			BlockPos min = region.min();
 			BlockPos max = region.max();
-			long count = TideFiller.fillChunk(min.getX(), min.getZ(), max.getX(), max.getZ(), chunk, lastLevel, targetLevel);
+			long count = FluidFiller.fillChunk(fillType, min.getX(), min.getZ(), max.getX(), max.getZ(), chunk, lastLevel, targetLevel);
 			if (count > 0) {
-				PacketDistributor.sendToPlayersTrackingChunk(level, chunk.getPos(), new RiseTideMessage(
+				PacketDistributor.sendToPlayersTrackingChunk(level, chunk.getPos(), new FillFluidPacket(
+						fillType,
 						new BlockPos(Math.max(min.getX(), chunkPos.getMinBlockX()), lastLevel, Math.max(min.getZ(), chunkPos.getMinBlockZ())),
 						new BlockPos(Math.min(max.getX(), chunkPos.getMaxBlockX()), targetLevel, Math.min(max.getZ(), chunkPos.getMaxBlockZ()))
 				));

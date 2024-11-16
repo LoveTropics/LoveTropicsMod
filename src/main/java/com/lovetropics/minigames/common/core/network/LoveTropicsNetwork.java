@@ -18,7 +18,6 @@ import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponse
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -55,7 +54,7 @@ public final class LoveTropicsNetwork {
 
         registrar.playToClient(SpectatorPlayerActivityMessage.TYPE, SpectatorPlayerActivityMessage.STREAM_CODEC, SpectatorPlayerActivityMessage::handle);
 
-        registrar.playToClient(RiseTideMessage.TYPE, RiseTideMessage.STREAM_CODEC, RiseTideMessage::handle);
+        registrar.playToClient(FillFluidPacket.TYPE, FillFluidPacket.STREAM_CODEC, FillFluidPacket::handle);
 
         registrar.playToClient(ShowTriviaMessage.TYPE, ShowTriviaMessage.STREAM_CODEC, ShowTriviaMessage::handle);
         registrar.playToServer(SelectTriviaAnswerMessage.TYPE, SelectTriviaAnswerMessage.STREAM_CODEC, SelectTriviaAnswerMessage::handle);
