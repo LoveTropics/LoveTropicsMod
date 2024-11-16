@@ -125,6 +125,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.Damag
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableThrowingItemsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.PreventBreakBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleDamageFromEntityBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleExplosionKnockbackBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScalePlayerDamageBehavior;
@@ -288,6 +289,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
 	public static final GameBehaviorEntry<SetStatisticAction> SET_STATISTIC = register("set_statistic", SetStatisticAction.CODEC);
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
+	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = REGISTRATE.object("prevent_break").behavior(PreventBreakBehavior.CODEC).register();
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

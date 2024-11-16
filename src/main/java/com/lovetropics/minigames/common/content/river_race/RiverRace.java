@@ -39,7 +39,6 @@ public class RiverRace {
     public static final GameBehaviorEntry<OverlordBehavior> OVERLORD_BEHAVIOR = REGISTRATE.object("river_race_overlord").behavior(OverlordBehavior.CODEC).register();
     public static final GameBehaviorEntry<ProgressBehaviour> RIVER_RACE_PROGRESS_BEHAVIOUR = REGISTRATE.object("river_race_progress").behavior(ProgressBehaviour.CODEC).register();
     public static final GameBehaviorEntry<CollectablesBehaviour> COLLECTABLES_BEHAVIOUR = REGISTRATE.object("river_race_collectables").behavior(CollectablesBehaviour.CODEC).register();
-    public static final GameBehaviorEntry<PreventBreakBehaviour> PREVENT_BREAK_BEHAVIOUR = REGISTRATE.object("prevent_break").behavior(PreventBreakBehaviour.CODEC).register();
     public static final GameBehaviorEntry<UnlockZoneAction> UNLOCK_ZONE_ACTION = REGISTRATE.object("unlock_zone").behavior(UnlockZoneAction.CODEC).register();
     public static final GameBehaviorEntry<KillAboveVoidBehavior> KILL_ABOVE_VOID_BEHAVIOR = REGISTRATE.object("kill_above_void").behavior(KillAboveVoidBehavior.CODEC).register();
 
