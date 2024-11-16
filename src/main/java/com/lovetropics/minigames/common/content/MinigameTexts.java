@@ -270,6 +270,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.everything", "I want it all!");
 		KEYS.add("donation.everything.description", "Trigger every package. Yes, all of them.");
 		KEYS.add("donation.everything.toast", "%sender% has triggered EVERY PACKAGE!");
+		KEYS.add("donation.plus_two_crabs", "+2 Crabs!");
+		KEYS.add("donation.plus_two_crabs.description", "More Crabs? +2 Crabs for the players to worry about!");
+		KEYS.add("donation.plus_two_crabs.toast", "%sender% has spawned 2 MORE CRABS!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
