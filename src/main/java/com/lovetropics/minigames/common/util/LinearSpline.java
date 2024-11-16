@@ -1,8 +1,6 @@
 package com.lovetropics.minigames.common.util;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import net.minecraft.util.ExtraCodecs;
 
@@ -10,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 public class LinearSpline implements Float2FloatFunction {
 	private static final Codec<LinearSpline> FULL_CODEC = ExtraCodecs.nonEmptyList(Point.CODEC.listOf()).xmap(
@@ -23,12 +20,16 @@ public class LinearSpline implements Float2FloatFunction {
 	);
 
 	public static final Codec<LinearSpline> CODEC = Codec.withAlternative(
-			FULL_CODEC,
-			Codec.mapPair(
-					Codec.FLOAT.fieldOf("start"),
-					Codec.FLOAT.fieldOf("end")
-			).codec(),
-			pair -> builder().point(0.0f, pair.getFirst()).point(1.0f, pair.getSecond()).build()
+			Codec.withAlternative(
+					FULL_CODEC,
+					Codec.mapPair(
+							Codec.FLOAT.fieldOf("start"),
+							Codec.FLOAT.fieldOf("end")
+					).codec(),
+					pair -> builder().point(0.0f, pair.getFirst()).point(1.0f, pair.getSecond()).build()
+			),
+			Codec.FLOAT,
+			LinearSpline::constant
 	);
 
 	private final float[] xs;
