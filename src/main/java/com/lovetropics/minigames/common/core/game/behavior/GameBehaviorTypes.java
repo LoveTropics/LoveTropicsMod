@@ -56,6 +56,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetB
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetDisguiseAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetExtendingBlocksAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetGlowingAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetStatisticAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShootProjectilesAroundPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShowTitleAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SpawnEntitiesAroundPlayersAction;
@@ -285,6 +286,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<AddCollidersAction> ADD_COLLIDERS = register("add_colliders", AddCollidersAction.CODEC);
 	public static final GameBehaviorEntry<RemoveCollidersAction> REMOVE_COLLIDERS = register("remove_colliders", RemoveCollidersAction.CODEC);
 	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
+	public static final GameBehaviorEntry<SetStatisticAction> SET_STATISTIC = register("set_statistic", SetStatisticAction.CODEC);
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);

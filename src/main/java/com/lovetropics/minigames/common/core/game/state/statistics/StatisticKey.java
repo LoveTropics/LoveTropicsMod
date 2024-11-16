@@ -62,6 +62,8 @@ public final class StatisticKey<T> {
 
 	public static final StatisticKey<String> MAP = ofString("map");
 
+	public static final StatisticKey<Integer> CRABS = ofInt("crabs").defaultValue(1);
+
 	// Turtle Race
 	public static final StatisticKey<Integer> PLAYER_COLLISIONS = ofInt("player_collisions").displays(unit("collisions"));
 

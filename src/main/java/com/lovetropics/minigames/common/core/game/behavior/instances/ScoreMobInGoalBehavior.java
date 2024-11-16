@@ -10,12 +10,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.EntityTemplate;
-import com.lovetropics.minigames.common.util.LinearSpline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -27,30 +29,43 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableLong;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public record ScoreMobInGoalBehavior(
 		String spawnRegion,
 		EntityTemplate scoringEntity,
-		LinearSpline initialCountByPlayers,
+		Optional<StatisticKey<Integer>> targetCountStatistic,
 		Map<GameTeamKey, String> teamGoalRegions,
-		StatisticKey<Integer> statistic
+		StatisticKey<Integer> statistic,
+		int spawnInterval,
+		// TODO: Split the scoring, and just detect entities dying?
+		ProgressChannel channel,
+		Optional<ProgressionPeriod> scorePeriod
 ) implements IGameBehavior {
 	public static final MapCodec<ScoreMobInGoalBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("spawn_region").forGetter(ScoreMobInGoalBehavior::spawnRegion),
 			EntityTemplate.CODEC.fieldOf("scoring_entity").forGetter(ScoreMobInGoalBehavior::scoringEntity),
-			LinearSpline.CODEC.optionalFieldOf("initial_count_by_players", LinearSpline.constant(1.0f)).forGetter(ScoreMobInGoalBehavior::initialCountByPlayers),
+			StatisticKey.INT_CODEC.optionalFieldOf("target_count_statistic").forGetter(ScoreMobInGoalBehavior::targetCountStatistic),
 			Codec.unboundedMap(GameTeamKey.CODEC, Codec.STRING).fieldOf("team_goal_regions").forGetter(ScoreMobInGoalBehavior::teamGoalRegions),
-			StatisticKey.typedCodec(Integer.class).fieldOf("statistic").forGetter(ScoreMobInGoalBehavior::statistic)
+			StatisticKey.typedCodec(Integer.class).fieldOf("statistic").forGetter(ScoreMobInGoalBehavior::statistic),
+			Codec.INT.optionalFieldOf("spawn_interval", 4).forGetter(ScoreMobInGoalBehavior::spawnInterval),
+			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(ScoreMobInGoalBehavior::channel),
+			ProgressionPeriod.CODEC.optionalFieldOf("score_period").forGetter(ScoreMobInGoalBehavior::scorePeriod)
 	).apply(i, ScoreMobInGoalBehavior::new));
 
 	private static final Component POSITIVE_EMOTE = Component.literal("⭐").withStyle(ChatFormatting.GOLD);
@@ -78,28 +93,48 @@ public record ScoreMobInGoalBehavior(
 			goals.add(new Goal(box, defensiveTeam, offensiveTeam));
 		}
 
-		events.listen(GamePhaseEvents.START, () -> {
-			int initialCount = Mth.floor(initialCountByPlayers.get(game.participants().size()));
-			for (int i = 0; i < initialCount; i++) {
+		MutableInt activeCount = new MutableInt();
+		MutableLong lastSpawnTime = new MutableLong(-spawnInterval);
+
+		events.listen(GamePhaseEvents.TICK, () -> {
+			if (game.ticks() - lastSpawnTime.getValue() < spawnInterval) {
+				return;
+			}
+			int targetCount = resolveTargetCount(game);
+			if (activeCount.getValue() < targetCount) {
 				spawnScoringEntity(game, spawnBox);
+				activeCount.increment();
+				lastSpawnTime.setValue(game.ticks());
 			}
 		});
 
+		BooleanSupplier canScore = scorePeriod.map(period -> period.createPredicate(game, channel)).orElse(() -> true);
+
 		events.listen(GameLivingEntityEvents.TICK, entity -> {
-			if (entity.getType() != scoringEntity.type()) {
+			if (entity.getType() != scoringEntity.type() || !canScore.getAsBoolean()) {
 				return;
 			}
 			Goal goal = getGoalAt(goals, entity.position());
 			if (goal != null) {
-				scoreGoal(game, teams, goal, entity, spawnBox);
+				scoreGoal(game, teams, goal, entity);
 				entity.discard();
+				if (activeCount.getValue() <= resolveTargetCount(game)) {
+					spawnScoringEntity(game, spawnBox);
+				} else {
+					activeCount.decrement();
+				}
 			}
 		});
 	}
 
+	private int resolveTargetCount(IGamePhase game) {
+		return targetCountStatistic.map(key -> game.statistics().global().getInt(key)).orElse(1);
+	}
+
 	private void spawnScoringEntity(IGamePhase game, BlockBox spawnBox) {
 		BlockPos spawnPos = findSuitableSpawn(game, spawnBox);
-		scoringEntity.spawn(game.level(), spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+		Entity entity = scoringEntity.spawn(game.level(), spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+		game.level().broadcastEntityEvent(entity, EntityEvent.POOF);
 	}
 
 	private BlockPos findSuitableSpawn(IGamePhase game, BlockBox box) {
@@ -124,14 +159,12 @@ public record ScoreMobInGoalBehavior(
 		return bestPos;
 	}
 
-	private void scoreGoal(IGamePhase game, TeamState teams, Goal goal, LivingEntity entity, BlockBox spawnBox) {
+	private void scoreGoal(IGamePhase game, TeamState teams, Goal goal, LivingEntity entity) {
 		game.statistics().forTeam(goal.offensiveTeam).incrementInt(statistic, 1);
 
 		ServerPlayer scoringPlayer = entity.getLastAttacker() instanceof ServerPlayer p ? p : null;
 		// Not necessarily the player who scored
 		GameTeam scoringTeam = Objects.requireNonNull(teams.getTeamByKey(goal.offensiveTeam));
-
-		spawnScoringEntity(game, spawnBox);
 
 		addScoreEffects(game, teams, goal, scoringPlayer, scoringTeam);
 	}
