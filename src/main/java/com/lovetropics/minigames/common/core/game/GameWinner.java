@@ -17,7 +17,7 @@ public sealed interface GameWinner {
 	record Nobody() implements GameWinner {
 		@Override
 		public Component name() {
-			return MinigameTexts.NOBODY_WON;
+			return MinigameTexts.NOBODY;
 		}
 	}
 
