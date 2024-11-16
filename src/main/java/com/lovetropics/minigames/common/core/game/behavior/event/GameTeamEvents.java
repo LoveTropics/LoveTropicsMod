@@ -17,6 +17,12 @@ public final class GameTeamEvents {
 		}
 	});
 
+	public static final GameEventType<TeamsAllocated> TEAMS_ALLOCATED = GameEventType.create(TeamsAllocated.class, listeners -> () -> {
+		for (TeamsAllocated listener : listeners) {
+			listener.onTeamsAllocated();
+		}
+	});
+
 	private GameTeamEvents() {
 	}
 
@@ -26,5 +32,8 @@ public final class GameTeamEvents {
 
 	public interface RemoveFromTeam {
 		void onRemoveFromTeam(ServerPlayer player, TeamState teams, GameTeamKey team);
+	}
+	public interface TeamsAllocated {
+		void onTeamsAllocated();
 	}
 }

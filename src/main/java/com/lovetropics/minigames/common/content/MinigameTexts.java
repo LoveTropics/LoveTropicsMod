@@ -42,6 +42,8 @@ public final class MinigameTexts {
 	public static final Component DE_A_COUDRE_TEAMS = KEYS.add("de_a_coudre_teams", "Dé à Coudre (Teams)");
 	public static final Component TREASURE_DIG = KEYS.add("treasure_dig", "Treasure Dig");
 	public static final Component TREASURE_DIG_TEAMS = KEYS.add("treasure_dig_teams", "Treasure Dig (Teams)");
+	public static final Component PILLARS_OF_WEALTH = KEYS.add("pillars_of_wealth", "Pillars of Wealth");
+	public static final Component PILLARS_OF_WEALTH_TEAMS = KEYS.add("pillars_of_wealth_teams", "Pillars of Wealth (Teams)");
 
 	// TODO: These should move into SurviveTheTideTexts
 	public static final Component[] SURVIVE_THE_TIDE_INTRO = {

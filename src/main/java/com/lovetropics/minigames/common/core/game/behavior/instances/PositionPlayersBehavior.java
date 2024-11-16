@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.core.game.util.CycledSpawner;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -83,7 +84,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		participantSpawner = new CycledSpawner(regions, participantSpawnKeys);
 		spectatorSpawner = new CycledSpawner(regions, spectatorSpawnKeys);
 		fallbackSpawner = new CycledSpawner(regions, allSpawnKeys);
-        LOGGER.debug("FOUND {} PARTICIPANT SPAWN REGIONS", participantSpawner.regions.size());
+        LOGGER.debug("FOUND {} PARTICIPANT SPAWN REGIONS", participantSpawner.regions().size());
 
 		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 		if (splitByTeam && teams != null) {
@@ -93,7 +94,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 								Map.Entry::getKey,
 								entry -> new CycledSpawner(regions, entry.getValue())
 						)));
-			} else if (!participantSpawner.regions.isEmpty()) {
+			} else if (!participantSpawner.regions().isEmpty()) {
 				events.listen(GamePhaseEvents.CREATE, () -> {
 					int participantCount = game.participants().size();
 					teamSpawners = createTeamSpawners(game, teams, participantSpawner, participantCount);
@@ -171,45 +172,5 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		}
 		LOGGER.debug("USING FALLBACK SPAWN POS");
 		return box.centerBlock();
-	}
-
-	private static class CycledSpawner {
-		public static final CycledSpawner EMPTY = new CycledSpawner(List.of());
-
-		private final List<BlockBox> regions;
-		private int index;
-
-		public CycledSpawner(List<BlockBox> regions) {
-			this.regions = new ArrayList<>(regions);
-			Collections.shuffle(this.regions);
-		}
-
-		public CycledSpawner(MapRegions regions, String... keys) {
-			this(regions.getAll(keys));
-		}
-
-		@Nullable
-		public BlockBox next() {
-			if (regions.isEmpty()) {
-				return null;
-			}
-			return regions.get(index++ % regions.size());
-		}
-
-		public CycledSpawner take(int count) {
-			List<BlockBox> result = new ArrayList<>(count);
-			for (int i = 0; i < count; i++) {
-				BlockBox region = next();
-				if (region == null) {
-					break;
-				}
-				result.add(region);
-			}
-			return new CycledSpawner(result);
-		}
-
-		public int size() {
-			return regions.size();
-		}
 	}
 }

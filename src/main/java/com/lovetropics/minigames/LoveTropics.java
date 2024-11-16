@@ -22,6 +22,7 @@ import com.lovetropics.minigames.common.content.crafting_bee.CraftingBee;
 import com.lovetropics.minigames.common.content.crafting_bee.CraftingBeeTexts;
 import com.lovetropics.minigames.common.content.de_a_coudre.DeACoudre;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
+import com.lovetropics.minigames.common.content.pillars_of_wealth.PillarsOfWealth;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
@@ -170,6 +171,7 @@ public class LoveTropics {
         RiverRace.init();
         DeACoudre.init();
         TreasureDig.init();
+        PillarsOfWealth.init();
 
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
         PlayerDisguise.ATTACHMENT_TYPES.register(modBus);
