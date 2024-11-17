@@ -6,9 +6,7 @@ import com.lovetropics.minigames.common.content.river_race.behaviour.Collectable
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -19,11 +17,13 @@ import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponse
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.*;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -33,6 +33,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -46,6 +47,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -58,6 +60,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
             Codec.INT.optionalFieldOf("starting_ammo", 32).forGetter(PaintPartyBehaviour::startAmmo),
             Codec.INT.optionalFieldOf("ammo_recharge_ticks", 5).forGetter(PaintPartyBehaviour::ammoRechargeTicks)
     ).apply(i, PaintPartyBehaviour::new));
+    private static final Holder<EntityType<?>> EXPLODING_COCONUT = DeferredHolder.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("tropicraft", "exploding_coconut"));
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -82,6 +85,36 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                 });
             }
         });
+        events.listen(GameWorldEvents.EXPLOSION_DETONATE, (explosion, affectedBlocks, affectedEntities) -> {
+            if(explosion.getDirectSourceEntity().getType().is(HolderSet.direct(EXPLODING_COCONUT)) && explosion.getIndirectSourceEntity() instanceof ServerPlayer throwingPlayer){
+                GameTeamKey teamKey = teams.getTeamForPlayer(throwingPlayer);
+                if(teamKey == null){
+                    return;
+                }
+                TeamConfig teamConfig = getTeamConfig(teamKey);
+                List<BlockPos> blockPos = new ArrayList<>(affectedBlocks);
+                for (BlockPos blockPo : blockPos) {
+                    BlockState blockState = game.level().getBlockState(blockPo);
+                    if(!blockState.isAir() && blockState.is(Tags.Blocks.DYED)) {
+                        if (!blockState.is(teamConfig.blockTag())) {
+                            if (!blockState.equals(neutralBlock)) {
+                                // Enemy team block, remove score from enemy
+                                GameTeamKey teamFromBlockState = getTeamFromBlockState(blockState);
+                                if(teamFromBlockState != null) {
+                                    game.statistics().forTeam(teamFromBlockState).incrementInt(StatisticKey.POINTS, -1);
+                                }
+                            }
+                            game.level().setBlock(blockPo, teamConfig.blockType(), Block.UPDATE_CLIENTS);
+                            game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
+                                    .setPos(blockPo), blockPo.getX() + 0.5, blockPo.getY() + 0.5, blockPo.getZ() + 0.5, 100, 0, 0,0,0.15F);
+                            game.statistics().forTeam(teamKey).incrementInt(StatisticKey.POINTS, 1);
+                        }
+                    }
+                }
+                affectedBlocks.clear();
+                affectedEntities.clear();
+            }
+        });
         events.listen(GamePlayerEvents.TICK, (player) -> {
             GameTeamKey teamKey = teams.getTeamForPlayer(player);
             if(teamKey == null){
@@ -99,8 +132,9 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
             BlockState blockState = game.level().getBlockState(playerPos);
             if(!blockState.isAir() && blockState.is(Tags.Blocks.DYED)){
                 if(!blockState.is(teamConfig.blockTag())){
-                    if(player.isSwimming()){
+                    if(player.isSwimming() || player.getForcedPose() == Pose.SWIMMING){
                         player.setSwimming(false);
+                        player.setShiftKeyDown(false);
                         player.setForcedPose(null);
                         PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
                         return;
@@ -127,6 +161,8 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                             }
                         }
                         game.level().setBlock(playerPos, teamConfig.blockType(), Block.UPDATE_CLIENTS);
+                        game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
+                                .setPos(playerPos), playerPos.getX() + 0.5, playerPos.getY() + 0.5, playerPos.getZ() + 0.5, 100, 0, 0,0,0.15F);
                         player.getInventory().removeItem(0, 1);
                         game.statistics().forTeam(teamKey).incrementInt(StatisticKey.POINTS, 1);
                     }
@@ -140,6 +176,8 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                             if (player.getInventory().countItem(teamConfig.ammoItem.getItem()) < startAmmo) {
                                 if (game.ticks() % ammoRechargeTicks() == 0) {
                                     player.getInventory().add(teamConfig.ammoItem.copy());
+                                    game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
+                                            .setPos(playerPos), playerPos.getX() + 0.5, playerPos.getY() + 1.5, playerPos.getZ() + 0.5, 150, 0, 0,0,0.15F);
                                 }
                             }
                         }
