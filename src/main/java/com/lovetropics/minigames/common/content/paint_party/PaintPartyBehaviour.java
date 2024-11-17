@@ -150,6 +150,9 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                         }
                     }
                 }
+            } else if(player.getForcedPose() == Pose.SWIMMING){
+                player.setForcedPose(null);
+                PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
             }
         });
     }
