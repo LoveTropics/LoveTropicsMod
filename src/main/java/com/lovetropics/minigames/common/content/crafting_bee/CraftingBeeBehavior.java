@@ -21,6 +21,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.TimedGameState;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -238,6 +239,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
         sync(team);
 
         var completed = teamTasks.stream().filter(t -> t.done).count();
+        game.statistics().forTeam(team).set(StatisticKey.ITEMS_CRAFTED, (int) completed);
+
         var gameTeam = teams.getTeamByKey(team);
         var teamConfig = gameTeam.config();
 

@@ -13,6 +13,10 @@ public class GameRewardsMap implements IGameState {
 
 	private final Map<UUID, GameRewards> rewards = new Object2ObjectOpenHashMap<>();
 
+	public void clear() {
+		rewards.clear();
+	}
+
 	public GameRewards forPlayer(ServerPlayer player) {
 		return rewards.computeIfAbsent(player.getUUID(), id -> new GameRewards());
 	}

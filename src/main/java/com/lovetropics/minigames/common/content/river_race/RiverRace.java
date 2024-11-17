@@ -44,6 +44,7 @@ public class RiverRace {
     public static final GameBehaviorEntry<CollectablesBehaviour> COLLECTABLES_BEHAVIOUR = REGISTRATE.object("river_race_collectables").behavior(CollectablesBehaviour.CODEC).register();
     public static final GameBehaviorEntry<UnlockZoneAction> UNLOCK_ZONE_ACTION = REGISTRATE.object("unlock_zone").behavior(UnlockZoneAction.CODEC).register();
     public static final GameBehaviorEntry<KillAboveVoidBehavior> KILL_ABOVE_VOID_BEHAVIOR = REGISTRATE.object("kill_above_void").behavior(KillAboveVoidBehavior.CODEC).register();
+    public static final GameBehaviorEntry<RewardsFromMicrogameBehavior> REWARDS_FROM_MICROGAME_BEHAVIOR = REGISTRATE.object("rewards_from_microgame").behavior(RewardsFromMicrogameBehavior.CODEC).register();
 
     public static final GameClientTweakEntry<RiverRaceClientBarState> BAR_STATE = REGISTRATE.object("river_race_bar")
             .clientState(RiverRaceClientBarState.CODEC).streamCodec(RiverRaceClientBarState.STREAM_CODEC)

@@ -8,6 +8,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -43,7 +45,13 @@ public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding>
 		).apply(i, StatisticBinding::new));
 
 		public int resolve(final IGamePhase game, final ServerPlayer player) {
-			final int value = game.statistics().forPlayer(player).getInt(statistic);
+			float value = game.statistics().forPlayer(player).getInt(statistic);
+			final TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+			final GameTeamKey team = teams != null ? teams.getTeamForPlayer(player) : null;
+			if (team != null) {
+				final int teamSize = teams.getPlayersForTeam(team).size();
+				value += game.statistics().forTeam(team).getInt(statistic) / (float) teamSize;
+			}
 			return Mth.floor(multiplier * value);
 		}
 	}

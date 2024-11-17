@@ -52,6 +52,8 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Integer> DEATHS = ofInt("deaths").displays(unit("deaths"));
 	public static final StatisticKey<Boolean> DEAD = ofBool("dead");
 
+	public static final StatisticKey<Integer> ITEMS_CRAFTED = ofInt("items_crafted").displays(unit("items"));
+
 	// Generic - Global
 	public static final StatisticKey<Integer> TOTAL_TIME = ofInt("total_time").displays(minutesSeconds());
 
