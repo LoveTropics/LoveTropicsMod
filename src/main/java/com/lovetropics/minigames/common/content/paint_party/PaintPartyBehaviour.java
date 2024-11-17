@@ -31,6 +31,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.RandomizableContainer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -49,11 +51,12 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, BlockState neutralBlock, int startAmmo) implements IGameBehavior {
+public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, BlockState neutralBlock, int startAmmo, int ammoRechargeTicks) implements IGameBehavior {
     public static final MapCodec<PaintPartyBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.unboundedMap(GameTeamKey.CODEC, TeamConfig.CODEC).optionalFieldOf("teams", Map.of()).forGetter(b -> b.teamConfigs),
             MoreCodecs.BLOCK_STATE.optionalFieldOf("neutral_block", Blocks.WHITE_CONCRETE.defaultBlockState()).forGetter(PaintPartyBehaviour::neutralBlock),
-            Codec.INT.optionalFieldOf("starting_ammo", 32).forGetter(PaintPartyBehaviour::startAmmo)
+            Codec.INT.optionalFieldOf("starting_ammo", 32).forGetter(PaintPartyBehaviour::startAmmo),
+            Codec.INT.optionalFieldOf("ammo_recharge_ticks", 5).forGetter(PaintPartyBehaviour::ammoRechargeTicks)
     ).apply(i, PaintPartyBehaviour::new));
 
     @Override
@@ -76,6 +79,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                     copy.setCount(startAmmo);
                     serverPlayer.getInventory().clearContent();
                     serverPlayer.getInventory().setItem(0, copy);
+                    serverPlayer.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 0, 2));
                 });
             }
         });
@@ -98,6 +102,8 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                 if(!blockState.is(teamConfig.blockTag())){
                     if(player.isSwimming()){
                         player.setSwimming(false);
+                        player.setForcedPose(null);
+                        PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
                     }
                     // Check if player has any blocks to place
                     if(player.getInventory().hasAnyMatching(itemStack -> itemStack.is(teamConfig.itemTag()))) {
@@ -121,7 +127,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                             PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
                         } else {
                             if (player.getInventory().countItem(teamConfig.ammoItem.getItem()) < startAmmo) {
-                                if (game.ticks() % 20 == 0) {
+                                if (game.ticks() % ammoRechargeTicks() == 0) {
                                     player.getInventory().add(teamConfig.ammoItem.copy());
                                 }
                             }
