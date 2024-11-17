@@ -33,6 +33,8 @@ public final class RiverRaceTexts {
 	public static final Component MICROGAME_RESULTS = KEYS.add("microgames_results", "Microgames have completed! Here are the results:")
 			.withStyle(ChatFormatting.GOLD);
 
+	public static final TranslationCollector.Fun1 COLLECTABLE_NAME = KEYS.add1("collectable_name", "Collectable - %s");
+
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.add("trivia.collectable_placed.title", "Go %team%!");
 		KEYS.add("trivia.collectable_placed.subtitle", "Completed %name% zone");

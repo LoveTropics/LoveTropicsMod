@@ -32,6 +32,7 @@ public class RiverRace {
 
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(LoveTropics.ID);
 
+    public static final GameBehaviorEntry<RiverRaceZonesBehavior> ZONES_BEHAVIOR = REGISTRATE.object("river_race/zones").behavior(RiverRaceZonesBehavior.CODEC).register();
     public static final GameBehaviorEntry<TriviaBehaviour> TRIVIA_BEHAVIOUR = REGISTRATE.object("trivia").behavior(TriviaBehaviour.CODEC).register();
     public static final GameBehaviorEntry<StartMicrogamesAction> START_MICROGAMES_ACTION = REGISTRATE.object("start_microgames").behavior(StartMicrogamesAction.CODEC).register();
     public static final GameBehaviorEntry<VictoryPointsBehavior> VICTORY_POINTS_BEHAVIOR = REGISTRATE.object("victory_points").behavior(VictoryPointsBehavior.CODEC).register();

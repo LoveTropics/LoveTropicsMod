@@ -427,6 +427,7 @@
   "ltminigames.minigame.rewards_granted": "You got rewards for playing minigames!",
   "ltminigames.minigame.river_race": "River Race",
   "ltminigames.minigame.river_race.cant_place_collectable": "Place in the Monument at the end of the correct zone to progress",
+  "ltminigames.minigame.river_race.collectable_name": "Collectable - %s",
   "ltminigames.minigame.river_race.microgames_results": "Microgames have completed! Here are the results:",
   "ltminigames.minigame.river_race.player_has_collectable": "%s already has this collectable!",
   "ltminigames.minigame.river_race.shop": "Shop",
