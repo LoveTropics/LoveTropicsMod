@@ -18,10 +18,6 @@ public final class RiverRaceTexts {
 
 	public static final Component COLLECTABLE_GIVEN = KEYS.add("trivia.collectable_given", "You've been given a collectable to place into the monument!")
 			.withStyle(ChatFormatting.GOLD);
-	public static final Component VICTORY_POINT_GIVEN = KEYS.add("trivia.victory_point_given", "You've gained a victory point!")
-			.withStyle(ChatFormatting.GOLD);
-	public static final Component LOOT_GIVEN = KEYS.add("trivia.loot_given", "Loot has been unlocked!")
-			.withStyle(ChatFormatting.GOLD);
 	public static final TranslationCollector.Fun1 VICTORY_POINT_CHANGE = KEYS.add1("trivia.victory_point_change", "+%s Victory Point(s)")
 			.withStyle(ChatFormatting.GREEN);
 
@@ -33,6 +29,9 @@ public final class RiverRaceTexts {
 			.withStyle(ChatFormatting.RED);
 	public static final TranslationCollector.Fun1 PLAYER_HAS_COLLECTABLE = KEYS.add1("player_has_collectable", "%s already has this collectable!")
 			.withStyle(ChatFormatting.RED);
+
+	public static final Component MICROGAME_RESULTS = KEYS.add("microgames_results", "Microgames have completed! Here are the results:")
+			.withStyle(ChatFormatting.GOLD);
 
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.add("trivia.collectable_placed.title", "Go %team%!");

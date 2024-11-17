@@ -9,7 +9,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.SubGameEvents;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -54,6 +56,10 @@ public class MultiGamePhase extends GamePhase {
             movePlayerToSubPhase(player);
         }
         hideRoles = false;
+
+        subPhase.events.listen(GamePhaseEvents.CREATE, () ->
+                invoker(SubGameEvents.CREATE).onCreateSubGame(subPhase, subPhase.events)
+        );
         subPhase.start(saveInventory);
     }
 
@@ -68,6 +74,7 @@ public class MultiGamePhase extends GamePhase {
         for (ServerPlayer player : shuffledPlayers) {
             returnPlayerToParentPhase(fromSubPhase, player);
         }
+        invoker(SubGameEvents.RETURN_TO_TOP).onReturnToTopGame();
     }
 
     private ServerPlayer returnPlayerToParentPhase(GamePhase fromSubPhase, ServerPlayer player) {

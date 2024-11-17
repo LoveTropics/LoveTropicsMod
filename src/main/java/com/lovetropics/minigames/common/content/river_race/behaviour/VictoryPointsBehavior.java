@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.SoundRegistry;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
@@ -11,8 +12,11 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.SubGameEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.state.statistics.Placement;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -23,13 +27,15 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.ExtraCodecs;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class VictoryPointsBehavior implements IGameBehavior {
 
@@ -37,8 +43,9 @@ public class VictoryPointsBehavior implements IGameBehavior {
         Codec.INT.optionalFieldOf("trivia_chest_points", 1).forGetter(c -> c.triviaChestPoints),
         Codec.INT.optionalFieldOf("trivia_gate_points", 2).forGetter(c -> c.triviaGatePoints),
         Codec.INT.optionalFieldOf("trivia_challenge_points", 5).forGetter(c -> c.triviaChallengePoints),
-        Codec.INT.optionalFieldOf("collectible_collected_points", 1).forGetter(c -> c.collectibleCollectedPoints),
-        Codec.INT.optionalFieldOf("points_per_game_won", 3).forGetter(c -> c.pointsPerGameWon)
+        Codec.INT.optionalFieldOf("collectable_collected_points", 0).forGetter(c -> c.collectableCollectedPoints),
+        Codec.INT.optionalFieldOf("collectable_placed_points", 1).forGetter(c -> c.collectablePlacedPoints),
+        ExtraCodecs.nonEmptyList(MoreCodecs.listOrUnit(Codec.INT)).optionalFieldOf("points_per_game_won", List.of(3, 2, 1)).forGetter(c -> c.pointsPerGameWon)
     ).apply(i, VictoryPointsBehavior::new));
 
     private IGamePhase game;
@@ -46,14 +53,19 @@ public class VictoryPointsBehavior implements IGameBehavior {
     private final int triviaChestPoints;
     private final int triviaGatePoints;
     private final int triviaChallengePoints;
-    private final int collectibleCollectedPoints;
-    private final int pointsPerGameWon;
+    private final int collectableCollectedPoints;
+    private final int collectablePlacedPoints;
+    private final List<Integer> pointsPerGameWon;
 
-    public VictoryPointsBehavior(int triviaChestPoints, int triviaGatePoints, int triviaChallengePoints, int collectibleCollectedPoints, int pointsPerGameWon) {
+    @Nullable
+    private MicrogameSegmentState microgameSegment;
+
+    public VictoryPointsBehavior(int triviaChestPoints, int triviaGatePoints, int triviaChallengePoints, int collectableCollectedPoints, int collectablePlacedPoints, List<Integer> pointsPerGameWon) {
         this.triviaChestPoints = triviaChestPoints;
         this.triviaGatePoints = triviaGatePoints;
         this.triviaChallengePoints = triviaChallengePoints;
-        this.collectibleCollectedPoints = collectibleCollectedPoints;
+        this.collectableCollectedPoints = collectableCollectedPoints;
+        this.collectablePlacedPoints = collectablePlacedPoints;
         this.pointsPerGameWon = pointsPerGameWon;
     }
 
@@ -62,12 +74,8 @@ public class VictoryPointsBehavior implements IGameBehavior {
         this.game = game;
         TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
-        // Victory points from trivia
         events.listen(RiverRaceEvents.QUESTION_COMPLETED, this::onQuestionAnswered);
-        // Victory points from collectible blocks
-        events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBlockBroken);
-        // Victory points from winning microgame
-        events.listen(GameLogicEvents.GAME_OVER, this::onWinTriggered);
+        events.listen(RiverRaceEvents.COLLECTABLE_PLACED, this::onCollectablePlaced);
         events.listen(RiverRaceEvents.VICTORY_POINTS_CHANGED, (team, value, lastValue) -> {
             PlayerSet playersForTeam = teams.getPlayersForTeam(team);
             playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(value - lastValue), true);
@@ -84,19 +92,56 @@ public class VictoryPointsBehavior implements IGameBehavior {
                 }
             }
         });
+
+        events.listen(SubGameEvents.CREATE, (subGame, subEvents) -> {
+            if (microgameSegment == null) {
+                microgameSegment = new MicrogameSegmentState();
+            }
+            MicrogameSegmentState segment = microgameSegment;
+            subEvents.listen(GameLogicEvents.GAME_OVER, winner -> onMicrogameWinTriggered(winner, segment));
+        });
+        events.listen(SubGameEvents.RETURN_TO_TOP, () -> {
+			if (microgameSegment != null) {
+                onMicrogamesCompleted(microgameSegment);
+                microgameSegment = null;
+            }
+        });
     }
 
-    private void onWinTriggered(GameWinner winner) {
-		switch (winner) {
-            case GameWinner.Player(ServerPlayer player) -> tryAddPoints(PlayerKey.from(player), pointsPerGameWon);
-            case GameWinner.Team(GameTeam team) -> tryAddPoints(team.key(), pointsPerGameWon);
-            case GameWinner.OfflinePlayer(PlayerKey playerKey, Component ignored) -> tryAddPoints(playerKey, pointsPerGameWon);
-            case GameWinner.Nobody ignored -> {
-            }
+    private void onMicrogameWinTriggered(GameWinner winner, MicrogameSegmentState segmentState) {
+        GameTeamKey winningTeam = switch (winner) {
+            case GameWinner.Player(ServerPlayer player) -> getTeamFor(PlayerKey.from(player));
+            case GameWinner.Team(GameTeam team) -> team.key();
+            case GameWinner.OfflinePlayer(PlayerKey playerKey, Component ignored) -> getTeamFor(playerKey);
+            case GameWinner.Nobody ignored -> null;
+		};
+		if (winningTeam != null) {
+            int winIndex = segmentState.winCountByTeam.addTo(winningTeam, 1);
+            int points = pointsPerGameWon.get(Math.min(winIndex, pointsPerGameWon.size() - 1));
+            segmentState.pointsByTeam.addTo(winningTeam, points);
 		}
     }
 
-    private void tryAddPoints(final PlayerKey playerKey, final int points) {
+    private void onMicrogamesCompleted(MicrogameSegmentState segmentState) {
+        GameStatistics segmentStatistics = new GameStatistics();
+
+        for (Object2IntMap.Entry<GameTeamKey> entry : segmentState.pointsByTeam.object2IntEntrySet()) {
+            addPoints(entry.getKey(), entry.getIntValue());
+            segmentStatistics.forTeam(entry.getKey()).set(StatisticKey.VICTORY_POINTS, entry.getIntValue());
+        }
+
+        game.allPlayers().sendMessage(RiverRaceTexts.MICROGAME_RESULTS);
+		Placement.fromScore(game, segmentStatistics, segmentStatistics.getTeams(), StatisticKey.VICTORY_POINTS, PlacementOrder.MAX.asComparator())
+                .sendTo(game.allPlayers(), 5);
+    }
+
+    @Nullable
+    private GameTeamKey getTeamFor(PlayerKey player) {
+        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        return teams != null ? teams.getTeamForPlayer(player) : null;
+    }
+
+    private void addPoints(final PlayerKey playerKey, final int points) {
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
         GameTeamKey team = teams != null ? teams.getTeamForPlayer(playerKey) : null;
 		if (team != null) {
@@ -104,30 +149,26 @@ public class VictoryPointsBehavior implements IGameBehavior {
         }
     }
 
-    private void tryAddPoints(final GameTeamKey team, final int points) {
+    private void addPoints(final GameTeamKey team, final int points) {
         game.statistics().forTeam(team).incrementInt(StatisticKey.VICTORY_POINTS, points);
     }
 
-    private InteractionResult onBlockBroken(ServerPlayer serverPlayer, BlockPos blockPos, BlockState blockState, InteractionHand interactionHand) {
-        return InteractionResult.PASS;
+    private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos) {
+		int points = switch (triviaType) {
+            case COLLECTABLE -> collectableCollectedPoints;
+            case VICTORY -> triviaChallengePoints;
+            case REWARD -> triviaChestPoints;
+            case GATE -> triviaGatePoints;
+        };
+        addPoints(PlayerKey.from(player), points);
     }
 
-    private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos) {
-        PlayerKey playerKey = PlayerKey.from(player);
-        switch (triviaType) {
-            case COLLECTABLE -> {
-                tryAddPoints(playerKey, collectibleCollectedPoints);
-                player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
-            }
-            case VICTORY -> {
-                tryAddPoints(playerKey, triviaChallengePoints);
-                player.displayClientMessage(RiverRaceTexts.VICTORY_POINT_GIVEN, false);
-            }
-            case REWARD -> {
-                tryAddPoints(playerKey, triviaChestPoints);
-                player.displayClientMessage(RiverRaceTexts.LOOT_GIVEN, false);
-            }
-            case GATE -> tryAddPoints(playerKey, triviaGatePoints);
-        }
+    private void onCollectablePlaced(ServerPlayer player, GameTeam team, BlockPos pos) {
+        addPoints(PlayerKey.from(player), collectablePlacedPoints);
     }
+
+	private static final class MicrogameSegmentState {
+		private final Object2IntOpenHashMap<GameTeamKey> winCountByTeam = new Object2IntOpenHashMap<>();
+		private final Object2IntOpenHashMap<GameTeamKey> pointsByTeam = new Object2IntOpenHashMap<>();
+	}
 }

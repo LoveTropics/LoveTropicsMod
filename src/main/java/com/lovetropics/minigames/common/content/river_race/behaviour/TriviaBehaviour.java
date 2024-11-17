@@ -250,6 +250,7 @@ public final class TriviaBehaviour implements IGameBehavior {
             player.sendSystemMessage(MinigameTexts.INVENTORY_FULL, true);
             return false;
         }
+        player.displayClientMessage(RiverRaceTexts.COLLECTABLE_GIVEN, false);
         return true;
 	}
 

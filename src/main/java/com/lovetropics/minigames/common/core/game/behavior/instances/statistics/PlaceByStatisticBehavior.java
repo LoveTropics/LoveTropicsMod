@@ -44,10 +44,10 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 
 	private GameWinner runPlacement(IGamePhase game) {
 		Placement.Score<PlayerKey, Integer> playerPlacement = Placement.fromPlayerScore(order, game, statistic);
-		playerPlacement.placeInto(StatisticKey.PLACEMENT);
+		playerPlacement.placeInto(game.statistics(), StatisticKey.PLACEMENT);
 
 		Placement.Score<GameTeamKey, Integer> teamPlacement = Placement.fromTeamScore(order, game, statistic);
-		teamPlacement.placeInto(StatisticKey.PLACEMENT);
+		teamPlacement.placeInto(game.statistics(), StatisticKey.PLACEMENT);
 
 		PlayerKey winningPlayerKey = playerPlacement.getWinner();
 		GameTeamKey winningTeamKey = teamPlacement.getWinner();

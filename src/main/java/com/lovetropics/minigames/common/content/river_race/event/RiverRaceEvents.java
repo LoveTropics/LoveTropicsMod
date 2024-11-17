@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.river_race.event;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.impl.MultiGamePhase;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,6 +19,12 @@ public class RiverRaceEvents {
     public static final GameEventType<VictoryPointsChanged> VICTORY_POINTS_CHANGED = GameEventType.create(VictoryPointsChanged.class, listeners -> (team, value, lastValue) -> {
         for (VictoryPointsChanged listener : listeners) {
             listener.onVictoryPointsChanged(team, value, lastValue);
+        }
+    });
+
+    public static final GameEventType<CollectablePlaced> COLLECTABLE_PLACED = GameEventType.create(CollectablePlaced.class, listeners -> (player, team, pos) -> {
+        for (CollectablePlaced listener : listeners) {
+            listener.onCollectablePlaced(player, team, pos);
         }
     });
 
@@ -39,6 +46,10 @@ public class RiverRaceEvents {
 
     public interface VictoryPointsChanged {
         void onVictoryPointsChanged(GameTeamKey team, int value, int lastValue);
+    }
+
+    public interface CollectablePlaced {
+        void onCollectablePlaced(ServerPlayer player, GameTeam team, BlockPos pos);
     }
 
     public interface MicrogameStarted {

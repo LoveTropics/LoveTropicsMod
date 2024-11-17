@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -15,7 +16,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -135,10 +135,10 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
             return InteractionResult.FAIL;
         }
 
-        return onCollectablePlaced(game, team, placedCollectable, pos);
+        return onCollectablePlaced(game, player, team, placedCollectable, pos);
     }
 
-    private InteractionResult onCollectablePlaced(IGamePhase game, GameTeam team, Collectable collectable, BlockPos slotPos) {
+    private InteractionResult onCollectablePlaced(IGamePhase game, ServerPlayer player, GameTeam team, Collectable collectable, BlockPos slotPos) {
         if (firstTeamToCollect.putIfAbsent(collectable.zone, team.key()) == null) {
             GameActionContext context = GameActionContext.builder()
                     .set(GameActionParameter.TEAM, team)
@@ -146,7 +146,7 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
                     .build();
             collectable.onCompleteAction.apply(game, context, game.allPlayers());
         }
-        game.statistics().forTeam(team.key()).incrementInt(StatisticKey.VICTORY_POINTS, collectable.victoryPoints);
+        game.invoker(RiverRaceEvents.COLLECTABLE_PLACED).onCollectablePlaced(player, team, slotPos);
         FireworkPalette.DYE_COLORS.spawn(slotPos.above(), game.level());
         return InteractionResult.PASS;
     }
@@ -167,13 +167,12 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
 
     public record Collectable(String zone, String zoneDisplayName, ItemStack collectable,
                               List<String> monumentSlotRegions,
-                              int victoryPoints, GameActionList<ServerPlayer> onCompleteAction) {
+                              GameActionList<ServerPlayer> onCompleteAction) {
         public static final Codec<Collectable> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("zone").forGetter(Collectable::zone),
                 Codec.STRING.fieldOf("zone_display_name").forGetter(Collectable::zoneDisplayName),
                 MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(Collectable::collectable),
                 ExtraCodecs.nonEmptyList(Codec.STRING.listOf()).fieldOf("monument_slot_region").forGetter(Collectable::monumentSlotRegions),
-                Codec.INT.fieldOf("victory_points").forGetter(Collectable::victoryPoints),
                 GameActionList.PLAYER_CODEC.fieldOf("on_complete").forGetter(Collectable::onCompleteAction)
         ).apply(i, Collectable::new));
     }

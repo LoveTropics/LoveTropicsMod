@@ -44,6 +44,6 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 	}
 
 	private void onFinish(IGamePhase game) {
-		Placement.fromDeathOrder(game, deathOrder).placeInto(StatisticKey.PLACEMENT);
+		Placement.fromDeathOrder(game, deathOrder).placeInto(game.statistics(), StatisticKey.PLACEMENT);
 	}
 }
