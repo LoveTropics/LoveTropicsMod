@@ -134,7 +134,7 @@ public final class CollectablesBehaviour implements IGameBehavior {
         if (firstTeamToCollect.putIfAbsent(collectableZone.id(), team.key()) == null) {
             GameActionContext context = GameActionContext.builder()
                     .set(GameActionParameter.TEAM, team)
-                    .set(GameActionParameter.NAME, collectableZone.displayName().copy().withColor(collectableZone.color().getTextColor()))
+                    .set(GameActionParameter.NAME, collectableZone.displayName().copy().withColor(collectableZone.color().getTextureDiffuseColor()))
                     .build();
             CollectableConfig config = collectablesByZone.get(collectableZone.id());
 			if (config != null) {
@@ -148,7 +148,7 @@ public final class CollectablesBehaviour implements IGameBehavior {
 
     private ItemStack createItem(RiverRaceState.Zone zone, CollectableConfig collectable) {
         ItemStack item = collectable.baseItem.copy();
-        item.set(DataComponents.ITEM_NAME, RiverRaceTexts.COLLECTABLE_NAME.apply(zone.displayName()).withColor(zone.color().getTextColor()));
+        item.set(DataComponents.ITEM_NAME, RiverRaceTexts.COLLECTABLE_NAME.apply(zone.displayName()).withColor(zone.color().getTextureDiffuseColor()));
         item.set(RiverRace.COLLECTABLE_MARKER.get(), Unit.INSTANCE);
         item.applyComponents(itemPatch);
         return item;
