@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.TriviaEvents;
 import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
@@ -14,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.network.trivia.ShowTriviaMessage;
 import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponseMessage;
@@ -45,7 +47,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -163,7 +164,7 @@ public final class TriviaBehaviour implements IGameBehavior {
                     game.level().destroyBlock(triviaPos, false);
                     findNeighboursOfTypeAndDestroy(game.scheduler(), game.level(), triviaPos, null);
                 }
-                case COLLECTABLE -> spawnCollectableFromBlock(game, triviaPos);
+                case COLLECTABLE -> giveCollectableFromBlock(game, player, triviaPos);
                 case REWARD -> {
 					if (game.level().getBlockEntity(triviaPos) instanceof TriviaChestBlockEntity chest) {
                         player.openMenu(chest);
@@ -191,10 +192,8 @@ public final class TriviaBehaviour implements IGameBehavior {
                 player.sendSystemMessage(RiverRaceTexts.TRIVIA_BLOCK_ALREADY_USED, true);
                 yield InteractionResult.FAIL;
             }
-            case COLLECTABLE -> {
-                spawnCollectableFromBlock(game, pos);
-                yield InteractionResult.SUCCESS_NO_ITEM_USED;
-            }
+            case COLLECTABLE ->
+					giveCollectableFromBlock(game, player, pos) ? InteractionResult.SUCCESS_NO_ITEM_USED : InteractionResult.FAIL;
             // Let the player open the chest
             case REWARD -> InteractionResult.PASS;
         };
@@ -231,16 +230,51 @@ public final class TriviaBehaviour implements IGameBehavior {
         });
 	}
 
-    private void spawnCollectableFromBlock(IGamePhase game, BlockPos pos) {
+    private boolean giveCollectableFromBlock(IGamePhase game, ServerPlayer player, BlockPos pos) {
+        CollectablesBehaviour.Collectable collectable = getCollectableFromPos(game, pos);
+        if (collectable == null) {
+			return false;
+		}
+		ServerPlayer playerWithCollectable = getPlayerWithCollectable(game, player, collectable);
+		if (playerWithCollectable != null) {
+			player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
+			if (playerWithCollectable == player) {
+				player.sendSystemMessage(RiverRaceTexts.YOU_HAVE_COLLECTABLE, true);
+			} else {
+				player.sendSystemMessage(RiverRaceTexts.PLAYER_HAS_COLLECTABLE.apply(playerWithCollectable.getDisplayName()), true);
+			}
+			return false;
+		}
+		if (!player.addItem(collectable.collectable().copy())) {
+            player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0f, 1.0f);
+            player.sendSystemMessage(MinigameTexts.INVENTORY_FULL, true);
+            return false;
+        }
+        return true;
+	}
+
+    @Nullable
+    private CollectablesBehaviour.Collectable getCollectableFromPos(IGamePhase game, BlockPos pos) {
         ZoneRegion inZone = getZoneByPos(pos);
         CollectablesBehaviour collectables = game.state().getOrNull(CollectablesBehaviour.COLLECTABLES);
-        if (inZone == null || collectables == null) {
-            return;
+		if (inZone != null && collectables != null) {
+			return collectables.getCollectableForZone(inZone.zone.regionKey());
+		}
+		return null;
+	}
+
+    @Nullable
+    private ServerPlayer getPlayerWithCollectable(IGamePhase game, ServerPlayer player, CollectablesBehaviour.Collectable collectable) {
+        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        if (teams == null) {
+            return null;
         }
-        CollectablesBehaviour.Collectable collectable = collectables.getCollectableForZone(inZone.zone.regionKey());
-        if (collectable != null) {
-            collectables.spawnCollectableItem(game, collectable, Vec3.atCenterOf(pos.above()));
+        for (ServerPlayer otherPlayer : teams.getPlayersOnSameTeam(player)) {
+			if (otherPlayer.getInventory().contains(collectable.collectable())) {
+				return otherPlayer;
+			}
         }
+        return null;
     }
 
     private static void findNeighboursOfTypeAndDestroy(GameScheduler scheduler, ServerLevel world, BlockPos pos, @Nullable Block blockType) {

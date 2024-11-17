@@ -29,6 +29,10 @@ public final class RiverRaceTexts {
 			.withStyle(ChatFormatting.RED);
 	public static final Component TRIVIA_BLOCK_ALREADY_USED = KEYS.add("trivia_block_already_used", "This Trivia Block has already been used!")
 			.withStyle(ChatFormatting.RED);
+	public static final Component YOU_HAVE_COLLECTABLE = KEYS.add("you_have_collectable", "You already have this collectable!")
+			.withStyle(ChatFormatting.RED);
+	public static final TranslationCollector.Fun1 PLAYER_HAS_COLLECTABLE = KEYS.add1("player_has_collectable", "%s already has this collectable!")
+			.withStyle(ChatFormatting.RED);
 
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.add("trivia.collectable_placed.title", "Go %team%!");

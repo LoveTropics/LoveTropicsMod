@@ -72,10 +72,6 @@ public final class CollectablesBehaviour implements IGameBehavior, IGameState {
         return null;
     }
 
-    public void spawnCollectableItem(IGamePhase game, Collectable collectable, Vec3 pos) {
-        game.level().addFreshEntity(new ItemEntity(game.level(), pos.x, pos.y, pos.z, collectable.collectable.copy()));
-    }
-
     @Override
     public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
         phaseState.register(COLLECTABLES, this);

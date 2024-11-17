@@ -130,6 +130,8 @@ public final class MinigameTexts {
 	public static final Component UNKNOWN = KEYS.add("unknown", "Unknown");
 	public static final TranslationCollector.Fun2 POINT_SCORED = KEYS.add2("goal_scored", "%s scored for %s!").withStyle(ChatFormatting.GRAY);
 
+	public static final Component INVENTORY_FULL = KEYS.add("inventory_full", "Your inventory is full!").withStyle(ChatFormatting.RED);
+
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");
 		KEYS.add("get_ready", "Get ready!");
