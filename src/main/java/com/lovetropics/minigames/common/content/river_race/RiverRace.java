@@ -34,6 +34,7 @@ public class RiverRace {
 
     public static final GameBehaviorEntry<RiverRaceSetupBehavior> SETUP_BEHAVIOR = REGISTRATE.object("river_race/setup").behavior(RiverRaceSetupBehavior.CODEC).register();
     public static final GameBehaviorEntry<RiverRaceZoneBehavior> ZONE_BEHAVIOR = REGISTRATE.object("river_race/zone").behavior(RiverRaceZoneBehavior.CODEC).register();
+    public static final GameBehaviorEntry<RiverRaceSpawnsBehavior> SPAWNS_BEHAVIOUR = REGISTRATE.object("river_race/spawns").behavior(RiverRaceSpawnsBehavior.CODEC).register();
     public static final GameBehaviorEntry<TriviaBehaviour> TRIVIA_BEHAVIOUR = REGISTRATE.object("trivia").behavior(TriviaBehaviour.CODEC).register();
     public static final GameBehaviorEntry<StartMicrogamesAction> START_MICROGAMES_ACTION = REGISTRATE.object("start_microgames").behavior(StartMicrogamesAction.CODEC).register();
     public static final GameBehaviorEntry<VictoryPointsBehavior> VICTORY_POINTS_BEHAVIOR = REGISTRATE.object("victory_points").behavior(VictoryPointsBehavior.CODEC).register();
