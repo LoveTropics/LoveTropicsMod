@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
@@ -146,6 +147,10 @@ public interface IGamePhase extends IGame {
 
 	default ControlCommands controlCommands() {
 		return state().get(ControlCommands.KEY);
+	}
+
+	default GameStatistics statistics() {
+		return state().get(GameStatistics.KEY);
 	}
 
 	default ControlCommandInvoker getControlInvoker() {

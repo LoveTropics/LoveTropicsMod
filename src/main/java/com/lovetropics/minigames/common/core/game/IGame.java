@@ -1,12 +1,8 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
-import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
 import net.minecraft.core.RegistryAccess;
@@ -34,10 +30,6 @@ public interface IGame  {
 	IGameDefinition definition();
 
 	GameStateMap instanceState();
-
-	default GameStatistics statistics() {
-		return instanceState().get(GameStatistics.KEY);
-	}
 
 	default GameInstanceIntegrations getIntegrationsOrThrow() {
 		return instanceState().getOrThrow(GameInstanceIntegrations.KEY);
