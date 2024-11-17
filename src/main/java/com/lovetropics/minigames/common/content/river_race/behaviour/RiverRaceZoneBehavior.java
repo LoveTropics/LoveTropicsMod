@@ -16,12 +16,14 @@ import net.minecraft.world.item.DyeColor;
 public record RiverRaceZoneBehavior(
 		String id,
 		String regionKey,
+		Component ordinalName,
 		Component displayName,
 		DyeColor color
 ) implements IGameBehavior {
 	public static final MapCodec<RiverRaceZoneBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("id").forGetter(RiverRaceZoneBehavior::id),
 			Codec.STRING.fieldOf("region").forGetter(RiverRaceZoneBehavior::regionKey),
+			ComponentSerialization.CODEC.fieldOf("ordinal_name").forGetter(RiverRaceZoneBehavior::ordinalName),
 			ComponentSerialization.CODEC.fieldOf("display_name").forGetter(RiverRaceZoneBehavior::displayName),
 			DyeColor.CODEC.fieldOf("color").forGetter(RiverRaceZoneBehavior::color)
 	).apply(i, RiverRaceZoneBehavior::new));
@@ -30,6 +32,6 @@ public record RiverRaceZoneBehavior(
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
 		BlockBox box = game.mapRegions().getOrThrow(regionKey);
-		riverRace.addZone(game, id, box, displayName, color);
+		riverRace.addZone(game, id, box, ordinalName, displayName, color);
 	}
 }

@@ -61,10 +61,9 @@ public class VictoryPointsBehavior implements IGameBehavior {
 
     private IGamePhase game;
     private TeamState teams;
+    private RiverRaceState riverRace;
     private final Object2IntMap<String> availablePointsPerZone = new Object2IntOpenHashMap<>();
     private final Map<GameTeamKey, Object2IntOpenHashMap<String>> acquiredPointsPerZone = new HashMap<>();
-
-    private RiverRaceState.Zone currentZone;
 
     private final int triviaChestPoints;
     private final int triviaGatePoints;
@@ -90,7 +89,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         this.game = game;
         teams = game.instanceState().getOrThrow(TeamState.KEY);
 
-        RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
+        riverRace = game.state().get(RiverRaceState.KEY);
         for (RiverRaceState.Zone zone : riverRace.getZones()) {
 			availablePointsPerZone.put(zone.id(), computeAvailablePoints(zone));
         }
@@ -98,8 +97,6 @@ public class VictoryPointsBehavior implements IGameBehavior {
         for (GameTeam team : teams) {
             acquiredPointsPerZone.put(team.key(), new Object2IntOpenHashMap<>());
         }
-
-        currentZone = riverRace.getFirstZone();
 
         GameSidebar sidebar = GlobalGameWidgets.registerTo(game, events).openSidebar(game.definition().name().copy().withStyle(ChatFormatting.AQUA));
 
@@ -141,7 +138,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         });
 
         events.listen(RiverRaceEvents.UNLOCK_ZONE, id ->
-                currentZone = riverRace.getZoneById(id)
+                riverRace.setCurrentZone(riverRace.getZoneById(id))
         );
     }
 
@@ -203,7 +200,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
     private void addPoints(final GameTeamKey team, final int points, final boolean inZone) {
         game.statistics().forTeam(team).incrementInt(StatisticKey.VICTORY_POINTS, points);
         if (inZone) {
-            acquiredPointsPerZone.get(team).addTo(currentZone.id(), points);
+            acquiredPointsPerZone.get(team).addTo(riverRace.currentZone().id(), points);
         }
     }
 
@@ -225,8 +222,6 @@ public class VictoryPointsBehavior implements IGameBehavior {
     }
 
     private Component[] renderSidebar(TeamState teams) {
-        RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
-
         List<Component> sidebar = new ArrayList<>(10);
         sidebar.add(RiverRaceTexts.SIDEBAR_VICTORY_POINTS);
 

@@ -51,6 +51,10 @@ public final class RiverRaceTexts {
 		KEYS.add("zone.india", "India");
 		KEYS.add("zone.niger_delta", "Niger Delta");
 		KEYS.add("zone.mexico", "Mexico");
+		KEYS.add("zone.1", "Zone 1");
+		KEYS.add("zone.2", "Zone 2");
+		KEYS.add("zone.3", "Zone 3");
+		KEYS.add("zone.4", "Zone 4");
 
 		KEYS.forEach(consumer);
 		consumer.accept(LoveTropics.ID + ".minigame.river_race", "River Race");

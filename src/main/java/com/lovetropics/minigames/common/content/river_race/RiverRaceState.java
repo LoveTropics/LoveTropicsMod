@@ -21,12 +21,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class RiverRaceState implements IGameState {
 	public static final GameStateKey.Defaulted<RiverRaceState> KEY = GameStateKey.create("River Race", RiverRaceState::new);
 
 	private final List<Zone> zones = new ArrayList<>();
 	private Direction forwardDirection = Direction.NORTH;
+
+	@Nullable
+	private Zone currentZone;
 
 	public void setForwardDirection(Direction forwardDirection) {
 		this.forwardDirection = forwardDirection;
@@ -50,9 +54,17 @@ public class RiverRaceState implements IGameState {
 		return triviaBlocks;
 	}
 
-	public void addZone(IGamePhase game, String id, BlockBox box, Component displayName, DyeColor color) {
+	public void addZone(IGamePhase game, String id, BlockBox box, Component ordinalName, Component displayName, DyeColor color) {
 		Map<BlockPos, TriviaType> triviaBlocks = findAllTriviaBlocks(game, box);
-		zones.add(new Zone(id, box, displayName, color, triviaBlocks));
+		Zone zone = new Zone(id, box, ordinalName, displayName, color, triviaBlocks);
+		zones.add(zone);
+		if (currentZone == null) {
+			currentZone = zone;
+		}
+	}
+
+	public void setCurrentZone(Zone currentZone) {
+		this.currentZone = currentZone;
 	}
 
 	public Zone getZoneById(String id) {
@@ -74,12 +86,12 @@ public class RiverRaceState implements IGameState {
 		return null;
 	}
 
-	public Zone getFirstZone() {
-		return zones.getFirst();
-	}
-
 	public List<Zone> getZones() {
 		return zones;
+	}
+
+	public Zone currentZone() {
+		return Objects.requireNonNull(currentZone);
 	}
 
 	// Mirrored for the opposite team side so that equivalent trivia blocks can reuse the same question
@@ -112,6 +124,7 @@ public class RiverRaceState implements IGameState {
 	public static final class Zone {
 		private final String id;
 		private final BlockBox box;
+		private final Component ordinalName;
 		private final Component displayName;
 		private final DyeColor color;
 		private final Map<BlockPos, TriviaType> triviaBlocks;
@@ -119,9 +132,10 @@ public class RiverRaceState implements IGameState {
 		@Nullable
 		private ItemStack collectable;
 
-		public Zone(String id, BlockBox box, Component displayName, DyeColor color, Map<BlockPos, TriviaType> triviaBlocks) {
+		public Zone(String id, BlockBox box, Component ordinalName, Component displayName, DyeColor color, Map<BlockPos, TriviaType> triviaBlocks) {
 			this.id = id;
 			this.box = box;
+			this.ordinalName = ordinalName;
 			this.displayName = displayName;
 			this.color = color;
 			this.triviaBlocks = triviaBlocks;
@@ -133,6 +147,10 @@ public class RiverRaceState implements IGameState {
 
 		public BlockBox box() {
 			return box;
+		}
+
+		public Component ordinalName() {
+			return ordinalName;
 		}
 
 		public Component displayName() {
