@@ -1,9 +1,11 @@
 package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguiseBehavior;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.item.MinigameItems;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -152,6 +154,10 @@ public final class ClientPlayerDisguises {
 
     // TODO: Shameless code duplication
     private static boolean shouldShowName(EntityRenderDispatcher entityRenderDispatcher, Player player) {
+        if (ClientGameStateManager.getOrNull(GameClientStateTypes.HIDE_NAME_TAGS) != null) {
+            return false;
+        }
+
         double distanceSq = entityRenderDispatcher.distanceToSqr(player);
         float maximumDistance = player.isDiscrete() ? 32.0f : 64.0f;
         if (distanceSq >= maximumDistance * maximumDistance) {
