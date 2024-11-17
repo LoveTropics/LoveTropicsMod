@@ -1,11 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -22,7 +19,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,41 +26,30 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Map;
 
 public final class TeamsBehavior implements IGameBehavior {
-	private static final ResourceLocation CONFIG_ID = LoveTropics.location("teams");
-	private static final BehaviorConfig<Boolean> CFG_FRIENDLY_FIRE = BehaviorConfig.fieldOf("friendly_fire", Codec.BOOL);
-
 	public static final MapCodec<TeamsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			CFG_FRIENDLY_FIRE.orElse(false).forGetter(c -> c.friendlyFire),
-			Codec.BOOL.optionalFieldOf("static_team_ids", false).forGetter(c -> c.staticTeamIds)
+			Codec.BOOL.optionalFieldOf("friendly_fire", false).forGetter(c -> c.friendlyFire),
+			Codec.BOOL.optionalFieldOf("static_team_ids", false).forGetter(c -> c.staticTeamIds),
+			Codec.BOOL.optionalFieldOf("player_collision", true).forGetter(c -> c.playerCollision)
 	).apply(i, TeamsBehavior::new));
 
 	private final Map<GameTeamKey, PlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 
 	private final boolean friendlyFire;
 	private final boolean staticTeamIds;
+	private final boolean playerCollision;
 
 	private TeamState teams;
 
-	public TeamsBehavior(boolean friendlyFire, boolean staticTeamIds) {
+	public TeamsBehavior(boolean friendlyFire, boolean staticTeamIds, boolean playerCollision) {
 		this.friendlyFire = friendlyFire;
 		this.staticTeamIds = staticTeamIds;
-	}
-
-	@Override
-	public ConfigList getConfigurables() {
-		return ConfigList.builder(CONFIG_ID)
-				.with(CFG_FRIENDLY_FIRE, friendlyFire)
-				.build();
-	}
-
-	@Override
-	public IGameBehavior configure(Map<ResourceLocation, ConfigList> configs) {
-		return new TeamsBehavior(CFG_FRIENDLY_FIRE.getValue(configs.get(CONFIG_ID)), staticTeamIds);
+		this.playerCollision = playerCollision;
 	}
 
 	@Override
@@ -113,10 +98,12 @@ public final class TeamsBehavior implements IGameBehavior {
 		PlayerTeam scoreboardTeam = scoreboard.getPlayerTeam(teamId);
 		if (scoreboardTeam == null) {
 			scoreboardTeam = scoreboard.addPlayerTeam(teamId);
-			scoreboardTeam.setDisplayName(team.config().name());
-			scoreboardTeam.setColor(team.config().formatting());
-			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
 		}
+
+		scoreboardTeam.setDisplayName(team.config().name());
+		scoreboardTeam.setColor(team.config().formatting());
+		scoreboardTeam.setAllowFriendlyFire(friendlyFire);
+		scoreboardTeam.setCollisionRule(playerCollision ? Team.CollisionRule.ALWAYS : Team.CollisionRule.NEVER);
 
 		return scoreboardTeam;
 	}
