@@ -140,7 +140,7 @@ public class GameCraftingBeeHandler {
                             tooltipLines.set(0, tooltipLines.getFirst().copy().withStyle(ChatFormatting.GREEN));
                         } else if (hint == null || hint.expectedIngredientCount() != hint.grid().stream().filter(Predicate.not(Ingredient::isEmpty)).count()) {
                             tooltipLines.add(CraftingBeeTexts.HINT);
-                            tooltipLines.add(CraftingBeeTexts.HINTS_LEFT.apply(Component.literal(String.valueOf(hintsRemaining)).withStyle(ChatFormatting.AQUA)));
+                            tooltipLines.add(CraftingBeeTexts.HINTS_LEFT.apply(hintsRemaining).withStyle(ChatFormatting.AQUA));
                         }
                         guiGraphics.renderTooltip(Minecraft.getInstance().font, tooltipLines, Optional.<TooltipComponent>ofNullable(hint).filter($ -> !craft.done()), mouseX, mouseY);
                     }

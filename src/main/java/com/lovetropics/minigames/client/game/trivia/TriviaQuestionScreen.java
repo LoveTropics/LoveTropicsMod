@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.game.trivia;
 
+import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.behaviour.TriviaBehaviour;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaBlockEntity;
 import com.lovetropics.minigames.common.core.network.trivia.RequestTriviaStateUpdateMessage;
@@ -77,7 +78,7 @@ public class TriviaQuestionScreen extends Screen {
     private final Set<AnswerButton> buttons = new HashSet<>();
 
     public TriviaQuestionScreen(BlockPos triviaBlockPos, TriviaBehaviour.TriviaQuestion question, TriviaBlockEntity.TriviaBlockState blockState) {
-        super(Component.literal("Answer Trivia Question"));
+        super(RiverRaceTexts.TRIVIA_SCREEN_TITLE);
         this.triviaBlockPos = triviaBlockPos;
         this.question = question;
         triviaBlockState = blockState;
@@ -92,9 +93,7 @@ public class TriviaQuestionScreen extends Screen {
         layout.addChild(new AutoUpdatingTextWidget(() -> {
             if(triviaBlockState.lockedOut()) {
                 long remainingSeconds = (triviaBlockState.unlocksAt() - Minecraft.getInstance().level.getGameTime()) / SharedConstants.TICKS_PER_SECOND;
-                return Component.literal("LOCKED OUT!\nUnlocks in ")
-                        .append(Component.literal(remainingSeconds + "s").withStyle(ChatFormatting.GOLD))
-                        .withStyle(ChatFormatting.RED);
+                return RiverRaceTexts.TRIVIA_SCREEN_LOCKED_OUT.apply(Component.literal(remainingSeconds + "s").withStyle(ChatFormatting.GOLD));
             } else if(triviaBlockState.correctAnswer().isPresent()){
                 return Component.literal("Answered Correctly!").withStyle(ChatFormatting.GREEN);
             }

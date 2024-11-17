@@ -39,10 +39,18 @@ public final class RiverRaceTexts {
 
 	public static final TranslationCollector.Fun1 COLLECTABLE_NAME = KEYS.add1("collectable_name", "Collectable - %s");
 
+	public static final Component TRIVIA_SCREEN_TITLE = KEYS.add("trivia_screen.title", "Answer Trivia Question");
+	public static final TranslationCollector.Fun1 TRIVIA_SCREEN_LOCKED_OUT = KEYS.add1("trivia_screen.locked_out", "LOCKED OUT!\nUnlocks in %s").withStyle(ChatFormatting.RED);
+
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.add("trivia.collectable_placed.title", "Go %team%!");
 		KEYS.add("trivia.collectable_placed.subtitle", "Completed %name% zone");
 		KEYS.add("trivia.games_start_in", "Microgames start in %time%");
+
+		KEYS.add("zone.east_africa", "East Africa");
+		KEYS.add("zone.india", "India");
+		KEYS.add("zone.niger_delta", "Niger Delta");
+		KEYS.add("zone.mexico", "Mexico");
 
 		KEYS.forEach(consumer);
 		consumer.accept(LoveTropics.ID + ".minigame.river_race", "River Race");
