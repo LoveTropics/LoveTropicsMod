@@ -35,6 +35,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.common.util.TriState;
 
 import java.util.List;
 
@@ -190,6 +191,11 @@ public class GameRendering {
     @SubscribeEvent
     public static void onRenderPlayerName(RenderNameTagEvent event) {
         if (event.getEntity() instanceof Player player) {
+            if (ClientGameStateManager.getOrNull(GameClientStateTypes.HIDE_NAME_TAGS) != null) {
+                event.setCanRender(TriState.FALSE);
+                return;
+            }
+
             PointTagClientState state = ClientGameStateManager.getOrNull(GameClientStateTypes.POINT_TAGS);
             Component points = state != null ? state.getPointsTextFor(player.getUUID()) : null;
             if (points != null) {
