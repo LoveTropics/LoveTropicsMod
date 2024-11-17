@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.SoundRegistry;
+import com.lovetropics.minigames.common.content.river_race.RiverRaceState;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
@@ -22,20 +23,28 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.core.game.util.GameSidebar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ExtraCodecs;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class VictoryPointsBehavior implements IGameBehavior {
 
@@ -48,7 +57,14 @@ public class VictoryPointsBehavior implements IGameBehavior {
         ExtraCodecs.nonEmptyList(MoreCodecs.listOrUnit(Codec.INT)).optionalFieldOf("points_per_game_won", List.of(3, 2, 1)).forGetter(c -> c.pointsPerGameWon)
     ).apply(i, VictoryPointsBehavior::new));
 
+    private static final int SIDEBAR_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
+
     private IGamePhase game;
+    private TeamState teams;
+    private final Object2IntMap<String> availablePointsPerZone = new Object2IntOpenHashMap<>();
+    private final Map<GameTeamKey, Object2IntOpenHashMap<String>> acquiredPointsPerZone = new HashMap<>();
+
+    private RiverRaceState.Zone currentZone;
 
     private final int triviaChestPoints;
     private final int triviaGatePoints;
@@ -72,7 +88,20 @@ public class VictoryPointsBehavior implements IGameBehavior {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
-        TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
+        teams = game.instanceState().getOrThrow(TeamState.KEY);
+
+        RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
+        for (RiverRaceState.Zone zone : riverRace.getZones()) {
+			availablePointsPerZone.put(zone.id(), computeAvailablePoints(zone));
+        }
+
+        for (GameTeam team : teams) {
+            acquiredPointsPerZone.put(team.key(), new Object2IntOpenHashMap<>());
+        }
+
+        currentZone = riverRace.getFirstZone();
+
+        GameSidebar sidebar = GlobalGameWidgets.registerTo(game, events).openSidebar(game.definition().name().copy().withStyle(ChatFormatting.AQUA));
 
         events.listen(RiverRaceEvents.QUESTION_COMPLETED, this::onQuestionAnswered);
         events.listen(RiverRaceEvents.COLLECTABLE_PLACED, this::onCollectablePlaced);
@@ -91,6 +120,10 @@ public class VictoryPointsBehavior implements IGameBehavior {
                     game.invoker(RiverRaceEvents.VICTORY_POINTS_CHANGED).onVictoryPointsChanged(teamKey, newPoints, oldPoints);
                 }
             }
+
+            if (game.ticks() % SIDEBAR_INTERVAL == 0) {
+                sidebar.set(renderSidebar(teams));
+            }
         });
 
         events.listen(SubGameEvents.CREATE, (subGame, subEvents) -> {
@@ -106,6 +139,24 @@ public class VictoryPointsBehavior implements IGameBehavior {
                 microgameSegment = null;
             }
         });
+
+        events.listen(RiverRaceEvents.UNLOCK_ZONE, id ->
+                currentZone = riverRace.getZoneById(id)
+        );
+    }
+
+    private int computeAvailablePoints(RiverRaceState.Zone zone) {
+        int availablePoints = 0;
+        for (TriviaType type : zone.triviaBlocks().values()) {
+            availablePoints += getPointsForTriviaType(type);
+        }
+        if (zone.collectable() != null) {
+            availablePoints += collectablePlacedPoints * teams.size();
+        }
+        if (availablePoints % teams.size() != 0) {
+            throw new GameException(Component.literal("Uneven point balance between teams"));
+        }
+		return availablePoints / teams.size();
     }
 
     private void onMicrogameWinTriggered(GameWinner winner, MicrogameSegmentState segmentState) {
@@ -126,7 +177,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
         GameStatistics segmentStatistics = new GameStatistics();
 
         for (Object2IntMap.Entry<GameTeamKey> entry : segmentState.pointsByTeam.object2IntEntrySet()) {
-            addPoints(entry.getKey(), entry.getIntValue());
+            addPoints(entry.getKey(), entry.getIntValue(), false);
             segmentStatistics.forTeam(entry.getKey()).set(StatisticKey.VICTORY_POINTS, entry.getIntValue());
         }
 
@@ -141,30 +192,59 @@ public class VictoryPointsBehavior implements IGameBehavior {
         return teams != null ? teams.getTeamForPlayer(player) : null;
     }
 
-    private void addPoints(final PlayerKey playerKey, final int points) {
+    private void addPoints(final PlayerKey playerKey, final int points, boolean inZone) {
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
         GameTeamKey team = teams != null ? teams.getTeamForPlayer(playerKey) : null;
 		if (team != null) {
-            game.statistics().forTeam(team).incrementInt(StatisticKey.VICTORY_POINTS, points);
+            addPoints(team, points, inZone);
         }
     }
 
-    private void addPoints(final GameTeamKey team, final int points) {
+    private void addPoints(final GameTeamKey team, final int points, final boolean inZone) {
         game.statistics().forTeam(team).incrementInt(StatisticKey.VICTORY_POINTS, points);
+        if (inZone) {
+            acquiredPointsPerZone.get(team).addTo(currentZone.id(), points);
+        }
     }
 
     private void onQuestionAnswered(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos) {
-		int points = switch (triviaType) {
+		addPoints(PlayerKey.from(player), getPointsForTriviaType(triviaType), true);
+    }
+
+    private int getPointsForTriviaType(TriviaType triviaType) {
+        return switch (triviaType) {
             case COLLECTABLE -> collectableCollectedPoints;
             case VICTORY -> triviaChallengePoints;
             case REWARD -> triviaChestPoints;
             case GATE -> triviaGatePoints;
         };
-        addPoints(PlayerKey.from(player), points);
     }
 
     private void onCollectablePlaced(ServerPlayer player, GameTeam team, BlockPos pos) {
-        addPoints(PlayerKey.from(player), collectablePlacedPoints);
+        addPoints(PlayerKey.from(player), collectablePlacedPoints, true);
+    }
+
+    private Component[] renderSidebar(TeamState teams) {
+        RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
+
+        List<Component> sidebar = new ArrayList<>(10);
+        sidebar.add(RiverRaceTexts.SIDEBAR_VICTORY_POINTS);
+
+        for (RiverRaceState.Zone zone : riverRace.getZones()) {
+            int pointsInZone = availablePointsPerZone.getInt(zone.id());
+            if (pointsInZone == 0) {
+                continue;
+            }
+            sidebar.add(CommonComponents.EMPTY);
+            sidebar.add(RiverRaceTexts.SIDEBAR_ZONE_HEADER.apply(zone.displayName()));
+            for (GameTeam team : teams) {
+                int acquiredPoints = acquiredPointsPerZone.get(team.key()).getInt(zone.id());
+				int percent = acquiredPoints * 100 / pointsInZone;
+                sidebar.add(RiverRaceTexts.SIDEBAR_TEAM_PROGRESS.apply(team.config().styledName(), percent));
+            }
+        }
+
+        return sidebar.toArray(new Component[0]);
     }
 
 	private static final class MicrogameSegmentState {

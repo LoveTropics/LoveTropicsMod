@@ -30,6 +30,6 @@ public record RiverRaceZoneBehavior(
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
 		BlockBox box = game.mapRegions().getOrThrow(regionKey);
-		riverRace.addZone(id, box, displayName, color);
+		riverRace.addZone(game, id, box, displayName, color);
 	}
 }

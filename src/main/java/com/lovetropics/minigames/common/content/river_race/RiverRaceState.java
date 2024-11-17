@@ -1,17 +1,26 @@
 package com.lovetropics.minigames.common.content.river_race;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.river_race.block.HasTrivia;
+import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RiverRaceState implements IGameState {
 	public static final GameStateKey.Defaulted<RiverRaceState> KEY = GameStateKey.create("River Race", RiverRaceState::new);
@@ -23,8 +32,27 @@ public class RiverRaceState implements IGameState {
 		this.forwardDirection = forwardDirection;
 	}
 
-	public void addZone(String id, BlockBox box, Component displayName, DyeColor color) {
-		zones.add(new Zone(id, box, displayName, color));
+	private Map<BlockPos, TriviaType> findAllTriviaBlocks(IGamePhase game, BlockBox box) {
+		Map<BlockPos, TriviaType> triviaBlocks = new HashMap<>();
+
+		LongIterator chunkIterator = box.asChunks().longIterator();
+		while (chunkIterator.hasNext()) {
+			long chunkPos = chunkIterator.nextLong();
+			LevelChunk chunk = game.level().getChunk(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+			for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
+				BlockPos pos = entry.getKey();
+				if (box.contains(pos) && entry.getValue() instanceof HasTrivia hasTrivia) {
+					triviaBlocks.put(pos, hasTrivia.getTriviaType());
+				}
+			}
+		}
+
+		return triviaBlocks;
+	}
+
+	public void addZone(IGamePhase game, String id, BlockBox box, Component displayName, DyeColor color) {
+		Map<BlockPos, TriviaType> triviaBlocks = findAllTriviaBlocks(game, box);
+		zones.add(new Zone(id, box, displayName, color, triviaBlocks));
 	}
 
 	public Zone getZoneById(String id) {
@@ -44,6 +72,14 @@ public class RiverRaceState implements IGameState {
 			}
 		}
 		return null;
+	}
+
+	public Zone getFirstZone() {
+		return zones.getFirst();
+	}
+
+	public List<Zone> getZones() {
+		return zones;
 	}
 
 	// Mirrored for the opposite team side so that equivalent trivia blocks can reuse the same question
@@ -78,15 +114,17 @@ public class RiverRaceState implements IGameState {
 		private final BlockBox box;
 		private final Component displayName;
 		private final DyeColor color;
+		private final Map<BlockPos, TriviaType> triviaBlocks;
 
 		@Nullable
 		private ItemStack collectable;
 
-		public Zone(String id, BlockBox box, Component displayName, DyeColor color) {
+		public Zone(String id, BlockBox box, Component displayName, DyeColor color, Map<BlockPos, TriviaType> triviaBlocks) {
 			this.id = id;
 			this.box = box;
 			this.displayName = displayName;
 			this.color = color;
+			this.triviaBlocks = triviaBlocks;
 		}
 
 		public String id() {
@@ -103,6 +141,10 @@ public class RiverRaceState implements IGameState {
 
 		public DyeColor color() {
 			return color;
+		}
+
+		public Map<BlockPos, TriviaType> triviaBlocks() {
+			return triviaBlocks;
 		}
 
 		@Nullable
