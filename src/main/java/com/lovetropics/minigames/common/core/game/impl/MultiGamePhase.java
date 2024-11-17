@@ -119,6 +119,7 @@ public class MultiGamePhase extends GamePhase {
                 });
                 return null;
             }
+            return stopped;
         }
         return super.tick();
     }
