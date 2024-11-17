@@ -79,7 +79,6 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                     copy.setCount(startAmmo);
                     serverPlayer.getInventory().clearContent();
                     serverPlayer.getInventory().setItem(0, copy);
-                    serverPlayer.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 0, 2));
                 });
             }
         });
@@ -104,6 +103,18 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                         player.setSwimming(false);
                         player.setForcedPose(null);
                         PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
+                        return;
+                    }
+                    boolean canPlace = false;
+                    for(Direction d : Direction.Plane.HORIZONTAL)
+                    {
+                        if(game.level().getBlockState(playerPos.relative(d)).is(teamConfig.blockTag())){
+                            canPlace = true;
+                            break;
+                        }
+                    }
+                    if(!canPlace){
+                        return;
                     }
                     // Check if player has any blocks to place
                     if(player.getInventory().hasAnyMatching(itemStack -> itemStack.is(teamConfig.itemTag()))) {
