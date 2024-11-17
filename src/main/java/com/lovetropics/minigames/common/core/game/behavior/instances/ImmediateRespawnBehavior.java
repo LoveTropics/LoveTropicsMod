@@ -76,7 +76,10 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		player.setDeltaMovement(0, 0, 0);
 		player.fallDistance = 0.0f;
 
-		respawnAction.apply(game, GameActionContext.EMPTY, player);
+		// Run only at the end of the current game tick, as the code that caused the damage might still have side-effects
+		game.scheduler().runAfterTicks(0, () ->
+				respawnAction.apply(game, GameActionContext.EMPTY, player)
+		);
 
 		if (clearKillTracker) {
 			for (ServerPlayer otherPlayer : game.participants()) {
