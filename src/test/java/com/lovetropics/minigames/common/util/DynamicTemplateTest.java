@@ -1,55 +1,82 @@
 package com.lovetropics.minigames.common.util;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.JavaOps;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DynamicTemplateTest {
-	private static final JsonOps OPS = JsonOps.INSTANCE;
-
-	private static <T> void assertSubstitutionAndExtraction(final DynamicTemplate template, final Dynamic<T> parameters, final Dynamic<T> result) {
-		assertEquals(result, template.substitute(parameters));
-		assertEquals(parameters, template.extract(result));
+	private static void assertSubstitutionAndExtraction(final DynamicTemplate template, final Object parameters, final Object result) {
+		assertEquals(result, template.substitute(JavaOps.INSTANCE, parameters));
+		assertEquals(parameters, template.extract(JavaOps.INSTANCE, result));
 	}
 
 	@Test
 	public void substitutionInMap() {
-		final DynamicTemplate template = DynamicTemplate.parse(map()
-				.set("foo", string("$1"))
-				.set("bar", map().set("baz", string("$2")))
-		);
+		final DynamicTemplate template = DynamicTemplate.parse(JavaOps.INSTANCE, Map.of(
+				"foo", "$1",
+				"bar", Map.of(
+						"baz", "$2"
+				)
+		));
 		assertSubstitutionAndExtraction(template,
-				map()
-						.set("1", string("hello"))
-						.set("2", string("there")),
-				map()
-						.set("foo", string("hello"))
-						.set("bar", map().set("baz", string("there")))
+				Map.of(
+						"1", "hello",
+						"2", "there"
+				),
+				Map.of(
+						"foo", "hello",
+						"bar", Map.of(
+								"baz", "there"
+						)
+				)
 		);
 	}
 
 	@Test
 	public void missingParameterInMap() {
-		final DynamicTemplate template = DynamicTemplate.parse(map()
-				.set("foo", string("$1"))
-				.set("bar", string("$2"))
+		final DynamicTemplate template = DynamicTemplate.parse(JavaOps.INSTANCE,
+				Map.of(
+						"foo", "$1",
+						"bar", "$2"
+				)
 		);
 		assertSubstitutionAndExtraction(template,
-				map().set("1", string("hello")),
-				map().set("foo", string("hello"))
+				Map.of(
+						"1", "hello"
+				),
+				Map.of(
+						"foo", "hello"
+				)
 		);
 	}
 
-	private static Dynamic<JsonElement> string(final String string) {
-		return new Dynamic<>(OPS, new JsonPrimitive(string));
-	}
-
-	private static Dynamic<JsonElement> map() {
-		return new Dynamic<>(OPS, new JsonObject());
+	@Test
+	public void stringTemplate() {
+		final DynamicTemplate template = DynamicTemplate.parse(JavaOps.INSTANCE, Map.of(
+				"with_prefix", Map.of(
+						"$", Map.of(
+								"path", "$1",
+								"prefix", "prefix_"
+						)
+				),
+				"with_suffix", Map.of(
+						"$", Map.of(
+								"path", "$1",
+								"suffix", "_suffix"
+						)
+				)
+		));
+		assertSubstitutionAndExtraction(template,
+				Map.of(
+						"1", "value"
+				),
+				Map.of(
+						"with_prefix", "prefix_value",
+						"with_suffix", "value_suffix"
+				)
+		);
 	}
 }

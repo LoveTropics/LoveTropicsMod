@@ -121,9 +121,9 @@ public final class GameConfigs {
 	private static Map.Entry<ResourceLocation, GameBehaviorType<?>> tryLoadBehavior(Resource resource, ResourceLocation path) {
 		try {
 			try (BufferedReader reader = resource.openAsReader()) {
-				Dynamic<JsonElement> template = new Dynamic<>(JsonOps.INSTANCE, JsonParser.parseReader(reader));
+				JsonElement json = JsonParser.parseReader(reader);
 				ResourceLocation id = BEHAVIOR_LISTER.fileToId(path);
-				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(DynamicTemplate.parse(template))));
+				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(DynamicTemplate.parse(JsonOps.INSTANCE, json))));
 			}
 		} catch (Exception e) {
 			LOGGER.error("Failed to load custom behavior at {}", path, e);
@@ -151,8 +151,8 @@ public final class GameConfigs {
 
 			@Override
 			public <T> DataResult<IGameBehavior> decode(DynamicOps<T> ops, MapLike<T> input) {
-				Dynamic<T> substituted = template.substitute(ops, input);
-				return IGameBehavior.CODEC.decode(substituted).map(Pair::getFirst);
+				T substituted = template.substituteMap(ops, input);
+				return IGameBehavior.CODEC.parse(ops, substituted);
 			}
 
 			@Override

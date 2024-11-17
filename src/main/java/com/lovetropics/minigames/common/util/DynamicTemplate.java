@@ -29,8 +29,8 @@ public class DynamicTemplate {
 		this.parameters = parameters;
 	}
 
-	public static <T> DynamicTemplate parse(final Dynamic<T> template) {
-		final Node node = parseNode(template.getOps(), template.getValue());
+	public static <T> DynamicTemplate parse(final DynamicOps<T> ops, final T template) {
+		final Node node = parseNode(ops, template);
 		final Set<ParameterPath> parameters = node.parameters().collect(Collectors.toSet());
 		return new DynamicTemplate(node, parameters);
 	}
@@ -45,6 +45,14 @@ public class DynamicTemplate {
 
 		final Optional<MapLike<T>> map = ops.getMap(value).result();
 		if (map.isPresent()) {
+			final T stringTemplateValue = map.get().get("$");
+			if (stringTemplateValue != null) {
+				final StringTemplate stringTemplate = parseStringTemplate(ops, stringTemplateValue);
+				if (stringTemplate != null) {
+					return stringTemplate;
+				}
+			}
+
 			final MapNode<T> node = new MapNode<>(ops, map.get().entries().collect(Collectors.toMap(
 					Pair::getFirst,
 					entry -> parseNode(ops, entry.getSecond())
@@ -62,6 +70,19 @@ public class DynamicTemplate {
 	}
 
 	@Nullable
+	private static <T> StringTemplate parseStringTemplate(DynamicOps<T> ops, T value) {
+		final ParameterPath path = ops.get(value, "path").flatMap(ops::getStringValue).result()
+				.map(DynamicTemplate::parseParameterReference)
+				.orElse(null);
+		if (path == null) {
+			return null;
+		}
+		final String prefix = ops.get(value, "prefix").flatMap(ops::getStringValue).result().orElse("");
+		final String suffix = ops.get(value, "suffix").flatMap(ops::getStringValue).result().orElse("");
+		return new StringTemplate(prefix, path, suffix);
+	}
+
+	@Nullable
 	private static ParameterPath parseParameterReference(String key) {
 		if (key.startsWith("$")) {
 			return new ParameterPath(key.substring(1).split("\\."));
@@ -70,22 +91,21 @@ public class DynamicTemplate {
 		}
 	}
 
-	public <U> Dynamic<U> substitute(final Dynamic<U> parameters) {
-		final DynamicOps<U> ops = parameters.getOps();
-		final Optional<MapLike<U>> map = ops.getMap(parameters.getValue()).result();
+	public  <U> U substitute(final DynamicOps<U> ops, final U parameters) {
+		final Optional<MapLike<U>> map = ops.getMap(parameters).result();
 		if (map.isPresent()) {
-			return substitute(ops, map.get());
+			return substituteMap(ops, map.get());
 		}
-		return substitute(ops, path -> null);
+		return substituteWithResolver(ops, path -> null);
 	}
 
-	public <U> Dynamic<U> substitute(final DynamicOps<U> ops, final MapLike<U> parameters) {
-		return substitute(ops, path -> resolveParameter(ops, parameters, path));
+	public <U> U substituteMap(final DynamicOps<U> ops, final MapLike<U> parameters) {
+		return substituteWithResolver(ops, path -> resolveParameter(ops, parameters, path));
 	}
 
-	private <U> Dynamic<U> substitute(final DynamicOps<U> ops, final Function<ParameterPath, U> resolver) {
+	private <U> U substituteWithResolver(final DynamicOps<U> ops, final Function<ParameterPath, U> resolver) {
 		final U result = node.substitute(ops, resolver);
-		return new Dynamic<>(ops, Objects.requireNonNullElseGet(result, ops::emptyMap));
+		return Objects.requireNonNullElseGet(result, ops::emptyMap);
 	}
 
 	@Nullable
@@ -107,10 +127,6 @@ public class DynamicTemplate {
 
 	public Set<ParameterPath> parameters() {
 		return parameters;
-	}
-
-	public <T> Dynamic<T> extract(final Dynamic<T> substituted) {
-		return new Dynamic<>(substituted.getOps(), extract(substituted.getOps(), substituted.getValue()));
 	}
 
 	public <T> T extract(final DynamicOps<T> ops, final T substituted) {
@@ -144,7 +160,7 @@ public class DynamicTemplate {
 		return result;
 	}
 
-	private sealed interface Node permits MapNode, ListNode, Substituted, Static {
+	private sealed interface Node {
 		@Nullable
 		<U> U substitute(DynamicOps<U> ops, Function<ParameterPath, U> resolver);
 
@@ -221,6 +237,35 @@ public class DynamicTemplate {
 		@Override
 		public <U> void extract(final DynamicOps<U> ops, final U value, final BiConsumer<ParameterPath, U> consumer) {
 			consumer.accept(path, value);
+		}
+
+		@Override
+		public Stream<ParameterPath> parameters() {
+			return Stream.of(path);
+		}
+	}
+
+	private record StringTemplate(String prefix, ParameterPath path, String suffix) implements Node {
+		@Override
+		@Nullable
+		public <U> U substitute(DynamicOps<U> ops, Function<ParameterPath, U> resolver) {
+			final U resolved = resolver.apply(path);
+			if (resolved != null) {
+				final String string = ops.getStringValue(resolved).result().orElse(null);
+				if (string != null) {
+					return ops.createString(prefix + string + suffix);
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public <U> void extract(DynamicOps<U> ops, U value, BiConsumer<ParameterPath, U> consumer) {
+			final String string = ops.getStringValue(value).result().orElse(null);
+			if (string != null && string.startsWith(prefix) && string.endsWith(suffix)) {
+				final String extracted = string.substring(prefix.length(), string.length() - suffix.length());
+				consumer.accept(path, ops.createString(extracted));
+			}
 		}
 
 		@Override
