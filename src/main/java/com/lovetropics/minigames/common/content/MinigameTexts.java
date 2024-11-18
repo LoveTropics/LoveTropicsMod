@@ -80,12 +80,8 @@ public final class MinigameTexts {
     public static final Component WINNER_TITLE = KEYS.add("winner.title", "WINNER");
     public static final Component WINNER_SUBTITLE = KEYS.add("winner.subtitle", "You've emerged victorious!");
 
-    public static final TranslationCollector.Fun1 TEAM_WON = KEYS.add1("team_won", "⭐ Team %s won the game!");
-    public static final TranslationCollector.Fun1 PLAYER_WON = KEYS.add1("player_won", "⭐ %s won the game!");
-	public static final Component NOBODY_WON = KEYS.add("nobody_won", "⭐ Nobody won the game!");
 	public static final Component NOBODY = KEYS.add("nobody", "Nobody");
 	public static final Component RESULTS = KEYS.add("results", "The game is over! Here are the results:");
-	public static final Component GAME_OVER = KEYS.add("game_over.title", "Game Over!").withStyle(ChatFormatting.GOLD);
 
 	public static final TranslationCollector.Fun1 JOIN_TEAM = KEYS.add1("teams.join", "Join %s");
 	public static final TranslationCollector.Fun1 JOINED_TEAM = KEYS.add1("teams.joined", "You have requested to join: %s").withStyle(ChatFormatting.GRAY);
@@ -137,8 +133,6 @@ public final class MinigameTexts {
 		KEYS.add("starting_in", "Starting in %time%!");
 		KEYS.add("get_ready", "Get ready!");
 		KEYS.add("go", "Go!");
-
-		KEYS.add("win", "⭐ %winner% won the game!");
 
 		KEYS.add("donation.antidote_package", "Antidote Package");
 		KEYS.add("donation.antidote_package.description", "Help someone avoid bad effects by giving them a Bucket of Milk!");
@@ -320,6 +314,10 @@ public final class MinigameTexts {
         KEYS.add("position.5", "fifth");
         KEYS.add("position.6", "sixth");
         KEYS.add("position.7", "seventh");
+
+		KEYS.add("game_over.title", "Game Over!");
+		KEYS.add("game_over.subtitle", "%winner% won!");
+		KEYS.add("win", "⭐ %winner% won the game!");
 
 		for (DonationPackageData.PackageType type : DonationPackageData.PackageType.values()) {
 			KEYS.add("donation." + type.getSerializedName(), type.getName());

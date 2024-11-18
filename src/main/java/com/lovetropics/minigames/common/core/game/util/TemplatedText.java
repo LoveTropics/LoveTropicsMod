@@ -36,6 +36,7 @@ public record TemplatedText(Component template) {
 		context.get(GameActionParameter.ITEM).ifPresent(item -> values.put("item", item.getHoverName()));
 		context.get(GameActionParameter.TEAM).ifPresent(team -> values.put("team", team.config().styledName()));
 		context.get(GameActionParameter.NAME).ifPresent(name -> values.put("name", name));
+		context.get(GameActionParameter.WINNER).ifPresent(name -> values.put("winner", name));
 	}
 
 	public Component apply(Map<String, Component> values) {

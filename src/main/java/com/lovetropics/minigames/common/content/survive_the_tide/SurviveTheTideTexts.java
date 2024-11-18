@@ -50,7 +50,6 @@ public final class SurviveTheTideTexts {
 		KEYS.add("outro.teams3", "\nThe remaining survivors of this island, have won - but at what cost? The world is not what it once was, and they must survive in this new apocalyptic land.");
 		KEYS.add("outro.teams4", "\nWhat would you do different next time? Together, we could stop this from becoming our future.");
 		KEYS.add("outro.teams5", "The game will close in 10 seconds...");
-		KEYS.add("win", "%winner% has won the game!");
 		KEYS.add("camping_warning", "You should not be here!");
 		KEYS.add("lightning_storm", "Lightning Storm!");
 		KEYS.add("lightning_storm.subtitle", "Look out!");

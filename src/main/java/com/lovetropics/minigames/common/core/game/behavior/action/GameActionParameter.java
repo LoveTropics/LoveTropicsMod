@@ -18,6 +18,7 @@ public class GameActionParameter<T> {
     public static final GameActionParameter<ItemStack> ITEM = GameActionParameter.create();
     public static final GameActionParameter<GameTeam> TEAM = GameActionParameter.create();
     public static final GameActionParameter<Component> NAME = GameActionParameter.create();
+    public static final GameActionParameter<Component> WINNER = GameActionParameter.create();
 
     private GameActionParameter() {
     }

@@ -111,16 +111,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> hasKnockback(state) ? InteractionResult.PASS : InteractionResult.FAIL);
 
 		events.listen(GameLogicEvents.GAME_OVER, winner -> {
-			Component message;
-			if (winner instanceof GameWinner.Nobody) {
-				message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
-			} else {
-				message = MinigameTexts.PLAYER_WON.apply(winner.name()).withStyle(ChatFormatting.GREEN);
-			}
-			game.allPlayers().sendMessage(message);
 			game.allPlayers().playSound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
-			game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
-
 			state = new Ending(game.ticks() + SharedConstants.TICKS_PER_SECOND * 5);
 		});
 	}

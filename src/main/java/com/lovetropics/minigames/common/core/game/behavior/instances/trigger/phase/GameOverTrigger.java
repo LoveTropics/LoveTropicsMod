@@ -20,7 +20,7 @@ public record GameOverTrigger(GameActionList<ServerPlayer> actions) implements I
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		actions.register(game, events);
 		events.listen(GameLogicEvents.GAME_OVER, winner -> {
-			GameActionContext context = GameActionContext.builder().set(GameActionParameter.NAME, winner.name()).build();
+			GameActionContext context = GameActionContext.builder().set(GameActionParameter.WINNER, winner.name()).build();
 			if (winner instanceof GameWinner.Player(ServerPlayer player)) {
 				actions.apply(game, context, player);
 			} else {

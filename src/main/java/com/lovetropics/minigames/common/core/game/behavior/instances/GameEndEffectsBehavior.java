@@ -10,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
@@ -23,15 +22,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -47,7 +40,6 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	public static final MapCodec<GameEndEffectsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.LONG.optionalFieldOf("stop_delay", NO_STOP_DELAY).forGetter(c -> c.stopDelay),
 			MoreCodecs.long2Object(TemplatedText.CODEC).optionalFieldOf("scheduled_messages", new Long2ObjectOpenHashMap<>()).forGetter(c -> c.scheduledMessages),
-			TemplatedText.CODEC.optionalFieldOf("title").forGetter(c -> Optional.ofNullable(c.title)),
 			Podium.CODEC.optionalFieldOf("podium").forGetter(c -> c.podium)
 	).apply(i, GameEndEffectsBehavior::new));
 
@@ -55,8 +47,6 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 	private final long stopDelay;
 	private final Long2ObjectMap<TemplatedText> scheduledMessages;
-	@Nullable
-	private final TemplatedText title;
 	private final Optional<Podium> podium;
 
 	private boolean ended;
@@ -65,10 +55,9 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	@Nullable
 	private Component winner;
 
-	public GameEndEffectsBehavior(long stopDelay, Long2ObjectMap<TemplatedText> scheduledMessages, Optional<TemplatedText> title, Optional<Podium> podium) {
+	public GameEndEffectsBehavior(long stopDelay, Long2ObjectMap<TemplatedText> scheduledMessages, Optional<Podium> podium) {
 		this.stopDelay = stopDelay;
 		this.scheduledMessages = scheduledMessages;
-		this.title = title.orElse(null);
 		this.podium = podium;
 	}
 
@@ -90,15 +79,6 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 	private void triggerEnd(IGamePhase game) {
 		ended = true;
-
-		if (title != null && winner != null) {
-			Component title = this.title.apply(Map.of("winner", winner));
-			PlayerSet players = game.allPlayers();
-			players.sendPacket(new ClientboundClearTitlesPacket(true));
-			players.sendPacket(new ClientboundSetTitlesAnimationPacket(SharedConstants.TICKS_PER_SECOND / 2, 3 * SharedConstants.TICKS_PER_SECOND, SharedConstants.TICKS_PER_SECOND / 2));
-			players.sendPacket(new ClientboundSetTitleTextPacket(CommonComponents.space()));
-			players.sendPacket(new ClientboundSetSubtitleTextPacket(title));
-		}
 
 		podium.ifPresent(p -> setupPodium(game, p));
 	}

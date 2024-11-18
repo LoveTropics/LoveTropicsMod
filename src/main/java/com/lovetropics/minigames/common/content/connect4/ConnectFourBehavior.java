@@ -231,15 +231,11 @@ public class ConnectFourBehavior implements IGameBehavior {
         gameOver = true;
 
         game.allPlayers().playSound(SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.5f, 1.0f);
-        game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
 
         if (winner instanceof GameWinner.Team(GameTeam team)) {
             for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
                 applyWinningPlayerEffects(winningPlayer, team);
             }
-            game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(team.config().styledName()).withStyle(ChatFormatting.GREEN), true);
-        } else {
-            game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true);
         }
 
         game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
@@ -257,7 +253,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         var nextTeam = playingTeams.next();
         var nextPlayer = nextTeam.players().next();
 
-        game.allPlayers().sendMessage(ConnectFourTexts.TEAM_GOES_NEXT.apply(teams.getTeamByKey(nextTeam.key).config().styledName()), false);
+        game.allPlayers().sendMessage(ConnectFourTexts.TEAM_GOES_NEXT.apply(teams.getTeamByKey(nextTeam.key).config().styledName()), true);
 
         nextTeam.timer().start();
 

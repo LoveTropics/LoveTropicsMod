@@ -130,6 +130,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.DESTROY, () -> timerBars.values().forEach(b -> b.bar().close()));
         events.listen(GamePhaseEvents.STOP, reason -> timerBars.values().forEach(b -> b.bar().close()));
 
+        events.listen(GameLogicEvents.GAME_OVER, this::onGameOver);
+
         events.listen(GamePlayerEvents.CRAFT_RESULT, this::modifyCraftResult);
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
         events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
@@ -260,21 +262,20 @@ public class CraftingBeeBehavior implements IGameBehavior {
     }
 
     private void triggerGameOver(GameWinner winner) {
-        done = true;
         game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
+    }
+
+    private void onGameOver(GameWinner winner) {
+        done = true;
         game.allPlayers().forEach(ServerPlayer::closeContainer);
 
         game.scheduler().runAfterSeconds(1.5f, () -> {
             game.allPlayers().playSound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
-            game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
 
             if (winner instanceof GameWinner.Team(GameTeam team)) {
                 for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
                     applyWinningPlayerEffects(winningPlayer, team);
                 }
-                game.allPlayers().sendMessage(MinigameTexts.TEAM_WON.apply(team.config().styledName()).withStyle(ChatFormatting.GREEN), true);
-            } else {
-                game.allPlayers().sendMessage(MinigameTexts.NOBODY_WON, true);
             }
         });
 
