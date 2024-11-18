@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
 public final class BlockPartyBehavior implements IGameBehavior {
 	public static final MapCodec<BlockPartyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("floor").forGetter(c -> c.floorRegionKey),
-			MoreCodecs.arrayOrUnit(BuiltInRegistries.BLOCK.byNameCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
+			MoreCodecs.arrayOrUnit(MoreCodecs.BLOCK_STATE, BlockState[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
 			Codec.INT.optionalFieldOf("quad_size", 3).forGetter(c -> c.quadSize),
 			Codec.LONG.optionalFieldOf("max_time", 20L * 5).forGetter(c -> c.maxTime),
 			Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
@@ -56,7 +56,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	).apply(i, BlockPartyBehavior::new));
 
 	private final String floorRegionKey;
-	private final Block[] blocks;
+	private final BlockState[] blocks;
 	private final int quadSize;
 
 	private final long maxTime;
@@ -74,7 +74,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	@Nullable
 	private State state;
 
-	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround) {
+	public BlockPartyBehavior(String floorRegionKey, BlockState[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround) {
 		this.floorRegionKey = floorRegionKey;
 		this.blocks = blocks;
 		this.quadSize = quadSize;
@@ -165,10 +165,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		Floor floor = Floor.generate(world.random, quadCountX, quadCountZ, blocks);
 		floor.set(world, floorRegion, quadSize);
 
-		Block target = floor.target;
-
-		ItemStack targetStack = new ItemStack(target);
-		targetStack.setCount(64);
+		ItemStack targetStack = new ItemStack(floor.target.getBlock());
 
 		Component name = BlockPartyTexts.STAND_ON_BLOCK.apply(targetStack.getHoverName())
 				.withStyle(style -> style.withBold(true));
@@ -294,21 +291,21 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	}
 
 	static final class Floor {
-		private final Block[] quads;
+		private final BlockState[] quads;
 		private final int quadCountX;
 		private final int quadCountZ;
 
-		private final Block target;
+		private final BlockState target;
 
-		Floor(Block[] quads, int quadCountX, int quadCountZ, Block target) {
+		Floor(BlockState[] quads, int quadCountX, int quadCountZ, BlockState target) {
 			this.quads = quads;
 			this.quadCountX = quadCountX;
 			this.quadCountZ = quadCountZ;
 			this.target = target;
 		}
 
-		static Floor generate(RandomSource random, int quadCountX, int quadCountZ, Block[] blocks) {
-			Block[] quads = new Block[quadCountX * quadCountZ];
+		static Floor generate(RandomSource random, int quadCountX, int quadCountZ, BlockState[] blocks) {
+			BlockState[] quads = new BlockState[quadCountX * quadCountZ];
 
 			for (int z = 0; z < quadCountZ; z++) {
 				for (int x = 0; x < quadCountX; x++) {
@@ -316,7 +313,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				}
 			}
 
-			Block target = Util.getRandom(quads, random);
+			BlockState target = Util.getRandom(quads, random);
 			return new Floor(quads, quadCountX, quadCountZ, target);
 		}
 
@@ -327,15 +324,15 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				int x = Mth.clamp(localX / quadSize, 0, quadCountX - 1);
 				int z = Mth.clamp(localZ / quadSize, 0, quadCountZ - 1);
 
-				Block quad = quads[x + z * quadCountX];
-				world.setBlockAndUpdate(pos, quad.defaultBlockState());
+				BlockState quad = quads[x + z * quadCountX];
+				world.setBlockAndUpdate(pos, quad);
 			}
 		}
 
 		void removeNonTargets(ServerLevel world, BlockBox box) {
 			for (BlockPos pos : box) {
 				BlockState state = world.getBlockState(pos);
-				if (!state.is(target)) {
+				if (!state.equals(target)) {
 					world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 				}
 			}
