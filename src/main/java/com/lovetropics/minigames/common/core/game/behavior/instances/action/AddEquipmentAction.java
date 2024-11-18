@@ -48,11 +48,21 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 			for (final ItemStack item : items) {
 				player.getInventory().add(copyAndModify(player, teams, item));
 			}
-			player.setItemSlot(EquipmentSlot.HEAD, copyAndModify(player, teams, head));
-			player.setItemSlot(EquipmentSlot.CHEST, copyAndModify(player, teams, chest));
-			player.setItemSlot(EquipmentSlot.LEGS, copyAndModify(player, teams, legs));
-			player.setItemSlot(EquipmentSlot.FEET, copyAndModify(player, teams, feet));
-			addOrReplaceInSlot(player, EquipmentSlot.OFFHAND, copyAndModify(player, teams, offhand));
+			if (!head.isEmpty()) {
+				player.setItemSlot(EquipmentSlot.HEAD, copyAndModify(player, teams, head));
+			}
+			if (!chest.isEmpty()) {
+				player.setItemSlot(EquipmentSlot.CHEST, copyAndModify(player, teams, chest));
+			}
+			if (!legs.isEmpty()) {
+				player.setItemSlot(EquipmentSlot.LEGS, copyAndModify(player, teams, legs));
+			}
+			if (!feet.isEmpty()) {
+				player.setItemSlot(EquipmentSlot.FEET, copyAndModify(player, teams, feet));
+			}
+			if (!offhand.isEmpty()) {
+				addOrReplaceInSlot(player, EquipmentSlot.OFFHAND, copyAndModify(player, teams, offhand));
+			}
 			if (teams != null) {
 				final GameTeamKey teamKey = teams.getTeamForPlayer(player);
 				final ItemStack hotbarItem = hotbarTeamItems.get(teamKey);
