@@ -295,7 +295,10 @@ public class CraftingBeeBehavior implements IGameBehavior {
         teamState.taskBar.setProgress(progress);
 
 		if (!teamState.beaconBarGlassPositions.isEmpty()) {
-            int index = Mth.lerpDiscrete(progress, 0, teamState.beaconBarGlassPositions.size() - 1);
+            int index = Mth.lerpDiscrete(progress, 0, teamState.beaconBarGlassPositions.size()) - 1;
+            if (index < 0) {
+                return;
+            }
             BlockPos glass = teamState.beaconBarGlassPositions.get(index);
             game.level().setBlockAndUpdate(glass, teamState.beaconBarGlass);
         }
