@@ -32,6 +32,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTric
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddCollidersAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyClientStateAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyForTimeAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearAttributeModifierAction;
@@ -49,6 +50,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Give
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.IncrementStatisticAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.RemoveClientStateAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RemoveCollidersAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ResetHungerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
@@ -291,10 +293,10 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
 	public static final GameBehaviorEntry<SetStatisticAction> SET_STATISTIC = register("set_statistic", SetStatisticAction.CODEC);
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
-	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = REGISTRATE.object("prevent_break").behavior(PreventBreakBehavior.CODEC).register();
-	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = REGISTRATE.object("rising_fluid").behavior(RisingFluidBehavior.CODEC).register();
-	public static final GameBehaviorEntry<EndGameAction> END_GAME = REGISTRATE.object("end_game").behavior(EndGameAction.CODEC).register();
-	public static final GameBehaviorEntry<CloseGameAction> CLOSE_GAME = REGISTRATE.object("close_game").behavior(CloseGameAction.CODEC).register();
+	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = register("prevent_break", PreventBreakBehavior.CODEC);
+	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = register("rising_fluid", RisingFluidBehavior.CODEC);
+	public static final GameBehaviorEntry<EndGameAction> END_GAME = register("end_game", EndGameAction.CODEC);
+	public static final GameBehaviorEntry<CloseGameAction> CLOSE_GAME = register("close_game", CloseGameAction.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
@@ -302,6 +304,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DebugModeBehavior> DEBUG_MODE = register("debug_mode", DebugModeBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetGameClientStateBehavior> SET_CLIENT_STATE = register("set_client_state", SetGameClientStateBehavior.CODEC);
+	public static final GameBehaviorEntry<ApplyClientStateAction> APPLY_CLIENT_STATE = register("apply_client_state", ApplyClientStateAction.CODEC);
+	public static final GameBehaviorEntry<RemoveClientStateAction> REMOVE_CLIENT_STATE = register("remove_client_state", RemoveClientStateAction.CODEC);
 
 	public static final GameBehaviorEntry<ApplyToBehavior<Plot, PlotActionTarget>> APPLY_TO_PLOT = register("apply_to_plot", ApplyToBehavior.PLOT_CODEC);
 	public static final GameBehaviorEntry<ApplyToBehavior<ServerPlayer, PlayerActionTarget>> APPLY_TO_PLAYER = register("apply_to_player", ApplyToBehavior.PLAYER_CODEC);

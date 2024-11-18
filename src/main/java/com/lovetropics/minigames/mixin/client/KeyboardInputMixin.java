@@ -12,7 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyboardInput.class)
 public class KeyboardInputMixin extends Input {
     @Inject(method = "tick", at = @At("TAIL"))
-    private void respectSwappedMovement(boolean isSneaking, float sneakingSpeedMultiplier, CallbackInfo ci) {
+    private void respectMovementRules(boolean isSneaking, float sneakingSpeedMultiplier, CallbackInfo ci) {
+        if (ClientGameStateManager.getOrNull(GameClientStateTypes.DISABLE_PLAYER_MOVEMENT) != null) {
+            leftImpulse = 0.0f;
+            forwardImpulse = 0.0f;
+            jumping = false;
+            return;
+        }
         if (ClientGameStateManager.getOrNull(GameClientStateTypes.SWAP_MOVEMENT) != null) {
             float oldLeft = leftImpulse;
             leftImpulse = forwardImpulse;
