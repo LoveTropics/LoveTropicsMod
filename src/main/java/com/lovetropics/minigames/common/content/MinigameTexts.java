@@ -100,6 +100,7 @@ public final class MinigameTexts {
 	public static final Component TEAM_GREEN = KEYS.add("teams.green", "Green");
 	public static final Component TEAM_HIDERS = KEYS.add("teams.hiders", "Hiders");
 	public static final Component TEAM_SEEKERS = KEYS.add("teams.seekers", "Seekers");
+	public static final Component TEAM_NAME = KEYS.add("teams.name", "Team %s");
 
 	public static final Component CLEAR_WEATHER = KEYS.add("weather.clear", "Clear");
 	public static final Component HEAVY_RAIN = KEYS.add("weather.heavy_rain", "Heavy Rain").withStyle(ChatFormatting.BLUE);

@@ -14,6 +14,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
+import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -47,6 +49,7 @@ import java.util.Objects;
 public class ConnectFourBehavior implements IGameBehavior {
     public static final MapCodec<ConnectFourBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
             Codec.unboundedMap(GameTeamKey.CODEC, GameBlock.CODEC.codec()).fieldOf("team_blocks").forGetter(c -> c.teamBlocks),
+            Codec.unboundedMap(GameTeamKey.CODEC, ProgressChannel.CODEC).fieldOf("team_timers").forGetter(c -> c.teamTimers),
             Codec.STRING.fieldOf("placing_region").forGetter(c -> c.placingRegionKey),
             MoreCodecs.BLOCK_STATE.fieldOf("separator").forGetter(c -> c.separator),
             MoreCodecs.BLOCK_STATE.fieldOf("blocker").forGetter(c -> c.blocker),
@@ -56,14 +59,16 @@ public class ConnectFourBehavior implements IGameBehavior {
     ).apply(in, ConnectFourBehavior::new));
 
     private final Map<GameTeamKey, GameBlock> teamBlocks;
+    private final Map<GameTeamKey, ProgressChannel> teamTimers;
     private final String placingRegionKey;
     private final BlockState separator;
     private final BlockState blocker;
 
     private final int width, height, connectAmount;
 
-    public ConnectFourBehavior(Map<GameTeamKey, GameBlock> teamBlocks, String placingRegionKey, BlockState separator, BlockState blocker, int width, int height, int connectAmount) {
+    public ConnectFourBehavior(Map<GameTeamKey, GameBlock> teamBlocks, Map<GameTeamKey, ProgressChannel> teamTimers, String placingRegionKey, BlockState separator, BlockState blocker, int width, int height, int connectAmount) {
         this.teamBlocks = teamBlocks;
+        this.teamTimers = teamTimers;
         this.placingRegionKey = placingRegionKey;
         this.separator = separator;
         this.blocker = blocker;
@@ -85,6 +90,8 @@ public class ConnectFourBehavior implements IGameBehavior {
     private PlacedPiece[][] pieces;
     private int placedPieces;
 
+    private boolean gameOver;
+
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
@@ -100,6 +107,8 @@ public class ConnectFourBehavior implements IGameBehavior {
         events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> player.isCreative() ? InteractionResult.PASS : InteractionResult.FAIL);
 
         events.listen(GameWorldEvents.BLOCK_LANDED, this::onBlockLanded);
+
+        events.listen(GameLogicEvents.GAME_OVER, this::onGameOver);
     }
 
     private void onStart() {
@@ -107,7 +116,9 @@ public class ConnectFourBehavior implements IGameBehavior {
         this.teams.getTeamKeys().forEach(key -> {
             var players = this.teams.getPlayersForTeam(key).stream().map(PlayerKey::from).toList();
             if (!players.isEmpty()) {
-                teams.add(new PlayingTeam(key, new SequentialList<>(players, -1)));
+                var timer = teamTimers.get(key).getOrThrow(game);
+                timer.pause();
+                teams.add(new PlayingTeam(key, timer, new SequentialList<>(players, -1)));
             }
         });
         Collections.shuffle(teams);
@@ -119,7 +130,7 @@ public class ConnectFourBehavior implements IGameBehavior {
     private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn, ItemStack placedItemStack) {
         if (player.isCreative()) return InteractionResult.PASS;
 
-        if (!Objects.equals(playingTeams.current().players.current(), PlayerKey.from(player)) || !placingRegion.contains(pos))
+        if (gameOver || !Objects.equals(playingTeams.current().players.current(), PlayerKey.from(player)) || !placingRegion.contains(pos))
             return InteractionResult.FAIL;
 
         var expected = teamBlocks.get(playingTeams.current().key).powder;
@@ -133,7 +144,12 @@ public class ConnectFourBehavior implements IGameBehavior {
     }
 
     private void onBlockLanded(ServerLevel level, BlockPos pos, BlockState state) {
-        var expected = teamBlocks.get(playingTeams.current().key);
+        if (gameOver) {
+            return;
+        }
+
+        var currentTeam = playingTeams.current();
+        var expected = teamBlocks.get(currentTeam.key);
 
         if (!state.is(expected.powder)) return;
 
@@ -155,15 +171,16 @@ public class ConnectFourBehavior implements IGameBehavior {
         int y;
         for (y = 0; y < column.length; y++) {
             if (column[y] == null) {
-                column[y] = new PlacedPiece(pos, playingTeams.current().key());
+                column[y] = new PlacedPiece(pos, currentTeam.key());
                 break;
             }
         }
         placedPieces++;
 
-        var team = playingTeams.current().key();
+        var team = currentTeam.key();
 
-        game.allPlayers().getPlayerBy(playingTeams.current().players().current()).setGlowingTag(false);
+        currentTeam.timer().pause();
+        game.allPlayers().getPlayerBy(currentTeam.players().current()).setGlowingTag(false);
 
         Line winningLine = checkWin(x, y, team);
         if (winningLine != null) {
@@ -208,6 +225,10 @@ public class ConnectFourBehavior implements IGameBehavior {
 
     private void triggerGameOver(GameWinner winner) {
         game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
+    }
+
+    private void onGameOver(GameWinner winner) {
+        gameOver = true;
 
         game.allPlayers().playSound(SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.5f, 1.0f);
         game.allPlayers().showTitle(MinigameTexts.GAME_OVER, null, 10, 40, 10);
@@ -237,6 +258,8 @@ public class ConnectFourBehavior implements IGameBehavior {
         var nextPlayer = nextTeam.players().next();
 
         game.allPlayers().sendMessage(ConnectFourTexts.TEAM_GOES_NEXT.apply(teams.getTeamByKey(nextTeam.key).config().styledName()), false);
+
+        nextTeam.timer().start();
 
         var player = game.allPlayers().getPlayerBy(nextPlayer);
         player.addItem(teamBlocks.get(nextTeam.key).powder.asItem().getDefaultInstance());
@@ -305,7 +328,7 @@ public class ConnectFourBehavior implements IGameBehavior {
     private record PendingGate(BlockPos gatePosition, BlockState gate) {
     }
 
-    private record PlayingTeam(GameTeamKey key, SequentialList<PlayerKey> players) {
+    private record PlayingTeam(GameTeamKey key, ProgressHolder timer, SequentialList<PlayerKey> players) {
 
     }
 }

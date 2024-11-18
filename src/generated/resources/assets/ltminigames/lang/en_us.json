@@ -548,6 +548,7 @@
   "ltminigames.minigame.teams.intro_2": "You can select a team preference by using the items in your inventory:",
   "ltminigames.minigame.teams.join": "Join %s",
   "ltminigames.minigame.teams.joined": "You have requested to join: %s",
+  "ltminigames.minigame.teams.name": "Team %s",
   "ltminigames.minigame.teams.on_team": "You are on %s team!",
   "ltminigames.minigame.teams.red": "Red",
   "ltminigames.minigame.teams.seekers": "Seekers",

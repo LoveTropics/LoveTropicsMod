@@ -72,7 +72,7 @@ public class GameProgressionBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			if (!progressHolder.isStarted()) {
+			if (progressHolder.isPaused()) {
 				return;
 			}
 			int newTime = tickTime(game, progressHolder.time());

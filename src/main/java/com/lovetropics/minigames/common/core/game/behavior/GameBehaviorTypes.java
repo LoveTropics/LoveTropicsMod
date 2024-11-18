@@ -41,6 +41,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Clea
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EliminatePlayerAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.EndGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ExtinguishPlayerFireAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
@@ -278,7 +279,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GiveRewardAction> GIVE_REWARD = register("give_reward", GiveRewardAction.CODEC);
 	public static final GameBehaviorEntry<TopPlayerTrigger> TOP_PLAYER_TRIGGER = register("top_player_trigger", TopPlayerTrigger.CODEC);
 	public static final GameBehaviorEntry<SetRoleTrigger> SET_ROLE = register("set_role", SetRoleTrigger.CODEC);
-	public static final GameBehaviorEntry<SpawnTrigger> SPAWN = register("on_spawn", SpawnTrigger.CODEC);	public static final GameBehaviorEntry<ItemPickedUpTrigger> ITEM_PICKED_UP = register("item_picked_up", ItemPickedUpTrigger.CODEC);
+	public static final GameBehaviorEntry<SpawnTrigger> SPAWN = register("on_spawn", SpawnTrigger.CODEC);
+	public static final GameBehaviorEntry<ItemPickedUpTrigger> ITEM_PICKED_UP = register("item_picked_up", ItemPickedUpTrigger.CODEC);
 	public static final GameBehaviorEntry<GiveItemsToKillerBehavior> GIVE_ITEMS_TO_KILLER = register("give_items_to_killer", GiveItemsToKillerBehavior.CODEC);
 	public static final GameBehaviorEntry<CountdownEffectsBehavior> COUNTDOWN_EFFECTS = register("countdown_effects", CountdownEffectsBehavior.CODEC);
 	public static final GameBehaviorEntry<TriggerEveryPackageBehavior> TRIGGER_EVERY_PACKAGE = register("trigger_every_package", TriggerEveryPackageBehavior.CODEC);
@@ -292,6 +294,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
 	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = REGISTRATE.object("prevent_break").behavior(PreventBreakBehavior.CODEC).register();
 	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = REGISTRATE.object("rising_fluid").behavior(RisingFluidBehavior.CODEC).register();
+	public static final GameBehaviorEntry<EndGameAction> END_GAME = REGISTRATE.object("end_game").behavior(EndGameAction.CODEC).register();
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
