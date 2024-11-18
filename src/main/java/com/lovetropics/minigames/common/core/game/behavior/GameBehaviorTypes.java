@@ -28,7 +28,6 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameClie
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameTypesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetupIntegrationsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorChaseBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddCollidersAction;
@@ -38,6 +37,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Ches
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearDisguiseAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearEffectsAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.CloseGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EliminatePlayerAction;
@@ -162,7 +162,6 @@ public class GameBehaviorTypes {
 
 	public static final GameBehaviorEntry<CompositeBehavior> COMPOSITE = register("composite", CompositeBehavior.MAP_CODEC);
 	public static final GameBehaviorEntry<PositionPlayersBehavior> POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);
-	public static final GameBehaviorEntry<TimedCloseBehavior> TIMED_CLOSE = register("timed_close", TimedCloseBehavior.CODEC);
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 	public static final GameBehaviorEntry<GameProgressionBehavior> PROGRESSION = register("progression", GameProgressionBehavior.CODEC);
@@ -295,6 +294,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = REGISTRATE.object("prevent_break").behavior(PreventBreakBehavior.CODEC).register();
 	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = REGISTRATE.object("rising_fluid").behavior(RisingFluidBehavior.CODEC).register();
 	public static final GameBehaviorEntry<EndGameAction> END_GAME = REGISTRATE.object("end_game").behavior(EndGameAction.CODEC).register();
+	public static final GameBehaviorEntry<CloseGameAction> CLOSE_GAME = REGISTRATE.object("close_game").behavior(CloseGameAction.CODEC).register();
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

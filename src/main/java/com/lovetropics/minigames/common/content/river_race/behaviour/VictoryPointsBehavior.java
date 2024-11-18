@@ -136,10 +136,6 @@ public class VictoryPointsBehavior implements IGameBehavior {
                 microgameSegment = null;
             }
         });
-
-        events.listen(RiverRaceEvents.UNLOCK_ZONE, id ->
-                riverRace.setCurrentZone(riverRace.getZoneById(id))
-        );
     }
 
     private int computeAvailablePoints(RiverRaceState.Zone zone) {

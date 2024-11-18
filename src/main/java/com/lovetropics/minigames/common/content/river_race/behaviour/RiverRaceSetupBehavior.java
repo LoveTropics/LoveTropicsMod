@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
 import com.lovetropics.minigames.common.content.river_race.RiverRaceState;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -24,5 +25,9 @@ public final class RiverRaceSetupBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		RiverRaceState riverRace = game.state().get(RiverRaceState.KEY);
 		riverRace.setForwardDirection(forwardDirection);
+
+		events.listen(RiverRaceEvents.UNLOCK_ZONE, id ->
+				riverRace.setCurrentZone(riverRace.getZoneById(id))
+		);
 	}
 }

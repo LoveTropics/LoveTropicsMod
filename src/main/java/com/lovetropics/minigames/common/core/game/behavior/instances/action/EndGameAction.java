@@ -15,6 +15,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public record EndGameAction(
@@ -36,19 +37,25 @@ public record EndGameAction(
 			});
 		} else {
 			events.listen(GameActionEvents.APPLY, context -> {
-				game.invoker(GameLogicEvents.GAME_OVER).onGameOver(getFixedWinner(game));
+				GameWinner winner = getFixedWinner(game);
+				if (winner != null) {
+					game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
+				} else {
+					if (!game.invoker(GameLogicEvents.REQUEST_GAME_OVER).requestGameOver()) {
+						game.invoker(GameLogicEvents.GAME_OVER).onGameOver(new GameWinner.Nobody());
+					}
+				}
 				return true;
 			});
 		}
 	}
 
+	@Nullable
 	private GameWinner getFixedWinner(IGamePhase game) {
-		Optional<GameWinner> winner = winningTeam.map(key -> {
+		return winningTeam.map(key -> {
 			TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 			return teams.getTeamByKey(key);
-		}).map(GameWinner.Team::new);
-
-		return winner.orElseGet(GameWinner.Nobody::new);
+		}).map(GameWinner.Team::new).orElse(null);
 	}
 
 	private GameWinner getWinnerBySource(IGamePhase game, ServerPlayer target, Source source) {
