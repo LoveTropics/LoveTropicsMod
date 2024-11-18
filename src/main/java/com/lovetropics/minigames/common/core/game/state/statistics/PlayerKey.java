@@ -4,6 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
@@ -97,6 +100,11 @@ public final class PlayerKey implements StatisticHolder {
 
 	@Override
 	public Component getName(IGamePhase game) {
+		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+		GameTeamKey team = teams != null ? teams.getTeamForPlayer(id()) : null;
+		if (team != null) {
+			return Component.literal(name()).withStyle(teams.getTeamOrThrow(team).config().formatting());
+		}
 		return Component.literal(name());
 	}
 
