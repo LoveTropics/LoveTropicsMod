@@ -105,7 +105,7 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
 
     @Override
     public boolean markAsCorrect() {
-        if (getBlockState().getValue(TriviaBlock.ANSWERED)) {
+        if (isAnswered()) {
             return false;
         }
         level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(TriviaBlock.ANSWERED, true));
@@ -114,12 +114,12 @@ public class TriviaChestBlockEntity extends ChestBlockEntity implements HasTrivi
     }
 
     @Override
+    public boolean isAnswered() {
+        return getBlockState().getValue(TriviaBlock.ANSWERED);
+    }
+
+    @Override
     public TriviaBlockEntity.TriviaBlockState getState() {
-        boolean answered = getBlockState().getValue(TriviaBlock.ANSWERED);
-        Optional<String> correctAnswer = Optional.empty();
-        if (answered) {
-            correctAnswer = Optional.of(question.answers().stream().filter(TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer::correct).findFirst().get().text());
-        }
-        return new TriviaBlockEntity.TriviaBlockState(answered, correctAnswer, unlocksAt > 0, unlocksAt);
+        return new TriviaBlockEntity.TriviaBlockState(isAnswered(), unlocksAt);
     }
 }

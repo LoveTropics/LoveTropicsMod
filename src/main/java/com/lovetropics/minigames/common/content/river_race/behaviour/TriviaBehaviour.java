@@ -28,7 +28,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
@@ -134,7 +136,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         if (!game.participants().contains(player)) {
             return InteractionResult.FAIL;
         }
-		if (hasTrivia.getState().isAnswered()) {
+		if (hasTrivia.isAnswered()) {
             return useUnlockedTriviaBlock(game, player, pos, hasTrivia);
         } else {
             return useLockedTriviaBlock(game, player, pos, hasTrivia);
@@ -267,18 +269,18 @@ public final class TriviaBehaviour implements IGameBehavior {
         }
     }
 
-    public record TriviaQuestion(String question, List<TriviaQuestionAnswer> answers, TriviaDifficulty difficulty) {
+    public record TriviaQuestion(Component question, List<TriviaQuestionAnswer> answers, TriviaDifficulty difficulty) {
         private static final Codec<List<TriviaQuestionAnswer>> SHUFFLED_ANSWERS_CODEC = ExtraCodecs.nonEmptyList(TriviaQuestionAnswer.CODEC.listOf())
                 .xmap(TriviaQuestion::shuffle, TriviaQuestion::shuffle);
 
         public static final Codec<TriviaQuestion> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.STRING.fieldOf("question").forGetter(TriviaQuestion::question),
+                ComponentSerialization.CODEC.fieldOf("question").forGetter(TriviaQuestion::question),
                 SHUFFLED_ANSWERS_CODEC.fieldOf("answers").forGetter(TriviaQuestion::answers),
                 TriviaDifficulty.CODEC.fieldOf("difficulty").forGetter(TriviaQuestion::difficulty)
         ).apply(i, TriviaQuestion::new));
 
-        public static final StreamCodec<ByteBuf, TriviaQuestion> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.STRING_UTF8, TriviaQuestion::question,
+        public static final StreamCodec<RegistryFriendlyByteBuf, TriviaQuestion> STREAM_CODEC = StreamCodec.composite(
+                ComponentSerialization.TRUSTED_STREAM_CODEC, TriviaQuestion::question,
                 TriviaQuestionAnswer.STREAM_CODEC.apply(ByteBufCodecs.list()), TriviaQuestion::answers,
                 TriviaDifficulty.STREAM_CODEC, TriviaQuestion::difficulty,
                 TriviaQuestion::new
@@ -290,26 +292,21 @@ public final class TriviaBehaviour implements IGameBehavior {
             return result;
         }
 
-        public record TriviaQuestionAnswer(String text, boolean correct) {
-            public static final StreamCodec<ByteBuf, TriviaQuestionAnswer> STREAM_CODEC = StreamCodec.composite(
-                    ByteBufCodecs.STRING_UTF8, TriviaQuestionAnswer::text,
+        public record TriviaQuestionAnswer(Component text, boolean correct) {
+            public static final StreamCodec<RegistryFriendlyByteBuf, TriviaQuestionAnswer> STREAM_CODEC = StreamCodec.composite(
+                    ComponentSerialization.TRUSTED_STREAM_CODEC, TriviaQuestionAnswer::text,
                     ByteBufCodecs.BOOL, TriviaQuestionAnswer::correct,
                     TriviaQuestionAnswer::new
             );
             public static final Codec<TriviaQuestionAnswer> CODEC = RecordCodecBuilder.create(i -> i.group(
-                    Codec.STRING.fieldOf("text").forGetter(TriviaQuestionAnswer::text),
+                    ComponentSerialization.CODEC.fieldOf("text").forGetter(TriviaQuestionAnswer::text),
                     Codec.BOOL.fieldOf("correct").forGetter(TriviaQuestionAnswer::correct)
             ).apply(i, TriviaQuestionAnswer::new));
         }
 
         @Nullable
-        public TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer getAnswer(String text) {
-            for (TriviaQuestionAnswer answer : answers) {
-                if (answer.text().equalsIgnoreCase(text)) {
-                    return answer;
-                }
-            }
-            return null;
+        public TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer getAnswer(int index) {
+            return index < answers.size() ? answers.get(index) : null;
         }
     }
 }

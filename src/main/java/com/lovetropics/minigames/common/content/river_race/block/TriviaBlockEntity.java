@@ -20,18 +20,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
 
-    public record TriviaBlockState(boolean isAnswered, Optional<String> correctAnswer, boolean lockedOut, long unlocksAt){
+    public record TriviaBlockState(boolean isAnswered, long unlocksAt){
         public static final StreamCodec<ByteBuf, TriviaBlockState> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.BOOL, TriviaBlockState::isAnswered,
-                ByteBufCodecs.optional(ByteBufCodecs.STRING_UTF8), TriviaBlockState::correctAnswer,
-                ByteBufCodecs.BOOL, TriviaBlockState::lockedOut,
                 ByteBufCodecs.VAR_LONG, TriviaBlockState::unlocksAt,
                 TriviaBlockState::new
         );
+
+        public boolean lockedOut() {
+            return unlocksAt > 0;
+        }
     }
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final String TAG_QUESTION = "question";
@@ -138,7 +139,7 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
 
     @Override
 	public boolean markAsCorrect() {
-		if (getBlockState().getValue(TriviaBlock.ANSWERED)) {
+		if (isAnswered()) {
             return false;
         }
         level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(TriviaBlock.ANSWERED, true));
@@ -147,13 +148,13 @@ public class TriviaBlockEntity extends BlockEntity implements HasTrivia {
     }
 
     @Override
+    public boolean isAnswered() {
+        return getBlockState().getValue(TriviaBlock.ANSWERED);
+    }
+
+    @Override
     public TriviaBlockState getState() {
-        boolean answered = getBlockState().getValue(TriviaBlock.ANSWERED);
-        Optional<String> correctAnswer = Optional.empty();
-        if (answered) {
-            correctAnswer = Optional.of(question.answers().stream().filter(TriviaBehaviour.TriviaQuestion.TriviaQuestionAnswer::correct).findFirst().get().text());
-        }
-        return new TriviaBlockState(answered, correctAnswer, unlocksAt > 0, unlocksAt);
+        return new TriviaBlockState(isAnswered(), unlocksAt);
     }
 
 }

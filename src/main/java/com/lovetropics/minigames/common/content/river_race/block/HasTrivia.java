@@ -19,5 +19,7 @@ public interface HasTrivia {
 
     boolean markAsCorrect();
 
+    boolean isAnswered();
+
     TriviaBlockEntity.TriviaBlockState getState();
 }
