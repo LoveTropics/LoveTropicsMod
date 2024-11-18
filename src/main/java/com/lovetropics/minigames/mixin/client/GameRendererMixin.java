@@ -3,6 +3,7 @@ package com.lovetropics.minigames.mixin.client;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.CollidersClientState;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
@@ -43,6 +44,13 @@ public class GameRendererMixin {
 		Vec3 clip = colliders.clip(start, start.add(player.getViewVector(partialTicks).scale(currentDistance)));
 		if (clip != null) {
 			minecraft.hitResult = BlockHitResult.miss(clip, Direction.UP, BlockPos.containing(clip));
+		}
+	}
+
+	@Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
+	private void bobView(PoseStack poseStack, float partialTicks, CallbackInfo ci) {
+		if (ClientGameStateManager.getOrNull(GameClientStateTypes.DISABLE_BOBBING) != null) {
+			ci.cancel();
 		}
 	}
 }

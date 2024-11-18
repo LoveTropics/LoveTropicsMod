@@ -4,6 +4,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.CollidersClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.CraftingBeeCraftsClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.DisableBobbingState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.FogClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.GlowTeamMembersState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HealthTagClientState;
@@ -57,6 +58,7 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<SwapMovementClientState> SWAP_MOVEMENT = register("swap_movement", SwapMovementClientState.CODEC);
 	public static final GameClientTweakEntry<CollidersClientState> COLLIDERS = register("colliders", CollidersClientState.CODEC, CollidersClientState.STREAM_CODEC);
 	public static final GameClientTweakEntry<HideNameTagsState> HIDE_NAME_TAGS = register("hide_name_tags", MapCodec.unit(HideNameTagsState.INSTANCE), StreamCodec.unit(HideNameTagsState.INSTANCE));
+	public static final GameClientTweakEntry<DisableBobbingState> DISABLE_BOBBING = register("disable_bobbing", MapCodec.unit(DisableBobbingState.INSTANCE), StreamCodec.unit(DisableBobbingState.INSTANCE));
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final MapCodec<T> codec) {
 		return REGISTRATE.object(name)
