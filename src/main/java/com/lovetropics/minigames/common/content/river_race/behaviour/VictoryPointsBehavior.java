@@ -31,7 +31,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
@@ -43,6 +42,7 @@ import net.minecraft.util.ExtraCodecs;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +98,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
             acquiredPointsPerZone.put(team.key(), new Object2IntOpenHashMap<>());
         }
 
-        GameSidebar sidebar = GlobalGameWidgets.registerTo(game, events).openSidebar(game.definition().name().copy().withStyle(ChatFormatting.AQUA));
+        GameSidebar sidebar = GlobalGameWidgets.registerTo(game, events).openSidebar(RiverRaceTexts.SIDEBAR_VICTORY_POINTS);
 
         events.listen(RiverRaceEvents.QUESTION_COMPLETED, this::onQuestionAnswered);
         events.listen(RiverRaceEvents.COLLECTABLE_PLACED, this::onCollectablePlaced);
@@ -223,7 +223,22 @@ public class VictoryPointsBehavior implements IGameBehavior {
 
     private Component[] renderSidebar(TeamState teams) {
         List<Component> sidebar = new ArrayList<>(10);
-        sidebar.add(RiverRaceTexts.SIDEBAR_VICTORY_POINTS);
+
+        if (teams.size() != 2) {
+            // :(
+            return new Component[0];
+        }
+
+        Iterator<GameTeam> iterator = teams.iterator();
+        GameTeam firstTeam = iterator.next();
+        GameTeam secondTeam = iterator.next();
+
+        sidebar.add(RiverRaceTexts.SIDEBAR_HEADER.apply(
+                Component.literal(String.valueOf(game.statistics().forTeam(firstTeam.key()).getInt(StatisticKey.VICTORY_POINTS))),
+                firstTeam.config().styledName(),
+                Component.literal(String.valueOf(game.statistics().forTeam(secondTeam.key()).getInt(StatisticKey.VICTORY_POINTS))),
+                secondTeam.config().styledName()
+        ));
 
         for (RiverRaceState.Zone zone : riverRace.getZones()) {
             int pointsInZone = availablePointsPerZone.getInt(zone.id());
@@ -231,18 +246,24 @@ public class VictoryPointsBehavior implements IGameBehavior {
                 continue;
             }
             sidebar.add(CommonComponents.EMPTY);
-            sidebar.add(RiverRaceTexts.SIDEBAR_ZONE_HEADER.apply(zone.displayName()));
-            for (GameTeam team : teams) {
-                int acquiredPoints = acquiredPointsPerZone.get(team.key()).getInt(zone.id());
-				int percent = acquiredPoints * 100 / pointsInZone;
-                sidebar.add(RiverRaceTexts.SIDEBAR_TEAM_PROGRESS.apply(team.config().styledName(), percent));
-            }
+            int firstPercent = getPercentInZone(zone, firstTeam, pointsInZone);
+            int secondPercent = getPercentInZone(zone, secondTeam, pointsInZone);
+            sidebar.add(zone.displayName());
+            sidebar.add(RiverRaceTexts.SIDEBAR_TEAM_PROGRESS.apply(
+                    Component.literal(String.valueOf(firstPercent)).withStyle(firstTeam.config().formatting()),
+                    Component.literal(String.valueOf(secondPercent)).withStyle(secondTeam.config().formatting())
+            ));
         }
 
         return sidebar.toArray(new Component[0]);
     }
 
-	private static final class MicrogameSegmentState {
+    private int getPercentInZone(RiverRaceState.Zone zone, GameTeam team, int totalPoints) {
+        int acquiredPoints = acquiredPointsPerZone.get(team.key()).getInt(zone.id());
+        return acquiredPoints * 100 / totalPoints;
+    }
+
+    private static final class MicrogameSegmentState {
 		private final Object2IntOpenHashMap<GameTeamKey> winCountByTeam = new Object2IntOpenHashMap<>();
 		private final Object2IntOpenHashMap<GameTeamKey> pointsByTeam = new Object2IntOpenHashMap<>();
 	}

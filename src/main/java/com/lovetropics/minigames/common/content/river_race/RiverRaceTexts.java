@@ -33,9 +33,9 @@ public final class RiverRaceTexts {
 	public static final Component MICROGAME_RESULTS = KEYS.add("microgames_results", "Microgames have completed! Here are the results:")
 			.withStyle(ChatFormatting.GOLD);
 
-	public static final Component SIDEBAR_VICTORY_POINTS = KEYS.add("sidebar.victory_points", "Victory Points per Zone").withStyle(ChatFormatting.GREEN);
-	public static final TranslationCollector.Fun1 SIDEBAR_ZONE_HEADER = KEYS.add1("sidebar.zone_header", "%s:");
-	public static final TranslationCollector.Fun2 SIDEBAR_TEAM_PROGRESS = KEYS.add2("sidebar.team_progress", " %s - %s%%");
+	public static final Component SIDEBAR_VICTORY_POINTS = KEYS.add("sidebar.victory_points", "Victory Points").withStyle(ChatFormatting.AQUA);
+	public static final TranslationCollector.Fun4 SIDEBAR_HEADER = KEYS.add4("sidebar.zones_header", "%s %s | %s %s").withStyle(ChatFormatting.GRAY);
+	public static final TranslationCollector.Fun2 SIDEBAR_TEAM_PROGRESS = KEYS.add2("sidebar.team_progress", "    %s%% | %s%%").withStyle(ChatFormatting.GRAY);
 
 	public static final TranslationCollector.Fun1 COLLECTABLE_NAME = KEYS.add1("collectable_name", "Collectable - %s");
 
