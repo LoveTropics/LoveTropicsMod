@@ -27,11 +27,13 @@ public final class KillsTrackerBehavior implements IGameBehavior {
 
 			final ServerPlayer killerPlayer = Util.getKillerPlayer(player, damageSource);
 			if (killerPlayer != null) {
-				statistics.forPlayer(killerPlayer).incrementInt(StatisticKey.KILLS, 1);
+				if (killerPlayer != player) {
+					statistics.forPlayer(killerPlayer).incrementInt(StatisticKey.KILLS, 1);
 
-				GameTeamKey team = teams != null ? teams.getTeamForPlayer(killerPlayer) : null;
-				if (team != null) {
-					statistics.forTeam(team).incrementInt(StatisticKey.KILLS, 1);
+					GameTeamKey team = teams != null ? teams.getTeamForPlayer(killerPlayer) : null;
+					if (team != null) {
+						statistics.forTeam(team).incrementInt(StatisticKey.KILLS, 1);
+					}
 				}
 
 				playerStatistics.set(StatisticKey.KILLED_BY, PlayerKey.from(killerPlayer));
