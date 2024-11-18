@@ -174,7 +174,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		for (ServerPlayer player : game.participants()) {
 			player.getInventory().clearContent();
 			for (int i = 0; i < 9; i++) {
-				player.getInventory().add(targetStack.copy());
+				player.getInventory().setItem(i, targetStack.copy());
 			}
 		}
 
