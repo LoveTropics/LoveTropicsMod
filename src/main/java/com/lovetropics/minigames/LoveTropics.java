@@ -24,8 +24,8 @@ import com.lovetropics.minigames.common.content.de_a_coudre.DeACoudre;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.paint_party.PaintParty;
 import com.lovetropics.minigames.common.content.paint_party.PaintPartyTexts;
-import com.lovetropics.minigames.common.content.pillars_of_wealth.PillarsOfWealth;
-import com.lovetropics.minigames.common.content.pillars_of_wealth.PillarsOfWealthTexts;
+import com.lovetropics.minigames.common.content.columns_of_chaos.ColumnsOfChaos;
+import com.lovetropics.minigames.common.content.columns_of_chaos.ColumnsOfChaosTexts;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
@@ -134,7 +134,7 @@ public class LoveTropics {
                     MinigameTexts.KEYS.forEach(consumer);
                     BiodiversityBlitzTexts.collectTranslations(consumer);
                     BlockPartyTexts.KEYS.forEach(consumer);
-                    PillarsOfWealthTexts.KEYS.forEach(consumer);
+                    ColumnsOfChaosTexts.KEYS.forEach(consumer);
                     PaintPartyTexts.KEYS.forEach(consumer);
                     CraftingBeeTexts.KEYS.forEach(consumer);
                     ConnectFourTexts.KEYS.forEach(consumer);
@@ -176,7 +176,7 @@ public class LoveTropics {
         RiverRace.init();
         DeACoudre.init();
         TreasureDig.init();
-        PillarsOfWealth.init();
+        ColumnsOfChaos.init();
         PaintParty.init();
 
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);

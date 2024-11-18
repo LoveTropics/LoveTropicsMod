@@ -1,13 +1,10 @@
-package com.lovetropics.minigames.common.content.pillars_of_wealth;
+package com.lovetropics.minigames.common.content.columns_of_chaos;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.MinigameTexts;
-import com.lovetropics.minigames.common.content.block_party.BlockPartyBehavior;
-import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
@@ -28,13 +25,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
@@ -44,8 +39,8 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public final class PillarsOfWealthBehaviour implements IGameBehavior {
-    public static final MapCodec<PillarsOfWealthBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+public final class ColumnsOfChaosBehavior implements IGameBehavior {
+    public static final MapCodec<ColumnsOfChaosBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.INT.fieldOf("pillar_height").forGetter(b -> b.pillarHeight),
             Codec.INT.optionalFieldOf("item_interval", 40).forGetter(b -> b.itemInterval),
             Codec.INT.optionalFieldOf("decrease_over_rounds", 20).forGetter(b -> b.decreaseOverRounds),
@@ -53,7 +48,7 @@ public final class PillarsOfWealthBehaviour implements IGameBehavior {
             Codec.INT.optionalFieldOf("min_countdown_ticks", (2 * 20)).forGetter(b -> b.decreaseOverRounds),
             TagKey.hashedCodec(Registries.ITEM).listOf().fieldOf("exclusion_tags").forGetter(b -> b.exclusionTags),
             Codec.STRING.fieldOf("floor_region").forGetter(b -> b.floorRegionName)
-    ).apply(i, PillarsOfWealthBehaviour::new));
+    ).apply(i, ColumnsOfChaosBehavior::new));
     private final int pillarHeight;
     private final int itemInterval;
     private final int decreaseOverRounds;
@@ -66,7 +61,7 @@ public final class PillarsOfWealthBehaviour implements IGameBehavior {
     @Nullable
     private State state;
 
-    public PillarsOfWealthBehaviour(int pillarHeight, int itemInterval, int decreaseOverRounds, int maxCountdownTicks, int minCountdownTicks, List<TagKey<Item>> exclusionTags, String floorRegionName) {
+    public ColumnsOfChaosBehavior(int pillarHeight, int itemInterval, int decreaseOverRounds, int maxCountdownTicks, int minCountdownTicks, List<TagKey<Item>> exclusionTags, String floorRegionName) {
         this.pillarHeight = pillarHeight;
         this.itemInterval = itemInterval;
         this.decreaseOverRounds = decreaseOverRounds;
@@ -209,7 +204,7 @@ public final class PillarsOfWealthBehaviour implements IGameBehavior {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (PillarsOfWealthBehaviour) obj;
+        var that = (ColumnsOfChaosBehavior) obj;
         return this.pillarHeight == that.pillarHeight &&
                 this.itemInterval == that.itemInterval &&
                 Objects.equals(this.exclusionTags, that.exclusionTags);
@@ -256,7 +251,7 @@ public final class PillarsOfWealthBehaviour implements IGameBehavior {
 
             long secondsLeft = ticksLeft / SharedConstants.TICKS_PER_SECOND;
             if (ticksLeft % 10 == 0) {
-                Component message = PillarsOfWealthTexts.NEW_ITEM_IN.apply(secondsLeft).withStyle(ChatFormatting.GOLD);
+                Component message = ColumnsOfChaosTexts.NEW_ITEM_IN.apply(secondsLeft).withStyle(ChatFormatting.GOLD);
                 players.sendMessage(message, true);
             }
 
