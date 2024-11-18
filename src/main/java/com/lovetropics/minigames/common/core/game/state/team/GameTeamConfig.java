@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.item.DyeColor;
 
 import java.util.List;
@@ -26,5 +27,17 @@ public record GameTeamConfig(Component name, DyeColor dye, ChatFormatting format
 
 	public MutableComponent styledName() {
 		return name.copy().withStyle(formatting);
+	}
+
+	public BossEvent.BossBarColor bossBarColor() {
+		return switch (dye) {
+			case WHITE, GRAY, LIGHT_GRAY -> BossEvent.BossBarColor.WHITE;
+			case ORANGE, RED -> BossEvent.BossBarColor.RED;
+			case MAGENTA, BLACK, PURPLE -> BossEvent.BossBarColor.PURPLE;
+			case LIGHT_BLUE, BLUE, CYAN -> BossEvent.BossBarColor.BLUE;
+			case YELLOW, BROWN -> BossEvent.BossBarColor.YELLOW;
+			case LIME, GREEN -> BossEvent.BossBarColor.GREEN;
+			case PINK -> BossEvent.BossBarColor.PINK;
+		};
 	}
 }

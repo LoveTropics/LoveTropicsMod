@@ -4,7 +4,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
-import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.crafting_bee.ingredient.IngredientDecomposer;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -23,6 +22,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.TimedGameState;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamConfig;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
@@ -35,6 +35,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -53,8 +55,13 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.BeaconBeamBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.StainedGlassBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,7 +84,8 @@ public class CraftingBeeBehavior implements IGameBehavior {
             TemplatedText.CODEC.fieldOf("timer_bar").forGetter(c -> c.timerBarText),
             Codec.INT.fieldOf("time_per_team").forGetter(t -> t.timePerTeam),
             Codec.INT.fieldOf("recycling_penalty").forGetter(t -> t.recyclingPenalty),
-            Codec.STRING.fieldOf("recycling_region").forGetter(c -> c.recyclingRegionKey)
+            Codec.STRING.fieldOf("recycling_region").forGetter(c -> c.recyclingRegionKey),
+            Codec.unboundedMap(GameTeamKey.CODEC, Codec.STRING).optionalFieldOf("beacon_bar_by_team", Map.of()).forGetter(b -> b.beaconBarByTeam)
     ).apply(in, CraftingBeeBehavior::new));
 
     private final List<RecipeSelector> selectors;
@@ -87,19 +95,19 @@ public class CraftingBeeBehavior implements IGameBehavior {
     private final TemplatedText timerBarText;
     private final int timePerTeam, recyclingPenalty;
     private final String recyclingRegionKey;
+    private final Map<GameTeamKey, String> beaconBarByTeam;
 
     private TeamState teams;
     private IGamePhase game;
-    private BlockBox recyclingRegion;
+    private List<BlockBox> recyclingRegions;
 
     private ListMultimap<GameTeamKey, CraftingTask> tasks;
     private volatile boolean done;
 
-    private final Map<GameTeamKey, GameBossBar> taskBars = new HashMap<>();
-    private Map<GameTeamKey, BossBar> timerBars;
+    private Map<GameTeamKey, CraftingTeamState> teamStates;
     private Set<GameTeamKey> teamsWithoutTime;
 
-    public CraftingBeeBehavior(List<RecipeSelector> selectors, List<IngredientDecomposer> decomposers, int allowedHints, TemplatedText timerBarText, int timePerTeam, int recyclingPenalty, String recyclingRegionKey) {
+    public CraftingBeeBehavior(List<RecipeSelector> selectors, List<IngredientDecomposer> decomposers, int allowedHints, TemplatedText timerBarText, int timePerTeam, int recyclingPenalty, String recyclingRegionKey, Map<GameTeamKey, String> beaconBarByTeam) {
         this.selectors = selectors;
         this.decomposers = decomposers;
         this.allowedHints = allowedHints;
@@ -108,6 +116,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         this.timePerTeam = timePerTeam;
         this.recyclingPenalty = recyclingPenalty;
         this.recyclingRegionKey = recyclingRegionKey;
+        this.beaconBarByTeam = beaconBarByTeam;
     }
 
     @Override
@@ -119,16 +128,16 @@ public class CraftingBeeBehavior implements IGameBehavior {
         this.game = game;
         teams = game.instanceState().getOrThrow(TeamState.KEY);
 
-        recyclingRegion = game.mapRegions().getOrThrow(recyclingRegionKey);
+        recyclingRegions = game.mapRegions().getAll(recyclingRegionKey);
 
-        timerBars = new HashMap<>();
+        teamStates = new HashMap<>();
         teamsWithoutTime = new HashSet<>();
 
         GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
         events.listen(GamePhaseEvents.START, () -> start(widgets));
         events.listen(GamePhaseEvents.TICK, () -> tickRunning(game));
-        events.listen(GamePhaseEvents.DESTROY, () -> timerBars.values().forEach(b -> b.bar().close()));
-        events.listen(GamePhaseEvents.STOP, reason -> timerBars.values().forEach(b -> b.bar().close()));
+        events.listen(GamePhaseEvents.DESTROY, () -> teamStates.values().forEach(b -> b.timerBar().close()));
+        events.listen(GamePhaseEvents.STOP, reason -> teamStates.values().forEach(b -> b.timerBar().close()));
 
         events.listen(GameLogicEvents.GAME_OVER, this::onGameOver);
 
@@ -152,17 +161,35 @@ public class CraftingBeeBehavior implements IGameBehavior {
             sync(team.key());
             distributeIngredients(recipes, teams.getPlayersForTeam(team.key()));
 
-            var bar = timerBars.computeIfAbsent(team.key(), k -> new BossBar(
-                    new GameBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10),
+            List<BlockPos> beaconBarGlassPositions;
+            String beaconBarKey = beaconBarByTeam.get(team.key());
+			if (beaconBarKey != null) {
+                BlockBox box = game.mapRegions().getOrThrow(beaconBarKey);
+                beaconBarGlassPositions = BlockPos.betweenClosedStream(box.min(), box.max())
+                        .filter(pos -> game.level().getBlockState(pos).is(Tags.Blocks.GLASS_BLOCKS))
+                        .map(BlockPos::immutable)
+                        .toList();
+            } else {
+                beaconBarGlassPositions = List.of();
+            }
+
+            GameBossBar timerBar = new GameBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
+            teams.getPlayersForTeam(team.key()).forEach(timerBar::addPlayer);
+
+            GameBossBar taskBar = new GameBossBar(team.config().styledName(), team.config().bossBarColor(), BossEvent.BossBarOverlay.PROGRESS);
+            taskBar.setProgress(0.0f);
+
+            teamStates.put(team.key(), new CraftingTeamState(
+                    beaconBarGlassPositions,
+                    getGlassBlockForTeam(team.config()),
+                    taskBar,
+                    timerBar,
                     new TimedGameState(timePerTeam, 0)
             ));
-            teams.getPlayersForTeam(team.key()).forEach(bar.bar::addPlayer);
         }
 
-        for (GameTeam team : teams) {
-            GameBossBar bar = widgets.openBossBar(team.config().styledName(), team.config().dye(), BossEvent.BossBarOverlay.PROGRESS);
-            bar.setProgress(0.0f);
-            taskBars.put(team.key(), bar);
+        for (CraftingTeamState state : teamStates.values()) {
+            widgets.registerWidget(state.taskBar);
         }
     }
 
@@ -246,8 +273,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         var gameTeam = teams.getTeamByKey(team);
         var teamConfig = gameTeam.config();
 
-        game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), completed, teamTasks.size()));
-        taskBars.get(team).setProgress(completed / (float) teamTasks.size());
+        setTeamTaskProgress(teamConfig, team, (int) completed, teamTasks.size());
 
         PlayerSet teamPlayers = teams.getPlayersForTeam(team);
         teamPlayers.playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -259,6 +285,29 @@ public class CraftingBeeBehavior implements IGameBehavior {
         if (completed == teamTasks.size()) {
             triggerGameOver(new GameWinner.Team(gameTeam));
         }
+    }
+
+    private void setTeamTaskProgress(GameTeamConfig teamConfig, GameTeamKey team, int count, int totalCount) {
+        game.allPlayers().sendMessage(CraftingBeeTexts.TEAM_HAS_COMPLETED_RECIPES.apply(teamConfig.styledName(), count, totalCount));
+
+        CraftingTeamState teamState = teamStates.get(team);
+        float progress = count / (float) totalCount;
+        teamState.taskBar.setProgress(progress);
+
+		if (!teamState.beaconBarGlassPositions.isEmpty()) {
+            int index = Mth.lerpDiscrete(progress, 0, teamState.beaconBarGlassPositions.size() - 1);
+            BlockPos glass = teamState.beaconBarGlassPositions.get(index);
+            game.level().setBlockAndUpdate(glass, teamState.beaconBarGlass);
+        }
+    }
+
+    private static BlockState getGlassBlockForTeam(GameTeamConfig teamConfig) {
+        for (Holder<Block> block : BuiltInRegistries.BLOCK.getTagOrEmpty(Tags.Blocks.GLASS_BLOCKS)) {
+            if (block.value() instanceof StainedGlassBlock stainedGlass && stainedGlass.getColor() == teamConfig.dye()) {
+                return stainedGlass.defaultBlockState();
+            }
+        }
+        return Blocks.GLASS.defaultBlockState();
     }
 
     private void triggerGameOver(GameWinner winner) {
@@ -291,18 +340,18 @@ public class CraftingBeeBehavior implements IGameBehavior {
     }
 
     private void tickRunning(IGamePhase game) {
-        timerBars.forEach((team, bar) -> {
+        teamStates.forEach((team, bar) -> {
             switch (bar.state.tick(game.ticks())) {
                 case RUNNING -> {
                     long ticksRemaining = bar.state.getTicksRemaining();
                     if (ticksRemaining % SharedConstants.TICKS_PER_SECOND == 0) {
-                        bar.bar.setTitle(getTimeRemainingText(game, ticksRemaining));
-                        bar.bar.setProgress((float) ticksRemaining / timePerTeam);
+                        bar.timerBar.setTitle(getTimeRemainingText(game, ticksRemaining));
+                        bar.timerBar.setProgress((float) ticksRemaining / timePerTeam);
                     }
                 }
                 case GAME_OVER -> {
-                    bar.bar.setTitle(getTimeRemainingText(game, 0));
-                    bar.bar.setProgress(0);
+                    bar.timerBar.setTitle(getTimeRemainingText(game, 0));
+                    bar.timerBar.setProgress(0);
 
                     teamsWithoutTime.add(team);
 
@@ -343,8 +392,10 @@ public class CraftingBeeBehavior implements IGameBehavior {
             return InteractionResult.FAIL;
         }
         ItemStack itemInHand = player.getItemInHand(hand);
-        if (recyclingRegion.contains(pos) && !itemInHand.isEmpty()) {
-            return useRecycler(player, itemInHand);
+        for (BlockBox recycler : recyclingRegions) {
+            if (recycler.contains(pos) && !itemInHand.isEmpty()) {
+                return useRecycler(player, itemInHand);
+            }
         }
         return InteractionResult.PASS;
     }
@@ -372,7 +423,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
     }
 
     private void applyTimePenalty(ServerPlayer player, int penalty) {
-        timerBars.get(teams.getTeamForPlayer(player))
+        teamStates.get(teams.getTeamForPlayer(player))
                 .state().increaseRemaining(-penalty);
 
         Component subtitle = CraftingBeeTexts.TIME_PENALTY.apply(Mth.positiveCeilDiv(penalty, SharedConstants.TICKS_PER_SECOND));
@@ -410,5 +461,12 @@ public class CraftingBeeBehavior implements IGameBehavior {
         }
     }
 
-    private record BossBar(GameBossBar bar, TimedGameState state) {}
+    private record CraftingTeamState(
+            List<BlockPos> beaconBarGlassPositions,
+            BlockState beaconBarGlass,
+            GameBossBar taskBar,
+            GameBossBar timerBar,
+            TimedGameState state
+    ) {
+    }
 }
