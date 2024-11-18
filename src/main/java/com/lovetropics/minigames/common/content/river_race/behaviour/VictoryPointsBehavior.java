@@ -35,6 +35,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ExtraCodecs;
@@ -54,7 +55,8 @@ public class VictoryPointsBehavior implements IGameBehavior {
         Codec.INT.optionalFieldOf("trivia_challenge_points", 5).forGetter(c -> c.triviaChallengePoints),
         Codec.INT.optionalFieldOf("collectable_collected_points", 0).forGetter(c -> c.collectableCollectedPoints),
         Codec.INT.optionalFieldOf("collectable_placed_points", 1).forGetter(c -> c.collectablePlacedPoints),
-        ExtraCodecs.nonEmptyList(MoreCodecs.listOrUnit(Codec.INT)).optionalFieldOf("points_per_game_won", List.of(3, 2, 1)).forGetter(c -> c.pointsPerGameWon)
+        ExtraCodecs.nonEmptyList(MoreCodecs.listOrUnit(Codec.INT)).optionalFieldOf("points_per_game_won", List.of(3, 2, 1)).forGetter(c -> c.pointsPerGameWon),
+        Codec.unboundedMap(ResourceLocation.CODEC, Codec.INT).optionalFieldOf("special_points_per_game", Map.of()).forGetter(c -> c.specialPointsPerGame)
     ).apply(i, VictoryPointsBehavior::new));
 
     private static final int SIDEBAR_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
@@ -71,18 +73,20 @@ public class VictoryPointsBehavior implements IGameBehavior {
     private final int collectableCollectedPoints;
     private final int collectablePlacedPoints;
     private final List<Integer> pointsPerGameWon;
+    private final Map<ResourceLocation, Integer> specialPointsPerGame;
 
     @Nullable
     private MicrogameSegmentState microgameSegment;
 
-    public VictoryPointsBehavior(int triviaChestPoints, int triviaGatePoints, int triviaChallengePoints, int collectableCollectedPoints, int collectablePlacedPoints, List<Integer> pointsPerGameWon) {
+    public VictoryPointsBehavior(int triviaChestPoints, int triviaGatePoints, int triviaChallengePoints, int collectableCollectedPoints, int collectablePlacedPoints, List<Integer> pointsPerGameWon, Map<ResourceLocation, Integer> specialPointsPerGame) {
         this.triviaChestPoints = triviaChestPoints;
         this.triviaGatePoints = triviaGatePoints;
         this.triviaChallengePoints = triviaChallengePoints;
         this.collectableCollectedPoints = collectableCollectedPoints;
         this.collectablePlacedPoints = collectablePlacedPoints;
         this.pointsPerGameWon = pointsPerGameWon;
-    }
+		this.specialPointsPerGame = specialPointsPerGame;
+	}
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -128,7 +132,8 @@ public class VictoryPointsBehavior implements IGameBehavior {
                 microgameSegment = new MicrogameSegmentState();
             }
             MicrogameSegmentState segment = microgameSegment;
-            subEvents.listen(GameLogicEvents.GAME_OVER, winner -> onMicrogameWinTriggered(winner, segment));
+            ResourceLocation microgameId = subGame.definition().id();
+            subEvents.listen(GameLogicEvents.GAME_OVER, winner -> onMicrogameWinTriggered(microgameId, winner, segment));
         });
         events.listen(SubGameEvents.RETURN_TO_TOP, () -> {
 			if (microgameSegment != null) {
@@ -152,7 +157,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
 		return availablePoints / teams.size();
     }
 
-    private void onMicrogameWinTriggered(GameWinner winner, MicrogameSegmentState segmentState) {
+    private void onMicrogameWinTriggered(ResourceLocation microgameId, GameWinner winner, MicrogameSegmentState segmentState) {
         GameTeamKey winningTeam = switch (winner) {
             case GameWinner.Player(ServerPlayer player) -> getTeamFor(PlayerKey.from(player));
             case GameWinner.Team(GameTeam team) -> team.key();
@@ -162,6 +167,7 @@ public class VictoryPointsBehavior implements IGameBehavior {
 		if (winningTeam != null) {
             int winIndex = segmentState.winCountByTeam.addTo(winningTeam, 1);
             int points = pointsPerGameWon.get(Math.min(winIndex, pointsPerGameWon.size() - 1));
+            points = specialPointsPerGame.getOrDefault(microgameId, points);
             segmentState.pointsByTeam.addTo(winningTeam, points);
 		}
     }
