@@ -6,18 +6,20 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class EliminatePlayerAction implements IGameBehavior {
-	public static final MapCodec<EliminatePlayerAction> CODEC = MapCodec.unit(EliminatePlayerAction::new);
+public record SetPlayerRoleAction(PlayerRole role) implements IGameBehavior {
+	public static final MapCodec<SetPlayerRoleAction> CODEC = PlayerRole.CODEC.fieldOf("role").xmap(SetPlayerRoleAction::new, SetPlayerRoleAction::role);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-			if (!game.spectators().contains(target)) {
-				game.setPlayerRole(target, PlayerRole.SPECTATOR);
+			if (game.getRoleFor(target) != role) {
+				game.setPlayerRole(target, role);
 				target.setHealth(20.0F);
+				return true;
 			}
-			return true;
+			return false;
 		});
 	}
 }

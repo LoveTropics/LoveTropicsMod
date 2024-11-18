@@ -175,6 +175,10 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return teamsByKey.get(key);
 	}
 
+	public GameTeam getTeamOrThrow(GameTeamKey key) {
+		return Objects.requireNonNull(getTeamByKey(key));
+	}
+
 	public boolean areSameTeam(Entity source, Entity target) {
 		if (!(source instanceof Player) || !(target instanceof Player)) {
 			return false;

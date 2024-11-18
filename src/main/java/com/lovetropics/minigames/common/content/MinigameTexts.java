@@ -47,6 +47,7 @@ public final class MinigameTexts {
 	public static final Component PAINT_PARTY = KEYS.add("paint_party", "Paint Party");
 	public static final Component ERUPTIVE_SPLEEF = KEYS.add("eruptive_spleef", "Eruptive Spleef");
 	public static final Component ERUPTIVE_SPLEEF_TEAMS = KEYS.add("eruptive_spleef_teams", "Eruptive Spleef (Teams)");
+	public static final Component PARKOUR_RACE_TEAMS = KEYS.add("parkour_race_teams", "Parkour Race (Teams)");
 
 	// TODO: These should move into SurviveTheTideTexts
 	public static final Component[] SURVIVE_THE_TIDE_INTRO = {
@@ -128,11 +129,14 @@ public final class MinigameTexts {
 	public static final TranslationCollector.Fun2 POINT_SCORED = KEYS.add2("goal_scored", "%s scored for %s!").withStyle(ChatFormatting.GRAY);
 
 	public static final Component INVENTORY_FULL = KEYS.add("inventory_full", "Your inventory is full!").withStyle(ChatFormatting.RED);
+	public static final Component CHECKPOINT_REACHED = KEYS.add("checkpoint_reached", "Checkpoint reached!").withStyle(ChatFormatting.GREEN);
 
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");
 		KEYS.add("get_ready", "Get ready!");
 		KEYS.add("go", "Go!");
+		KEYS.add("player_completed_course", "%name% just completed the course!");
+		KEYS.add("sidebar.race_course", "Race to the end of the course!");
 
 		KEYS.add("donation.antidote_package", "Antidote Package");
 		KEYS.add("donation.antidote_package.description", "Help someone avoid bad effects by giving them a Bucket of Milk!");

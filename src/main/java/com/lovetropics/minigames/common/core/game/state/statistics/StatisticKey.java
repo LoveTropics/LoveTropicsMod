@@ -55,7 +55,7 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Integer> ITEMS_CRAFTED = ofInt("items_crafted").displays(unit("items"));
 
 	// Generic - Global
-	public static final StatisticKey<Integer> TOTAL_TIME = ofInt("total_time").displays(minutesSeconds());
+	public static final StatisticKey<Integer> TOTAL_TIME = ofIntNoDefault("total_time").displays(minutesSeconds());
 
 	public static final StatisticKey<Boolean> TEAMS = ofBool("teams");
 
@@ -100,6 +100,10 @@ public final class StatisticKey<T> {
 
 	public static StatisticKey<Integer> ofInt(String key) {
 		return StatisticKey.register(Integer.class, key, JsonPrimitive::new).defaultValue(0);
+	}
+
+	public static StatisticKey<Integer> ofIntNoDefault(String key) {
+		return StatisticKey.register(Integer.class, key, JsonPrimitive::new);
 	}
 
 	public static StatisticKey<Float> ofFloat(String key) {

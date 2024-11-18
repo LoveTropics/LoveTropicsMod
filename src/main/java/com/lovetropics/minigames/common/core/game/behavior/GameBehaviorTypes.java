@@ -2,14 +2,17 @@ package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import com.lovetropics.minigames.common.content.river_race.behaviour.KillInVoidBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.CheckpointsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CountdownEffectsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.DebugModeBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.FirstEmptyTeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameEndEffectsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameProgressionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsToKillerBehavior;
@@ -41,7 +44,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Clea
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CloseGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.EliminatePlayerAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetPlayerRoleAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EndGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ExtinguishPlayerFireAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
@@ -61,6 +64,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetD
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetExtendingBlocksAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetGlowingAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetStatisticAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetTotalTimeAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShootProjectilesAroundPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShowTitleAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SpawnEntitiesAroundPlayersAction;
@@ -194,7 +198,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TeamChatBehavior> TEAM_CHAT = register("team_chat", TeamChatBehavior.CODEC);
 	public static final GameBehaviorEntry<SpectatorChaseBehavior> SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior.CODEC);
 	public static final GameBehaviorEntry<ForceLoadRegionBehavior> FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
-	public static final GameBehaviorEntry<EliminatePlayerAction> ELIMINATE_PLAYER = register("eliminate_player", EliminatePlayerAction.CODEC);
+	public static final GameBehaviorEntry<SetPlayerRoleAction> SET_PLAYER_ROLE = register("set_player_role", SetPlayerRoleAction.CODEC);
 	public static final GameBehaviorEntry<FillChestsByMarkerBehavior> FILL_CHESTS_BY_MARKER = register("fill_chests_by_marker", FillChestsByMarkerBehavior.CODEC);
 	public static final GameBehaviorEntry<GenerateEntitiesBehavior> GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 	public static final GameBehaviorEntry<AddWeatherBehavior> ADD_WEATHER = register("add_weather", AddWeatherBehavior.CODEC);
@@ -205,6 +209,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DisableTntDestructionBehavior> DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTntDestructionBehavior.CODEC);
 	public static final GameBehaviorEntry<SetMaxHealthBehavior> SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
 	public static final GameBehaviorEntry<LastRemainingWinTrigger> LAST_REMAINING_WIN_TRIGGER = register("last_remaining_win_trigger", LastRemainingWinTrigger.CODEC);
+	public static final GameBehaviorEntry<FirstEmptyTeamWinTrigger> FIRST_EMPTY_TEAM_WIN_TRIGGER = register("first_empty_team_win_trigger", FirstEmptyTeamWinTrigger.CODEC);
 	public static final GameBehaviorEntry<SyncTeamsBehavior> SYNC_TEAMS = register("sync_teams", SyncTeamsBehavior.CODEC);
 	public static final GameBehaviorEntry<AddEquipmentAction> ADD_EQUIPMENT = register("add_equipment", AddEquipmentAction.CODEC);
 	public static final GameBehaviorEntry<ResetHungerAction> RESET_HUNGER = register("reset_hunger", ResetHungerAction.CODEC);
@@ -292,11 +297,14 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<RemoveCollidersAction> REMOVE_COLLIDERS = register("remove_colliders", RemoveCollidersAction.CODEC);
 	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
 	public static final GameBehaviorEntry<SetStatisticAction> SET_STATISTIC = register("set_statistic", SetStatisticAction.CODEC);
+	public static final GameBehaviorEntry<SetTotalTimeAction> SET_TOTAL_TIME = register("set_total_time", SetTotalTimeAction.CODEC);
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
 	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = register("prevent_break", PreventBreakBehavior.CODEC);
 	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = register("rising_fluid", RisingFluidBehavior.CODEC);
 	public static final GameBehaviorEntry<EndGameAction> END_GAME = register("end_game", EndGameAction.CODEC);
 	public static final GameBehaviorEntry<CloseGameAction> CLOSE_GAME = register("close_game", CloseGameAction.CODEC);
+	public static final GameBehaviorEntry<CheckpointsBehavior> CHECKPOINTS = register("checkpoints", CheckpointsBehavior.CODEC);
+	public static final GameBehaviorEntry<KillInVoidBehavior> KILL_IN_VOID = register("kill_in_void", KillInVoidBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

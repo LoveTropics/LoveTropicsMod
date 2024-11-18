@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
@@ -35,7 +36,8 @@ public record WhileInRegionTrigger(Map<String, GameActionList<ServerPlayer>> reg
 			for (var entry : regionActions.entrySet()) {
 				if (isPlayerInRegion(game, player, entry.getKey())) {
 					GameActionList<ServerPlayer> actions = entry.getValue();
-					actions.apply(game, GameActionContext.EMPTY, player);
+					GameActionContext context = GameActionContext.builder().set(GameActionParameter.NAME, player.getDisplayName()).build();
+					actions.apply(game, context, player);
 				}
 			}
 		});
