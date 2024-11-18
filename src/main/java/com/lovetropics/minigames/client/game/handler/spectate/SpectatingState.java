@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -28,6 +28,9 @@ interface SpectatingState {
 	}
 
 	default void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, ViewportEvent.ComputeCameraAngles event) {
+	}
+
+	default void applyCameraDistance(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, CalculateDetachedCameraDistanceEvent event) {
 	}
 
 	boolean allowsZoom();
@@ -113,25 +116,21 @@ interface SpectatingState {
 
 		@Override
 		public void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, ViewportEvent.ComputeCameraAngles event) {
-			Entity focusEntity = client.getCameraEntity();
-			focusEntity = focusEntity != null ? focusEntity : player;
-
 			double zoom = session.getZoom(partialTicks);
 			boolean firstPerson = zoom <= 1e-2;
-
 			if (!firstPerson) {
-				float yaw = player.getViewYRot(partialTicks);
-				float pitch = player.getViewXRot(partialTicks);
+				event.setYaw(player.getViewYRot(partialTicks));
+				event.setPitch(player.getViewXRot(partialTicks));
+			}
+		}
 
-				event.setYaw(yaw);
-				event.setPitch(pitch);
-				camera.setRotation(yaw, pitch);
-
-				Vec3 origin = focusEntity.getEyePosition(partialTicks);
-				camera.setPosition(origin.x, origin.y, origin.z);
-
+		@Override
+		public void applyCameraDistance(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, CalculateDetachedCameraDistanceEvent event) {
+			double zoom = session.getZoom(partialTicks);
+			boolean firstPerson = zoom <= 1e-2;
+			if (!firstPerson) {
 				float distance = (float) (zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE);
-				camera.move(-camera.getMaxZoom(distance), 0.0f, 0.0f);
+				event.setDistance(distance);
 			}
 		}
 

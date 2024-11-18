@@ -3,6 +3,7 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
 import javax.annotation.Nullable;
@@ -59,6 +60,10 @@ class SpectatingSession {
 
 	void applyToCamera(Camera camera, float partialTicks, ViewportEvent.ComputeCameraAngles event) {
 		state.applyToCamera(CLIENT, this, CLIENT.player, camera, partialTicks, event);
+	}
+
+	void applyCameraDistance(Camera camera, float partialTicks, CalculateDetachedCameraDistanceEvent event) {
+		state.applyCameraDistance(CLIENT, this, CLIENT.player, camera, partialTicks, event);
 	}
 
 	void applyState(SpectatingState state) {

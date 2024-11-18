@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
@@ -81,6 +82,15 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 		SpectatingSession session = INSTANCE.session;
 		if (session != null) {
 			session.applyToCamera(event.getCamera(), (float) event.getPartialTick(), event);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onCalculateCameraDistance(CalculateDetachedCameraDistanceEvent event) {
+		SpectatingSession session = INSTANCE.session;
+		if (session != null) {
+			float partialTicks = event.getCamera().getPartialTickTime();
+			session.applyCameraDistance(event.getCamera(), partialTicks, event);
 		}
 	}
 }
