@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
@@ -261,7 +262,7 @@ public class ConnectFourBehavior implements IGameBehavior {
         player.addItem(teamBlocks.get(nextTeam.key).powder.asItem().getDefaultInstance());
 
         player.setGlowingTag(true);
-        player.displayClientMessage(ConnectFourTexts.IT_IS_YOUR_TURN.copy().withStyle(ChatFormatting.GOLD), true);
+        PlayerSet.of(player).showTitle(ConnectFourTexts.IT_IS_YOUR_TURN_TITLE, ConnectFourTexts.IT_IS_YOUR_TURN_SUBTITLE, 10, 40, 10);
         player.playNotifySound(SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.0f, 1.0f);
     }
 
