@@ -74,8 +74,8 @@ public final class PlayerRoleSelections {
 	}
 
 	@Nonnull
-	public PlayerRole getSelectedRoleFor(ServerPlayer player) {
-		return roles.getOrDefault(player.getUUID(), PlayerRole.SPECTATOR);
+	public PlayerRole getSelectedRoleFor(UUID playerId) {
+		return roles.getOrDefault(playerId, PlayerRole.SPECTATOR);
 	}
 
 	public boolean hasPending() {

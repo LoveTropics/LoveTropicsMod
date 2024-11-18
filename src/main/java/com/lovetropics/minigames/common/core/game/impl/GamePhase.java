@@ -22,6 +22,7 @@ import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
@@ -259,7 +260,14 @@ public class GamePhase implements IGamePhase {
 
 	ServerPlayer onPlayerJoin(ServerPlayer player, boolean savePlayerDataToMemory) {
 		try {
-			ServerPlayer newPlayer = addAndSpawnPlayer(player, getRoleFor(player), savePlayerDataToMemory);
+			// Bit of a hack - might already have been assigned a role from the top-level game
+			PlayerRole role = getRoleFor(player);
+			if (role == null) {
+				// The player hasn't joined the game yet, so don't expose the player instance
+				role = invoker(GamePlayerEvents.SELECT_ROLE_ON_JOIN).selectRole(PlayerKey.from(player));
+				setPlayerRole(player, role);
+			}
+			ServerPlayer newPlayer = addAndSpawnPlayer(player, role, savePlayerDataToMemory);
 			invoker(GamePlayerEvents.JOIN).onAdd(newPlayer);
 			return newPlayer;
 		} catch (Exception e) {

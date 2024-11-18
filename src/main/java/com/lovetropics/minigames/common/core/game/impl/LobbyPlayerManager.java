@@ -36,7 +36,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 				continue;
 			}
 
-			PlayerRole role = roleSelections.getSelectedRoleFor(player);
+			PlayerRole role = roleSelections.getSelectedRoleFor(player.getUUID());
 			if (StreamHosts.isHost(player) || role != PlayerRole.PARTICIPANT) {
 				allocator.addPlayer(player, role);
 			}

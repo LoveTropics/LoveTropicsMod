@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.PlayerChatMessage;
@@ -52,6 +53,16 @@ public final class GamePlayerEvents {
 		for (SetRole listener : listeners) {
 			listener.onSetRole(player, role, lastRole);
 		}
+	});
+
+	public static final GameEventType<SelectRole> SELECT_ROLE_ON_JOIN = GameEventType.create(SelectRole.class, listeners -> player -> {
+		for (SelectRole listener : listeners) {
+			PlayerRole role = listener.selectRole(player);
+			if (role != null) {
+				return role;
+			}
+		}
+		return null;
 	});
 
 	public static final GameEventType<Spawn> SPAWN = GameEventType.create(Spawn.class, listeners -> (playerId, spawn, role) -> {
@@ -242,6 +253,11 @@ public final class GamePlayerEvents {
 
 	public interface SetRole {
 		void onSetRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole);
+	}
+
+	public interface SelectRole {
+		@Nullable
+		PlayerRole selectRole(PlayerKey player);
 	}
 
 	public interface Spawn {

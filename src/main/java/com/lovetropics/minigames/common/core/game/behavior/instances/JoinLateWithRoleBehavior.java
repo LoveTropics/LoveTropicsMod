@@ -16,12 +16,12 @@ public record JoinLateWithRoleBehavior(PlayerRole role) implements IGameBehavior
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		events.listen(GamePlayerEvents.JOIN, player -> {
+		events.listen(GamePlayerEvents.SELECT_ROLE_ON_JOIN, player -> {
 			final PlayerRoleSelections roleSelections = game.lobby().getPlayers().getRoleSelections();
-			if (roleSelections.getSelectedRoleFor(player) == PlayerRole.SPECTATOR) {
-				game.setPlayerRole(player, PlayerRole.SPECTATOR);
+			if (roleSelections.getSelectedRoleFor(player.id()) == PlayerRole.SPECTATOR) {
+				return PlayerRole.SPECTATOR;
 			} else {
-				game.setPlayerRole(player, role);
+				return role;
 			}
 		});
 	}
