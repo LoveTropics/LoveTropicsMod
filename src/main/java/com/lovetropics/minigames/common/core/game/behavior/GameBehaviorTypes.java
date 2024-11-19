@@ -35,6 +35,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTric
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddCollidersAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.AllowSingleFallAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyClientStateAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyForTimeAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
@@ -309,6 +310,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<CloseGameAction> CLOSE_GAME = register("close_game", CloseGameAction.CODEC);
 	public static final GameBehaviorEntry<CheckpointsBehavior> CHECKPOINTS = register("checkpoints", CheckpointsBehavior.CODEC);
 	public static final GameBehaviorEntry<KillInVoidBehavior> KILL_IN_VOID = register("kill_in_void", KillInVoidBehavior.CODEC);
+	public static final GameBehaviorEntry<AllowSingleFallAction> ALLOW_SINGLE_FALL = register("allow_single_fall", AllowSingleFallAction.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

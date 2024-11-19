@@ -4,6 +4,8 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -36,17 +38,20 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
-public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, ProgressChannel channel, ProgressionPeriod openAt) implements IGameBehavior {
+public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, ProgressChannel channel, ProgressionPeriod openAt, GameActionList<ServerPlayer> teleportAction) implements IGameBehavior {
 	public static final MapCodec<LobbyWithPortalBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("portal_region").forGetter(LobbyWithPortalBehavior::portalRegion),
 			Codec.STRING.fieldOf("target_region").forGetter(LobbyWithPortalBehavior::targetRegion),
 			Codec.STRING.fieldOf("point_towards_region").forGetter(LobbyWithPortalBehavior::pointTowardsRegion),
 			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(LobbyWithPortalBehavior::channel),
-			ProgressionPeriod.CODEC.fieldOf("open_at").forGetter(LobbyWithPortalBehavior::openAt)
+			ProgressionPeriod.CODEC.fieldOf("open_at").forGetter(LobbyWithPortalBehavior::openAt),
+			GameActionList.PLAYER_CODEC.optionalFieldOf("on_teleport", GameActionList.EMPTY).forGetter(LobbyWithPortalBehavior::teleportAction)
 	).apply(i, LobbyWithPortalBehavior::new));
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
+		teleportAction.register(game, events);
+
 		final BlockBox portal = game.mapRegions().getOrThrow(portalRegion);
 		final List<BlockBox> targets = game.mapRegions().getAll(targetRegion);
 		if (targets.isEmpty()) {
@@ -81,6 +86,7 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 				final Vec3 center = target.center();
 				player.teleportTo(player.serverLevel(), center.x, center.y, center.z, computeAngle(center, pointTowards), 0.0f);
 				player.level().playSound(null, center.x, center.y, center.z, SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+				teleportAction.apply(game, GameActionContext.EMPTY, player);
 			}
 		});
 
