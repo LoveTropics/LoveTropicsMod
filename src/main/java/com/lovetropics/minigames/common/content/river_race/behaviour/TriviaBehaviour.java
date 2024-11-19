@@ -46,6 +46,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -244,7 +245,7 @@ public final class TriviaBehaviour implements IGameBehavior {
         for (Direction direction : Direction.values()) {
             BlockPos relative = pos.relative(direction);
             BlockState blockState = world.getBlockState(relative);
-            if (!blockState.isAir()) {
+            if (!blockState.isAir() && blockState.is(Tags.Blocks.GLASS_BLOCKS)) {
                 if (blockType == null) {
                     blockType = blockState.getBlock();
                 }
