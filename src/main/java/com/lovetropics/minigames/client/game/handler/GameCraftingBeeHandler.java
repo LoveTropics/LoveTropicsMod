@@ -31,6 +31,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -98,12 +99,12 @@ public class GameCraftingBeeHandler {
                         var ingredient = recipeHint.grid.get(i);
                         if (ingredient.isEmpty()) continue;
 
-                        var size = recipeHint.grid.size() == 4 ? 2 : 3;
+                        var width = recipeHint.width();
 
                         guiGraphics.renderFakeItem(
                                 resolveIngredient(ingredient),
-                                x + 1 + 18 * (i % size),
-                                y + 1 + 18 * (i / size)
+                                x + 1 + 18 * (i % width),
+                                y + 1 + 18 * (i / width)
                         );
                     }
                 }
@@ -138,7 +139,7 @@ public class GameCraftingBeeHandler {
                         var tooltipLines = new ArrayList<>(Screen.getTooltipFromItem(Minecraft.getInstance(), craft.output()));
                         if (craft.done()) {
                             tooltipLines.set(0, tooltipLines.getFirst().copy().withStyle(ChatFormatting.GREEN));
-                        } else if (hint == null || hint.expectedIngredientCount() != hint.grid().stream().filter(Predicate.not(Ingredient::isEmpty)).count()) {
+                        } else if (hint == null || hint.expectedIngredientCount() != hint.filledIngredientCount()) {
                             tooltipLines.add(CraftingBeeTexts.HINT);
                             tooltipLines.add(CraftingBeeTexts.HINTS_LEFT.apply(hintsRemaining).withStyle(ChatFormatting.AQUA));
                         }
@@ -163,14 +164,25 @@ public class GameCraftingBeeHandler {
                 var recipe = new SelectedRecipe(craft.recipeId(), Minecraft.getInstance().player.connection.getRecipeManager());
                 var ingredients = recipe.decompose();
 
-                var grid = hintGrids.computeIfAbsent(craft.recipeId(), k -> new RecipeHint(
-                        NonNullList.withSize(
-                                recipe.recipe().map(shaped -> shaped.getWidth() * shaped.getHeight(), shapeless -> shapeless.getIngredients().size() > 3 ? 9 : shapeless.getIngredients().size()),
-                                Ingredient.EMPTY),
-                        (int)ingredients.stream().filter(Predicate.not(Ingredient::isEmpty)).count()
-                ));
+                var grid = hintGrids.computeIfAbsent(craft.recipeId(), k -> {
+                    int expectedIngredientCount = (int) ingredients.stream().filter(Predicate.not(Ingredient::isEmpty)).count();
+                    return recipe.recipe().map(
+                            shaped -> new RecipeHint(
+                                    NonNullList.withSize(shaped.getWidth() * shaped.getHeight(), Ingredient.EMPTY),
+                                    expectedIngredientCount,
+                                    shaped.getWidth(),
+                                    shaped.getHeight()
+                            ),
+                            shapeless -> new RecipeHint(
+                                    NonNullList.withSize(shapeless.getIngredients().size(), Ingredient.EMPTY),
+                                    expectedIngredientCount,
+                                    Math.min(shapeless.getIngredients().size(), 3),
+                                    Mth.positiveCeilDiv(shapeless.getIngredients().size(), 3)
+                            )
+                    );
+				});
 
-                int filledGridAmount = (int) grid.grid().stream().filter(Predicate.not(Ingredient::isEmpty)).count();
+                int filledGridAmount = grid.filledIngredientCount();
                 if (grid.expectedIngredientCount() == filledGridAmount) return;
 
                 record PositionedIngredient(Ingredient ingredient, int position) {}
@@ -333,7 +345,13 @@ public class GameCraftingBeeHandler {
 
     public record RecipeHint(
             NonNullList<Ingredient> grid,
-            int expectedIngredientCount
-    ) implements TooltipComponent {}
+            int expectedIngredientCount,
+            int width,
+            int height
+    ) implements TooltipComponent {
+        public int filledIngredientCount() {
+            return (int) grid.stream().filter(ingredient -> !ingredient.isEmpty()).count();
+        }
+    }
 
 }
