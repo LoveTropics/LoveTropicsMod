@@ -2,10 +2,7 @@ package com.lovetropics.minigames.common.content.connect4;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.lib.entity.FireworkPalette;
-import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -25,7 +22,6 @@ import com.lovetropics.minigames.common.util.SequentialList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -235,19 +231,9 @@ public class ConnectFourBehavior implements IGameBehavior {
 
         if (winner instanceof GameWinner.Team(GameTeam team)) {
             for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
-                applyWinningPlayerEffects(winningPlayer, team);
+                winningPlayer.setGlowingTag(true);
             }
         }
-
-        game.scheduler().runAfterSeconds(5, () -> game.requestStop(GameStopReason.finished()));
-    }
-
-    private void applyWinningPlayerEffects(ServerPlayer winningPlayer, GameTeam team) {
-        game.scheduler().runAfterSeconds(game.random().nextFloat(), () -> {
-            BlockPos fireworksPos = BlockPos.containing(winningPlayer.getEyePosition()).above();
-            FireworkPalette.forDye(team.config().dye()).spawn(fireworksPos, game.level());
-        });
-        winningPlayer.setGlowingTag(true);
     }
 
     private void nextPlayer() {

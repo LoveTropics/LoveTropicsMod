@@ -45,6 +45,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Clea
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CloseGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.DelayedAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.KillEntitiesAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetPlayerRoleAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EndGameAction;
@@ -273,6 +274,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PackageCostModifierBehavior> PACKAGE_COST_MODIFIER = register("package_cost_modifier", PackageCostModifierBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 	public static final GameBehaviorEntry<CountdownAction<?>> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
+	public static final GameBehaviorEntry<DelayedAction<?>> DELAYED = register("delayed", DelayedAction.CODEC);
 	public static final GameBehaviorEntry<TargetPlayerAction> TARGET_PLAYER = register("target_player", TargetPlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);

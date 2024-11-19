@@ -3,10 +3,8 @@ package com.lovetropics.minigames.common.content.crafting_bee;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.crafting_bee.ingredient.IngredientDecomposer;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.GameWinner;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
@@ -55,7 +53,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.block.BeaconBeamBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StainedGlassBlock;
@@ -326,20 +323,10 @@ public class CraftingBeeBehavior implements IGameBehavior {
 
             if (winner instanceof GameWinner.Team(GameTeam team)) {
                 for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
-                    applyWinningPlayerEffects(winningPlayer, team);
+                    winningPlayer.setGlowingTag(true);
                 }
             }
         });
-
-        game.scheduler().runAfterSeconds(8, () -> game.requestStop(GameStopReason.finished()));
-    }
-
-    private void applyWinningPlayerEffects(ServerPlayer winningPlayer, GameTeam team) {
-        game.scheduler().runAfterSeconds(game.random().nextFloat(), () -> {
-            BlockPos fireworksPos = BlockPos.containing(winningPlayer.getEyePosition()).above();
-            FireworkPalette.forDye(team.config().dye()).spawn(fireworksPos, game.level());
-        });
-        winningPlayer.setGlowingTag(true);
     }
 
     private void tickRunning(IGamePhase game) {

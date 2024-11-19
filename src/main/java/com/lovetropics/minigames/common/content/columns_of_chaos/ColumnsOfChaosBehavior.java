@@ -276,23 +276,5 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
             }
             return this;
         }
-
     }
-
-    record Ending(long endAt) implements State {
-        @Override
-        public State tick(IGamePhase game) {
-            if (game.ticks() > endAt) {
-                return null;
-            }
-            for (ServerPlayer player : game.participants()) {
-                if (!player.isSpectator() && game.random().nextInt(10) == 0) {
-                    BlockPos fireworksPos = BlockPos.containing(player.getEyePosition()).above();
-                    FireworkPalette.DYE_COLORS.spawn(fireworksPos, game.level());
-                }
-            }
-            return this;
-        }
-    }
-
 }
