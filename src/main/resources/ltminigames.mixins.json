@@ -9,6 +9,7 @@
     "CommonHooksMixin",
     "CraftingMenuMixin",
     "DataCommandsMixin",
+    "EntityAccessor",
     "EntityMixin",
     "EntityTypeMixin",
     "FallingBlockEntityMixin",

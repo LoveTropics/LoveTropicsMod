@@ -74,6 +74,7 @@ public class SpawnBuilder {
 
 	public void teleportAndApply(final ServerPlayer player) {
 		player.teleportTo(level, position.x, position.y, position.z, yRot, xRot);
+		player.connection.resetPosition();
 		applyInitializers(player);
 	}
 

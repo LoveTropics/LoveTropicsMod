@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.util.Util;
+import com.lovetropics.minigames.mixin.EntityAccessor;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -75,6 +76,8 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		player.setHealth(20.0F);
 		player.setDeltaMovement(0, 0, 0);
 		player.fallDistance = 0.0f;
+		// If the player was in lava, they are no longer in lava - please stop burning me :)
+		((EntityAccessor) player).invokeUpdateInWaterStateAndDoFluidPushing();
 
 		// Run only at the end of the current game tick, as the code that caused the damage might still have side-effects
 		game.scheduler().runAfterTicks(0, () ->
