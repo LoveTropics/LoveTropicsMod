@@ -121,6 +121,6 @@ public class GameActionList<T> {
     }
 
 	private boolean isEmpty() {
-		return this == EMPTY;
+		return behavior == IGameBehavior.EMPTY;
 	}
 }
