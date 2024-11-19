@@ -2,6 +2,7 @@ package com.lovetropics.minigames.mixin;
 
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.PlayerListAccess;
+import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -80,5 +82,12 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 	@Override
 	public void ltminigames$firePlayerLoading(final ServerPlayer player) {
 		EventHooks.firePlayerLoadingEvent(player, playerIo.getPlayerDir(), player.getStringUUID());
+	}
+
+	// We need to run the rest of the logic with the new player instance
+	// FIXME: It would be nice to not need to produce new player instances in the logout process - but microgames need it right now to pull players all the way out
+	@ModifyVariable(method = "remove", at = @At(value= "HEAD"), argsOnly = true)
+	private ServerPlayer onPlayerLogOut(ServerPlayer player) {
+		return MultiGameManager.onPlayerLoggedOut(player);
 	}
 }

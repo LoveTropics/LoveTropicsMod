@@ -267,14 +267,13 @@ public class MultiGameManager implements IGameManager {
 	 * Also if they have registered for a game poll, they will be removed from the
 	 * list of registered players.
 	 */
-	@SubscribeEvent
-	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		ServerPlayer player = (ServerPlayer) event.getEntity();
+	public static ServerPlayer onPlayerLoggedOut(ServerPlayer player) {
 		if (!PlayerIsolation.INSTANCE.isReloading(player)) {
 			for (GameLobby lobby : INSTANCE.lobbies) {
-				lobby.onPlayerLoggedOut(player);
+				player = lobby.onPlayerLoggedOut(player);
 			}
 		}
+		return player;
 	}
 
 	@SubscribeEvent

@@ -228,10 +228,10 @@ final class GameLobby implements IGameLobby {
 		trackingPlayers.onPlayerLoggedIn(player);
 	}
 
-	void onPlayerLoggedOut(ServerPlayer player) {
+	ServerPlayer onPlayerLoggedOut(ServerPlayer player) {
 		trackingPlayers.onPlayerLoggedOut(player);
 
-		players.remove(player, true);
+		return players.logOut(player);
 	}
 
 	void onPlayerRegister(ServerPlayer player) {
@@ -247,7 +247,7 @@ final class GameLobby implements IGameLobby {
 		management.onPlayersChanged();
 	}
 
-	void onPlayerLeave(ServerPlayer player, boolean loggingOut) {
+	ServerPlayer onPlayerLeave(ServerPlayer player, boolean loggingOut) {
 		GamePhase phase = state.getTopPhase();
 		if (phase != null) {
 			player = phase.onPlayerLeave(player, loggingOut);
@@ -261,6 +261,8 @@ final class GameLobby implements IGameLobby {
 		manager.removePlayerFromLobby(player, this);
 
 		rewardsMap.grant(player);
+
+		return player;
 	}
 
 	// TODO: better abstract this logic?
