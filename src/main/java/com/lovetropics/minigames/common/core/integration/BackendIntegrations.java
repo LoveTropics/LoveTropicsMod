@@ -76,7 +76,7 @@ public final class BackendIntegrations {
 
 			@Override
 			public void acceptError(Throwable cause) {
-				LOGGER.error("Integrations websocket closed with error", cause);
+				LOGGER.error("Integrations websocket closed with error: {}", cause.getMessage());
 			}
 
 			@Override
