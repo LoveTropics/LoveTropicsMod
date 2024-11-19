@@ -44,6 +44,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Clea
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CloseGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.KillEntitiesAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetPlayerRoleAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EndGameAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ExtinguishPlayerFireAction;
@@ -113,6 +114,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.Gen
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ItemPickedUpTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDamageTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDeathTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PeriodicActionsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PhaseChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PlayerTickTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
@@ -185,6 +187,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
+	public static final GameBehaviorEntry<PeriodicActionsTrigger> PERIODIC_ACTIONS = register("periodic_actions", PeriodicActionsTrigger.CODEC);
 	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 	public static final GameBehaviorEntry<GameFinishTrigger> GAME_FINISH = register("game_finish", GameFinishTrigger.CODEC);
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
@@ -298,6 +301,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<IncrementStatisticAction> INCREMENT_STATISTIC = register("increment_statistic", IncrementStatisticAction.CODEC);
 	public static final GameBehaviorEntry<SetStatisticAction> SET_STATISTIC = register("set_statistic", SetStatisticAction.CODEC);
 	public static final GameBehaviorEntry<SetTotalTimeAction> SET_TOTAL_TIME = register("set_total_time", SetTotalTimeAction.CODEC);
+	public static final GameBehaviorEntry<KillEntitiesAction> KILL_ENTITIES = register("kill_entities", KillEntitiesAction.CODEC);
 	public static final GameBehaviorEntry<StartProgressChannelAction> START_PROGRESS_CHANNEL = register("start_progress_channel", StartProgressChannelAction.CODEC);
 	public static final GameBehaviorEntry<PreventBreakBehavior> PREVENT_BREAK = register("prevent_break", PreventBreakBehavior.CODEC);
 	public static final GameBehaviorEntry<RisingFluidBehavior> RISING_FLUID = register("rising_fluid", RisingFluidBehavior.CODEC);
