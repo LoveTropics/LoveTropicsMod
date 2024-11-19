@@ -139,15 +139,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                         PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
                         return;
                     }
-                    boolean canPlace = false;
-                    for(Direction d : Direction.Plane.HORIZONTAL)
-                    {
-                        if(game.level().getBlockState(playerPos.relative(d)).is(teamConfig.blockTag())){
-                            canPlace = true;
-                            break;
-                        }
-                    }
-                    if(!canPlace){
+                    if (!hasNeighboringPaint(game, playerPos, teamConfig)) {
                         return;
                     }
                     // Check if player has any blocks to place
@@ -193,6 +185,18 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                 PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
             }
         });
+    }
+
+    private static boolean hasNeighboringPaint(IGamePhase game, BlockPos pos, TeamConfig teamConfig) {
+        for (BlockPos neighborPos : BlockPos.betweenClosed(pos.offset(-1, 0, -1), pos.offset(1, 0, 1))) {
+            if (neighborPos.equals(pos)) {
+                continue;
+            }
+            if (game.level().getBlockState(neighborPos).is(teamConfig.blockTag())){
+                return true;
+            }
+        }
+        return false;
     }
 
     public TeamConfig getTeamConfig(GameTeamKey teamKey){
