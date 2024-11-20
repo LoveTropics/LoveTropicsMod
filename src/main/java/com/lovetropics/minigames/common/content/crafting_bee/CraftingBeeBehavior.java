@@ -149,6 +149,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         events.listen(GamePlayerEvents.CRAFT_RESULT, this::modifyCraftResult);
         events.listen(GamePlayerEvents.CRAFT, this::onCraft);
         events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
+        events.listen(GamePlayerEvents.USE_ITEM, (player, hand) -> InteractionResult.FAIL);
 
         events.listen(GamePhaseEvents.STOP, reason -> GameClientState.removeFromPlayers(GameClientStateTypes.CRAFTING_BEE_CRAFTS.get(), game.allPlayers()));
         events.listen(GamePlayerEvents.REMOVE, player -> GameClientState.removeFromPlayer(GameClientStateTypes.CRAFTING_BEE_CRAFTS.get(), player));
