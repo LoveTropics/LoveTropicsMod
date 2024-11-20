@@ -17,6 +17,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.behavior.Surviv
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SurviveTheTideWeatherControlBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SurviveTheTideWindController;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.WorldBorderGameBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.block.BaseBigRedButtonBlock;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.BigRedButtonBlock;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.BigRedButtonBlockEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.LootDispenserBlock;
@@ -30,6 +31,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.item.PaddleItem
 import com.lovetropics.minigames.common.content.survive_the_tide.item.SuperSunscreenItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
+import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -41,8 +43,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 
 public final class SurviveTheTide {
@@ -55,15 +60,24 @@ public final class SurviveTheTide {
 			.blockEntity(BigRedButtonBlockEntity::new)
 			.renderer(() -> BigRedButtonBlockEntityRenderer::new)
 			.build()
-			.blockstate((ctx, prov) -> {
-				ResourceLocation texture = prov.mcLoc("block/redstone_block");
-				prov.buttonBlock(ctx.get(),
-						buttonModel(ctx.getName(), prov, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.UNPRESSED_DEPTH, texture),
-						buttonModel(ctx.getName() + "_pressed", prov, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.PRESSED_DEPTH, texture)
-				);
-			})
+			.blockstate(SurviveTheTide::bigRedButtonBlockState)
 			.simpleItem()
 			.register();
+
+	public static final BlockEntry<BaseBigRedButtonBlock> NORMAL_BIG_RED_BUTTON = REGISTRATE
+			.block("normal_big_red_button", BaseBigRedButtonBlock::new)
+			.initialProperties(() -> Blocks.STONE_BUTTON)
+			.blockstate(SurviveTheTide::bigRedButtonBlockState)
+			.simpleItem()
+			.register();
+
+	private static void bigRedButtonBlockState(DataGenContext<Block, ? extends ButtonBlock> ctx, RegistrateBlockstateProvider prov) {
+		ResourceLocation texture = prov.mcLoc("block/redstone_block");
+		prov.buttonBlock(ctx.get(),
+				buttonModel(ctx.getName(), prov, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.UNPRESSED_DEPTH, texture),
+				buttonModel(ctx.getName() + "_pressed", prov, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.HALF_SIZE, BigRedButtonBlock.PRESSED_DEPTH, texture)
+		);
+	}
 
 	public static final BlockEntityEntry<BigRedButtonBlockEntity> BIG_RED_BUTTON_ENTITY = BlockEntityEntry.cast(REGISTRATE.get("big_red_button", Registries.BLOCK_ENTITY_TYPE));
 
