@@ -42,5 +42,15 @@
     "sounds": [
       "ltminigames:coins"
     ]
+  },
+  "correct": {
+    "sounds": [
+      "ltminigames:correct"
+    ]
+  },
+  "incorrect": {
+    "sounds": [
+      "ltminigames:incorrect"
+    ]
   }
 }

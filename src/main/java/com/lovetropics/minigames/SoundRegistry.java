@@ -15,6 +15,8 @@ public class SoundRegistry {
 	public static final Holder<SoundEvent> FLASH_FLOODING_IMMINENT = register("stt4.flash_flooding_imminent");
 	public static final Holder<SoundEvent> LAST_SHUTTLE_DEPARTING = register("stt4.last_shuttle_departing");
 	public static final Holder<SoundEvent> COINS = register("coins");
+	public static final Holder<SoundEvent> CORRECT = register("correct");
+	public static final Holder<SoundEvent> INCORRECT = register("incorrect");
 
 	private static Holder<SoundEvent> register(String name) {
 		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(LoveTropics.location(name)));

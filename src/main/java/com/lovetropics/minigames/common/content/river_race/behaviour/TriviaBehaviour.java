@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.river_race.behaviour;
 
+import com.lovetropics.minigames.SoundRegistry;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceState;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
@@ -106,12 +107,14 @@ public final class TriviaBehaviour implements IGameBehavior {
             }
             if (answer.correct()) {
                 player.sendSystemMessage(RiverRaceTexts.CORRECT_ANSWER);
+                player.playNotifySound(SoundRegistry.CORRECT.value(), SoundSource.BLOCKS, 1.0f, 1.0f);
                 if (triviaBlockEntity.markAsCorrect()) {
                     game.invoker(RiverRaceEvents.QUESTION_COMPLETED).onAnswer(player, triviaBlockEntity.getTriviaType(), pos);
                 }
                 PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
             } else {
                 player.sendSystemMessage(RiverRaceTexts.INCORRECT_ANSWER.apply(questionLockout));
+                player.playNotifySound(SoundRegistry.INCORRECT.value(), SoundSource.BLOCKS, 1.0f, 1.0f);
                 lockedOutTriviaBlocks.put(triviaBlockEntity.lockout(questionLockout), pos);
                 PacketDistributor.sendToPlayer(player, new TriviaAnswerResponseMessage(pos, triviaBlockEntity.getState()));
             }
