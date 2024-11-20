@@ -18,6 +18,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -60,18 +62,23 @@ public record TreasureDigBehaviour(String chestsRegion, Map<Block,
             if (team == null) {
                 return;
             }
-            int newScore = calculateTeamScore(teams, team);
-            int lastScore = game.statistics().forTeam(team).getInt(StatisticKey.POINTS);
-            if (lastScore != newScore) {
-                game.statistics().forTeam(team).set(StatisticKey.POINTS, newScore);
+
+            int oldPlayerScore = game.statistics().forPlayer(player).getInt(StatisticKey.POINTS);
+            int newPlayerScore = calculatePlayerScore(player);
+            if (newPlayerScore == oldPlayerScore) {
+                return;
             }
+            game.statistics().forPlayer(player).set(StatisticKey.POINTS, newPlayerScore);
+            player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
+
+			game.statistics().forTeam(team).set(StatisticKey.POINTS, sumTeamScore(game, teams, team));
         });
     }
 
-    private int calculateTeamScore(TeamState teams, GameTeamKey team) {
+    private int sumTeamScore(IGamePhase game, TeamState teams, GameTeamKey team) {
         int teamScore = 0;
-        for (ServerPlayer otherPlayer : teams.getPlayersForTeam(team)) {
-            teamScore += calculatePlayerScore(otherPlayer);
+        for (ServerPlayer player : teams.getPlayersForTeam(team)) {
+            teamScore += game.statistics().forPlayer(player).getInt(StatisticKey.POINTS);
         }
         return teamScore;
     }
