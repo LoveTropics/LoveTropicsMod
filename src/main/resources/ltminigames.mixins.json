@@ -17,6 +17,7 @@
     "MinecraftServerMixin",
     "PlayerListMixin",
     "PlayerMixin",
+    "ServerPlayerMixin",
     "SimpleRegistryMixin",
     "TagManagerAccessor",
     "WorldGenSettingsMixin",

@@ -20,6 +20,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -479,6 +481,25 @@ public final class GameEventDispatcher {
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch item pickup event", e);
 			}
+		}
+	}
+
+	public ContainerListener createInventoryListener(ServerPlayer player) {
+		return new InventoryListener(player, gameLookup);
+	}
+
+	// Note: equality is important to avoid adding duplicates
+	private record InventoryListener(ServerPlayer player, IGameLookup gameLookup) implements ContainerListener {
+		@Override
+		public void slotChanged(AbstractContainerMenu containerToSend, int dataSlotIndex, ItemStack stack) {
+			IGamePhase game = gameLookup.getGamePhaseFor(player);
+			if (game != null) {
+				game.invoker(GamePlayerEvents.INVENTORY_CHANGED).onInventoryChanged(player, containerToSend, dataSlotIndex, stack);
+			}
+		}
+
+		@Override
+		public void dataChanged(AbstractContainerMenu containerMenu, int dataSlotIndex, int value) {
 		}
 	}
 }

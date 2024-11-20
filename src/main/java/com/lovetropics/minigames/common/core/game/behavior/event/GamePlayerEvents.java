@@ -15,6 +15,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -240,6 +241,12 @@ public final class GamePlayerEvents {
 		return crafted;
 	});
 
+	public static final GameEventType<InventoryChanged> INVENTORY_CHANGED = GameEventType.create(InventoryChanged.class, listeners -> (player, container, slot, newItemStack) -> {
+		for (InventoryChanged listener : listeners) {
+			listener.onInventoryChanged(player, container, slot, newItemStack);
+		}
+	});
+
 	private GamePlayerEvents() {
 	}
 
@@ -338,5 +345,9 @@ public final class GamePlayerEvents {
 
 	public interface CraftResult {
 		ItemStack modifyResult(ServerPlayer player, ItemStack crafted, CraftingInput input, CraftingRecipe recipe);
+	}
+
+	public interface InventoryChanged {
+		void onInventoryChanged(ServerPlayer player, AbstractContainerMenu container, int slotIndex, ItemStack newItemStack);
 	}
 }

@@ -5,9 +5,9 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -39,7 +39,7 @@ public record TreasureDigBehaviour(String chestsRegion, Map<Block,
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         ServerLevel level = game.level();
-        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
         BlockBox chestRegion = game.mapRegions().getOrThrow(chestsRegion);
 
         // Rushes dodgy code for filling the chests
@@ -55,18 +55,25 @@ public record TreasureDigBehaviour(String chestsRegion, Map<Block,
             }
         }
 
-        // This is not good, but there doesn't seem to be an event for when a players inventory changes?
-        events.listen(GamePhaseEvents.TICK, () -> {
-            for (GameTeam team : teams) {
-                int teamScore = 0;
-                for (ServerPlayer serverPlayer : teams.getPlayersForTeam(team.key())) {
-                    teamScore += calculatePlayerScore(serverPlayer);
-                }
-                if(game.statistics().forTeam(team).getOr(StatisticKey.POINTS, 0) != teamScore) {
-                    game.statistics().forTeam(team).set(StatisticKey.POINTS, teamScore);
-                }
+        events.listen(GamePlayerEvents.INVENTORY_CHANGED, (player, container, slotIndex, newItemStack) -> {
+            GameTeamKey team = teams.getTeamForPlayer(player);
+            if (team == null) {
+                return;
+            }
+            int newScore = calculateTeamScore(teams, team);
+            int lastScore = game.statistics().forTeam(team).getInt(StatisticKey.POINTS);
+            if (lastScore != newScore) {
+                game.statistics().forTeam(team).set(StatisticKey.POINTS, newScore);
             }
         });
+    }
+
+    private int calculateTeamScore(TeamState teams, GameTeamKey team) {
+        int teamScore = 0;
+        for (ServerPlayer otherPlayer : teams.getPlayersForTeam(team)) {
+            teamScore += calculatePlayerScore(otherPlayer);
+        }
+        return teamScore;
     }
 
     private int calculatePlayerScore(ServerPlayer serverPlayer){
