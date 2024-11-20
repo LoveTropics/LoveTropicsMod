@@ -188,7 +188,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
     }
 
     private static boolean hasNeighboringPaint(IGamePhase game, BlockPos pos, TeamConfig teamConfig) {
-        for (BlockPos neighborPos : BlockPos.betweenClosed(pos.offset(-1, 0, -1), pos.offset(1, 0, 1))) {
+        for (BlockPos neighborPos : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, -1, 1))) {
             if (neighborPos.equals(pos)) {
                 continue;
             }
