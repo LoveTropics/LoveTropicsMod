@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.BlockPredicate;
@@ -27,5 +28,15 @@ public record PreventBreakBehavior(List<BlockPredicate> predicates) implements I
             }
             return InteractionResult.PASS;
         });
+		events.listen(GameWorldEvents.EXPLOSION_DETONATE, (explosion, affectedBlocks, affectedEntities) -> {
+			affectedBlocks.removeIf(pos -> {
+				for (BlockPredicate predicate : predicates) {
+					if (predicate.matches(game.level(), pos)) {
+						return true;
+					}
+				}
+				return false;
+			});
+		});
     }
 }
