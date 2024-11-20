@@ -35,6 +35,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -98,6 +99,15 @@ public final class CollectablesBehaviour implements IGameBehavior {
                 return InteractionResult.FAIL;
 			}
             return InteractionResult.PASS;
+        });
+
+        events.listen(GamePlayerEvents.INVENTORY_CHANGED, (player, container, slotIndex, newItemStack) -> {
+            Slot slot = container.getSlot(slotIndex);
+            if (slot.container != player.getInventory() && newItemStack.has(RiverRace.COLLECTABLE_MARKER)) {
+                ItemStack slotItem = slot.getItem();
+                player.getInventory().add(slotItem.copy());
+                slotItem.setCount(0);
+            }
         });
     }
 
