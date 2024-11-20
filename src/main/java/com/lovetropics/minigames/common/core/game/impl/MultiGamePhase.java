@@ -108,7 +108,6 @@ public class MultiGamePhase extends GamePhase {
         if (subPhase != null) {
             if (subPhase.tick() != null) {
                 GamePhase lastPhase = subPhase;
-                destroySubGame();
                 startNextQueuedMicrogame(false).whenComplete((newGame, throwable) -> {
                     if (throwable != null || !newGame) {
                         returnHere(lastPhase);
@@ -176,6 +175,7 @@ public class MultiGamePhase extends GamePhase {
     }
 
     public CompletableFuture<Boolean> startNextQueuedMicrogame(final boolean saveInventory) {
+        destroySubGame();
         // No queued games left
         if (subPhaseQueue.isEmpty()) {
             return CompletableFuture.completedFuture(false);

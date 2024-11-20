@@ -100,7 +100,7 @@ public class GamePhase implements IGamePhase {
 		CompletableFuture<GameResult<GamePhase>> future = phaseDefinition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
 					BehaviorList behaviors = phaseDefinition.createBehaviors();
-					if (game.definition.isMultiGamePhase()) {
+					if (gameDefinition.isMultiGamePhase()) {
 						return new MultiGamePhase(game, gameDefinition, phaseDefinition, phaseType, map, behaviors);
 					}
 					return new GamePhase(game, gameDefinition, phaseDefinition, phaseType, map, behaviors);

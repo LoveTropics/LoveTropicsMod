@@ -65,7 +65,7 @@ public record StartMicrogamesAction(
     }
 
     public void queueMicrogames(IGamePhase game, List<GameConfig> gameConfigs) {
-        if (game instanceof MultiGamePhase multiGamePhase) {
+        if (game.getTopPhase() instanceof MultiGamePhase multiGamePhase) {
             multiGamePhase.clearQueuedGames();
 
             final List<GameConfig> configs = new ArrayList<>(gameConfigs);
@@ -75,7 +75,7 @@ public record StartMicrogamesAction(
     }
 
     public void startQueuedMicrogame(final IGamePhase game) {
-        if (game instanceof MultiGamePhase multiGamePhase) {
+        if (game.getTopPhase() instanceof MultiGamePhase multiGamePhase) {
             multiGamePhase.startNextQueuedMicrogame(true);
         }
     }

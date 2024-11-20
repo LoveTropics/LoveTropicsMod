@@ -34,6 +34,9 @@ public interface IGameLobby {
 	}
 
 	@Nullable
+	IGamePhase getTopPhase();
+
+	@Nullable
 	IGamePhase getActivePhase();
 
 	@Nullable

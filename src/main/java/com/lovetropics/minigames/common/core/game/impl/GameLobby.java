@@ -91,6 +91,12 @@ final class GameLobby implements IGameLobby {
 
 	@Nullable
 	@Override
+	public IGamePhase getTopPhase() {
+		return state.getTopPhase();
+	}
+
+	@Nullable
+	@Override
 	public IGamePhase getActivePhase() {
 		GamePhase phase = state.getTopPhase();
 		return phase != null ? phase.getActivePhase() : null;

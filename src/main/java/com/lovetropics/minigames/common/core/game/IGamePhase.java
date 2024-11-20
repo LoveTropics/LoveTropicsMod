@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.UUID;
 
 public interface IGamePhase extends IGame {
@@ -157,5 +158,9 @@ public interface IGamePhase extends IGame {
 		ControlCommands commands = controlCommands();
 		GameLobbyMetadata lobby = lobby().getMetadata();
 		return ControlCommandInvoker.create(commands, lobby);
+	}
+
+	default IGamePhase getTopPhase() {
+		return Objects.requireNonNullElse(lobby().getTopPhase(), this);
 	}
 }
