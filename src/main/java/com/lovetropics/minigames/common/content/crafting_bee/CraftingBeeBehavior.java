@@ -331,7 +331,7 @@ public class CraftingBeeBehavior implements IGameBehavior {
         TaskDisplay taskDisplay = teamState.taskDisplays.get(taskIndex);
         BlockPos glass = taskDisplay.beaconGlassPos;
         game.level().setBlockAndUpdate(glass, teamState.beaconGlass);
-        taskDisplay.itemDisplay.setBrightnessOverride(new Brightness(0, 15));
+        taskDisplay.itemDisplay.setBrightnessOverride(new Brightness(0, 13));
     }
 
     private static BlockState getGlassBlockForTeam(GameTeamConfig teamConfig) {

@@ -220,7 +220,9 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	void tick(MinecraftServer server) {
-		actions.pollGameActions(gameStack.getLast(), server.getTickCount());
+		if (!closed) {
+			actions.pollGameActions(gameStack.getLast(), server.getTickCount());
+		}
 	}
 
 	void handlePayload(JsonObject object, String type, Crud crud) {
