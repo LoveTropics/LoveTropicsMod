@@ -50,11 +50,12 @@ public final class PlayerIsolation {
 	 * Player going into a GamePhase
 	 * Saves player data and then teleports them
 	 */
-	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot) {
+	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot, final Consumer<ServerPlayer> load) {
 		final TransferableState transferableState = TransferableState.copyOf(player);
 		return reloadPlayer(player, newPlayer -> {
 			((PlayerListAccess) newPlayer.server.getPlayerList()).ltminigames$firePlayerLoading(newPlayer);
 			newPlayer.setServerLevel(newLevel);
+			load.accept(newPlayer);
 			newPlayer.moveTo(position.x, position.y, position.z, yRot, xRot);
 			newPlayer.addTag(ISOLATED_TAG);
 			transferableState.restore(newPlayer);
@@ -88,7 +89,7 @@ public final class PlayerIsolation {
 	public ServerPlayer reloadPlayerFromMemory(final GameInstance game, final ServerPlayer player) {
 		return reloadPlayer(player, newPlayer -> {
 			final MinecraftServer server = player.getServer();
-			final Optional<CompoundTag> playerTag = game.getPlayerStorage().fetchAndRemovePlayerData(player);
+			final Optional<CompoundTag> playerTag = game.getPlayerStorage().fetchAndRemovePlayerData(player.getUUID());
 
 			final ResourceKey<Level> dimensionKey = playerTag.isPresent() ? getPlayerDimension(playerTag.get()) : Level.OVERWORLD;
 			final ServerLevel newLevel = Objects.requireNonNullElse(server.getLevel(dimensionKey), server.overworld());

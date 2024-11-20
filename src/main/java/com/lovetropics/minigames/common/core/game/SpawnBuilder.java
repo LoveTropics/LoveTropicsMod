@@ -2,11 +2,13 @@ package com.lovetropics.minigames.common.core.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,6 +18,8 @@ public class SpawnBuilder {
 	private Vec3 position;
 	private float yRot;
 	private float xRot;
+	@Nullable
+	private CompoundTag loadFromTag;
 	private final List<Consumer<ServerPlayer>> initializers = new ArrayList<>();
 
 	public SpawnBuilder(final ServerPlayer player) {
@@ -52,6 +56,10 @@ public class SpawnBuilder {
 		run(player -> player.setGameMode(gameType));
 	}
 
+	public void loadFromTag(CompoundTag loadFromTag) {
+		this.loadFromTag = loadFromTag;
+	}
+
 	public void run(final Consumer<ServerPlayer> initializer) {
 		initializers.add(initializer);
 	}
@@ -76,6 +84,13 @@ public class SpawnBuilder {
 		player.teleportTo(level, position.x, position.y, position.z, yRot, xRot);
 		player.connection.resetPosition();
 		applyInitializers(player);
+	}
+
+	public void loadInto(final ServerPlayer player) {
+		if (loadFromTag != null) {
+			player.load(loadFromTag);
+			player.loadGameTypes(loadFromTag);
+		}
 	}
 
 	public void applyInitializers(final ServerPlayer player) {

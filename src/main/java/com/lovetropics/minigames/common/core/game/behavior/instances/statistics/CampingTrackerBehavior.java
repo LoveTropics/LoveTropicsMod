@@ -45,7 +45,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		trigger.awaitThen(game, events, () -> {
 			events.listen(GamePhaseEvents.TICK, () -> tick(game));
-			events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+			events.listen(GamePlayerEvents.REMOVE, this::onPlayerLeave);
 			events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		});
 	}

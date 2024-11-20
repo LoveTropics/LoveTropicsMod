@@ -15,10 +15,10 @@ import java.util.UUID;
 public class PlayerStorage {
     private final Object2ObjectMap<UUID, CompoundTag> storage = new Object2ObjectOpenHashMap<>();
 
-    public Optional<CompoundTag> fetchAndRemovePlayerData(final ServerPlayer player) {
-        @Nullable final CompoundTag compoundTag = storage.get(player.getUUID());
+    public Optional<CompoundTag> fetchAndRemovePlayerData(final UUID playerId) {
+        @Nullable final CompoundTag compoundTag = storage.get(playerId);
         if (compoundTag != null) {
-            storage.remove(player.getUUID());
+            storage.remove(playerId);
             return Optional.of(compoundTag);
         }
         return Optional.empty();

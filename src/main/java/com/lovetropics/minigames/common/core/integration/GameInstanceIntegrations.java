@@ -56,7 +56,7 @@ public final class GameInstanceIntegrations implements IGameState {
 		this.integrations = integrations;
 		actions = new GameActionHandler(this);
 
-		phaseListeners.listen(GamePlayerEvents.LEAVE, p -> sendParticipantsList());
+		phaseListeners.listen(GamePlayerEvents.REMOVE, p -> sendParticipantsList());
 		phaseListeners.listen(GamePlayerEvents.SET_ROLE, (p, r, lr) -> sendParticipantsList());
 	}
 

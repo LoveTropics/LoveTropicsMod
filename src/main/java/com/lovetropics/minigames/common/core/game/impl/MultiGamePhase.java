@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -139,6 +140,11 @@ public class MultiGamePhase extends GamePhase {
     ServerPlayer onPlayerLeave(ServerPlayer player, boolean loggingOut) {
 		if (subPhase != null) {
             // To ensure that the top-level game gets notified properly, we need to pull the player out step-by-step
+            try {
+                subPhase.invoker(GamePlayerEvents.LEAVE).onRemove(player);
+            } catch (Exception e) {
+                LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
+            }
             player = returnPlayerToParentPhase(subPhase, player);
 		}
         return super.onPlayerLeave(player, loggingOut);

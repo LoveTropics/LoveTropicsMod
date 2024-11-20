@@ -147,7 +147,7 @@ public class GamePhase implements IGamePhase {
 		SpawnBuilder spawn = new SpawnBuilder(player);
 		invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
 
-		ServerPlayer newPlayer = PlayerIsolation.INSTANCE.teleportTo(player, spawn.level(), spawn.position(), spawn.yRot(), spawn.xRot());
+		ServerPlayer newPlayer = PlayerIsolation.INSTANCE.teleportTo(player, spawn.level(), spawn.position(), spawn.yRot(), spawn.xRot(), spawn::loadInto);
 		invoker(GamePlayerEvents.ADD).onAdd(newPlayer);
 		spawn.applyInitializers(newPlayer);
 
@@ -277,13 +277,18 @@ public class GamePhase implements IGamePhase {
 	}
 
 	ServerPlayer onPlayerLeave(ServerPlayer player, boolean loggingOut) {
+		try {
+			invoker(GamePlayerEvents.LEAVE).onRemove(player);
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
+		}
+
 		for (PlayerRole role : PlayerRole.ROLES) {
 			roles.get(role).remove(player);
 		}
 
 		try {
 			addedPlayers.remove(player.getUUID());
-			invoker(GamePlayerEvents.LEAVE).onRemove(player);
 			invoker(GamePlayerEvents.REMOVE).onRemove(player);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
