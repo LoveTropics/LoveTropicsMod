@@ -350,16 +350,6 @@ public class CraftingBeeBehavior implements IGameBehavior {
     private void onGameOver(GameWinner winner) {
         done = true;
         game.allPlayers().forEach(ServerPlayer::closeContainer);
-
-        game.scheduler().runAfterSeconds(1.5f, () -> {
-            game.allPlayers().playSound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
-
-            if (winner instanceof GameWinner.Team(GameTeam team)) {
-                for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
-                    winningPlayer.setGlowingTag(true);
-                }
-            }
-        });
     }
 
     private void tickRunning(IGamePhase game) {

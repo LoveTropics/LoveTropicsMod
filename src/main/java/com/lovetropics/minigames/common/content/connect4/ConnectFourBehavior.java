@@ -105,7 +105,7 @@ public class ConnectFourBehavior implements IGameBehavior {
 
         events.listen(GameWorldEvents.BLOCK_LANDED, this::onBlockLanded);
 
-        events.listen(GameLogicEvents.GAME_OVER, this::onGameOver);
+        events.listen(GameLogicEvents.GAME_OVER, winner -> gameOver = true);
     }
 
     private void onStart() {
@@ -222,18 +222,6 @@ public class ConnectFourBehavior implements IGameBehavior {
 
     private void triggerGameOver(GameWinner winner) {
         game.invoker(GameLogicEvents.GAME_OVER).onGameOver(winner);
-    }
-
-    private void onGameOver(GameWinner winner) {
-        gameOver = true;
-
-        game.allPlayers().playSound(SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.5f, 1.0f);
-
-        if (winner instanceof GameWinner.Team(GameTeam team)) {
-            for (ServerPlayer winningPlayer : teams.getPlayersForTeam(team.key())) {
-                winningPlayer.setGlowingTag(true);
-            }
-        }
     }
 
     private void nextPlayer() {
