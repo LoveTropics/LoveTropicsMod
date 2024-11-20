@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.paint_party;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.paint_party.entity.PaintBallEntity;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -26,12 +27,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,8 +46,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, BlockState neutralBlock, int startAmmo, int ammoRechargeTicks) implements IGameBehavior {
@@ -87,7 +95,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
             }
         });
         events.listen(GameWorldEvents.EXPLOSION_DETONATE, (explosion, affectedBlocks, affectedEntities) -> {
-            if (explosion.getDirectSourceEntity().getType().is(HolderSet.direct(EXPLODING_COCONUT)) && explosion.getIndirectSourceEntity() instanceof ServerPlayer throwingPlayer) {
+            if ((explosion.getDirectSourceEntity().getType().is(HolderSet.direct(EXPLODING_COCONUT)) || explosion.getDirectSourceEntity() instanceof PaintBallEntity) && explosion.getIndirectSourceEntity() instanceof ServerPlayer throwingPlayer) {
                 GameTeamKey teamKey = teams.getTeamForPlayer(throwingPlayer);
                 if (teamKey == null) {
                     return;
@@ -133,6 +141,66 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
 				player.getAttribute(Attributes.STEP_HEIGHT).removeModifier(SWIMMING_STEP_MODIFIER);
 			}
         });
+
+        events.listen(GamePlayerEvents.USE_ITEM, (player, hand) -> {
+            ItemStack stack = player.getItemInHand(hand);
+            GameTeamKey teamKey = teams.getTeamForPlayer(player);
+            if (teamKey == null) {
+                return InteractionResult.PASS;
+            }
+
+            TeamConfig teamConfig = getTeamConfig(teamKey);
+
+            if (stack.getItem() == Items.DIAMOND_HOE && player.getInventory().countItem(teamConfig.ammoItem.getItem()) >= 20) {
+                removeFromInventory(player, teamConfig, 20);
+
+                player.getCooldowns().addCooldown(stack.getItem(), 60);
+
+                PaintBallEntity paintball = new PaintBallEntity(player.level());
+                paintball.setOwner(player);
+                paintball.setPos(player.getX(), player.getEyeY() - 0.1F, player.getZ());
+                paintball.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 0.75F, 1.0F);
+                player.level().addFreshEntity(paintball);
+
+                return InteractionResult.PASS;
+            }
+
+            return InteractionResult.PASS;
+        });
+
+        events.listen(PaintPartyEvents.PAINTBALL_HIT, (eventLevel, entity, pos) -> {
+            Explosion explosion = new Explosion(eventLevel, entity, entity.getX(), entity.getY() + 1, entity.getZ(), 4f, false, Explosion.BlockInteraction.KEEP);
+            explosion.explode();
+        });
+    }
+
+    // TODO: taken from bioblitz, abstract out into helper eventually!
+
+    private int removeFromInventory(ServerPlayer player, TeamConfig config, int amount) {
+        int remaining = amount;
+
+        List<Slot> slots = player.containerMenu.slots;
+        for (Slot slot : slots) {
+            remaining -= removeFromSlot(slot, i -> i.is(config.ammoItem().getItem()), remaining);
+            if (remaining <= 0) break;
+        }
+
+        remaining -= ContainerHelper.clearOrCountMatchingItems(player.containerMenu.getCarried(), i -> i.is(config.ammoItem().getItem()), remaining, false);
+
+        player.containerMenu.broadcastChanges();
+
+        return amount - remaining;
+    }
+
+    private int removeFromSlot(Slot slot, Predicate<ItemStack> predicate, int amount) {
+        ItemStack stack = slot.getItem();
+        if (predicate.test(stack)) {
+            int removed = Math.min(amount, stack.getCount());
+            stack.shrink(removed);
+            return removed;
+        }
+
+        return 0;
     }
 
     private static boolean isInOpponentSpawnRegion(Map<GameTeamKey, BlockBox> spawnRegions, GameTeamKey teamKey, BlockPos playerPos) {
@@ -182,7 +250,7 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
         if (player.getInventory().hasAnyMatching(itemStack -> itemStack.is(teamConfig.itemTag()))) {
             // Player has blocks to place
             paintBlock(game, playerPos, teamKey, teamConfig, blockState);
-            player.getInventory().removeItem(0, 1);
+            removeFromInventory(player, teamConfig, 1);
         }
     }
 
