@@ -281,6 +281,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.plus_two_crabs", "+2 Crabs!");
 		KEYS.add("donation.plus_two_crabs.description", "Even more Crabs? Spawn 2 additional Crabs on the field!");
 		KEYS.add("donation.plus_two_crabs.toast", "%sender% has spawned 2 MORE CRABS!");
+		KEYS.add("donation.invert_controls_package", "Invert Controls");
+		KEYS.add("donation.invert_controls_package.description", "For those that want the players to suffer: invert the players' vertical mouse control!");
+		KEYS.add("donation.invert_controls_package.toast", "%sender% has INVERTED MOUSE CONTROLS for 1 minute!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
