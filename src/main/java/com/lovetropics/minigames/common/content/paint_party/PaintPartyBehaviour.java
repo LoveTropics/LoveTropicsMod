@@ -66,12 +66,6 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
 			0.5,
 			AttributeModifier.Operation.ADD_VALUE
 	);
-    // Also allows falling down blocks, as we are sneaking!
-	private static final AttributeModifier SWIMMING_STEP_MODIFIER = new AttributeModifier(
-			LoveTropics.location("paint_party/swimming_in_paint"),
-			0.5,
-			AttributeModifier.Operation.ADD_VALUE
-	);
 
 	@Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -79,19 +73,16 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
         Map<GameTeamKey, BlockBox> spawnRegions = teamConfigs.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, teamEntry -> game.mapRegions().getOrThrow(teamEntry.getValue().spawnRegion())));
 
-        events.listen(GamePlayerEvents.SPAWN, (player, spawnBuilder, playerRole) -> {
-            if (playerRole == PlayerRole.PARTICIPANT) {
-                GameTeamKey teamKey = teams.getTeamForPlayer(player);
+        events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
+            if (role == PlayerRole.PARTICIPANT) {
+                GameTeamKey teamKey = teams.getTeamForPlayer(playerId);
                 if (teamKey == null) {
                     return;
                 }
                 TeamConfig teamConfig = teamConfigs.get(teamKey);
-                spawnBuilder.run(serverPlayer -> {
-                    ItemStack copy = teamConfig.ammoItem.copy();
-                    copy.setCount(startAmmo);
-                    serverPlayer.getInventory().clearContent();
-                    serverPlayer.getInventory().setItem(0, copy);
-                });
+                spawn.run(player ->
+                        player.getInventory().add(teamConfig.ammoItem.copyWithCount(startAmmo))
+                );
             }
         });
         events.listen(GameWorldEvents.EXPLOSION_DETONATE, (explosion, affectedBlocks, affectedEntities) -> {
@@ -112,6 +103,10 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
             }
         });
         events.listen(GamePlayerEvents.TICK, (player) -> {
+            // Persist whatever state the player already has if they are not on the ground
+            if (!player.onGround()) {
+                return;
+            }
             GameTeamKey teamKey = teams.getTeamForPlayer(player);
             if (teamKey == null) {
                 return;
@@ -135,10 +130,8 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
 
 			if (player.isVisuallySwimming()) {
 				player.getAttribute(Attributes.MOVEMENT_SPEED).addOrUpdateTransientModifier(SWIMMING_SPEED_MODIFIER);
-				player.getAttribute(Attributes.STEP_HEIGHT).addOrUpdateTransientModifier(SWIMMING_STEP_MODIFIER);
 			} else {
 				player.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SWIMMING_SPEED_MODIFIER);
-				player.getAttribute(Attributes.STEP_HEIGHT).removeModifier(SWIMMING_STEP_MODIFIER);
 			}
         });
 
