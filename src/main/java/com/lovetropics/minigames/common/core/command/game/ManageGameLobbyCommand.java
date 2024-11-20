@@ -14,6 +14,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 
 import static net.minecraft.commands.Commands.literal;
@@ -27,26 +28,20 @@ public class ManageGameLobbyCommand {
 		dispatcher.register(
 				literal("game")
 						.then(literal("create")
-								.requires(source -> source.hasPermission(2))
+								.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 								.executes(ManageGameLobbyCommand::createLobby)
 						)
 						.then(literal("manage")
-								.requires(source -> source.hasPermission(2))
+								.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 								.then(GameLobbyArgument.argument("lobby")
 										.executes(ManageGameLobbyCommand::manageLobby)
 								))
 						.then(literal("manage")
-								.requires(source -> source.hasPermission(2))
+								.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 								.executes(ManageGameLobbyCommand::manageCurrentLobby)
 						)
-						.then(literal("enqueue")
-								.requires(source -> source.hasPermission(2))
-								.then(GameLobbyArgument.argument("lobby")
-										.then(GameConfigArgument.argument("game")
-												.executes(ManageGameLobbyCommand::enqueueGame)
-										)))
 						.then(literal("close")
-								.requires(source -> source.hasPermission(2))
+								.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 								.then(GameLobbyArgument.argument("lobby")
 										.executes(ManageGameLobbyCommand::closeLobby)
 								))
@@ -92,15 +87,6 @@ public class ManageGameLobbyCommand {
 		if (!lobby.getManagement().startManaging(player)) {
 			throw NO_MANAGE_PERMISSION.create();
 		}
-
-		return Command.SINGLE_SUCCESS;
-	}
-
-	private static int enqueueGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
-		GameConfig game = GameConfigArgument.get(context, "game");
-
-		lobby.getGameQueue().enqueue(game);
 
 		return Command.SINGLE_SUCCESS;
 	}
