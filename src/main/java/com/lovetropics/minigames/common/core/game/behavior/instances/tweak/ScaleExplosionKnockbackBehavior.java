@@ -12,11 +12,13 @@ import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
 
-public record ScaleExplosionKnockbackBehavior(float factor, EntityPredicate explodedPredicate, EntityPredicate exploderPredicate) implements IGameBehavior {
+import java.util.Optional;
+
+public record ScaleExplosionKnockbackBehavior(float factor, Optional<EntityPredicate> explodedPredicate, Optional<EntityPredicate> exploderPredicate) implements IGameBehavior {
     public static final MapCodec<ScaleExplosionKnockbackBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
             Codec.floatRange(0.0F, Float.MAX_VALUE).fieldOf("factor").forGetter(ScaleExplosionKnockbackBehavior::factor),
-            EntityPredicate.CODEC.fieldOf("exploded").forGetter(ScaleExplosionKnockbackBehavior::explodedPredicate),
-            EntityPredicate.CODEC.fieldOf("exploder").forGetter(ScaleExplosionKnockbackBehavior::exploderPredicate)
+            EntityPredicate.CODEC.optionalFieldOf("exploded").forGetter(ScaleExplosionKnockbackBehavior::explodedPredicate),
+            EntityPredicate.CODEC.optionalFieldOf("exploder").forGetter(ScaleExplosionKnockbackBehavior::exploderPredicate)
     ).apply(in, ScaleExplosionKnockbackBehavior::new));
 
     @Override
@@ -30,9 +32,12 @@ public record ScaleExplosionKnockbackBehavior(float factor, EntityPredicate expl
     }
 
     private boolean matches(IGamePhase game, Entity entity, Explosion explosion) {
-        if (!explodedPredicate.matches(game.level(), explosion.center(), entity)) {
+        if (explodedPredicate.isPresent() && !explodedPredicate.get().matches(game.level(), explosion.center(), entity)) {
             return false;
         }
-		return explosion.getDirectSourceEntity() != null && exploderPredicate.matches(game.level(), explosion.center(), explosion.getDirectSourceEntity());
+        if (exploderPredicate.isPresent() && !exploderPredicate.get().matches(game.level(), explosion.center(), explosion.getDirectSourceEntity())) {
+            return false;
+        }
+        return true;
 	}
 }

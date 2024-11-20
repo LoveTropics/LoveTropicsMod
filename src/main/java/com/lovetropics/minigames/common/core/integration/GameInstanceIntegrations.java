@@ -102,10 +102,8 @@ public final class GameInstanceIntegrations implements IGameState {
 
 		IGamePhase activeGame = gameStack.getLast();
 		GamePackageState packageState = activeGame.state().getOrNull(GamePackageState.KEY);
-		if (packageState != null) {
-			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
-			payload.add("packages", PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList).getOrThrow());
-		}
+		List<DonationPackageData> packageList = packageState != null ? List.copyOf(packageState.packages()) : List.of();
+		payload.add("packages", PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList).getOrThrow());
 	}
 
 	public void finish(IGamePhase phase) {

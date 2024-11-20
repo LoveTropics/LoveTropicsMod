@@ -113,6 +113,7 @@ public final class BackendIntegrations {
 		return instance;
 	}
 
+	// TODO: It would be nice to have a more robust system for sending with retries - for example, if we send but the minigame didn't exist.. we probably shouldn't resend it
 	void postAndRetry(final String endpoint, final JsonElement body) {
 		postAndRetry(endpoint, body, 0);
 	}
