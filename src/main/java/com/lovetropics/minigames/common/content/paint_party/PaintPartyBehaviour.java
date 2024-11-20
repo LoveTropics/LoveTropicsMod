@@ -2,56 +2,44 @@ package com.lovetropics.minigames.common.content.paint_party;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.content.river_race.behaviour.CollectablesBehaviour;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.network.SetForcedPoseMessage;
-import com.lovetropics.minigames.common.core.network.trivia.TriviaAnswerResponseMessage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
-import net.minecraft.world.RandomizableContainer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, BlockState neutralBlock, int startAmmo, int ammoRechargeTicks) implements IGameBehavior {
     public static final MapCodec<PaintPartyBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -64,16 +52,14 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        ServerLevel level = game.level();
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
-        Map<GameTeamKey, BlockBox> spawnRegions = new HashMap<>();
-        for (Map.Entry<GameTeamKey, TeamConfig> teamEntry : PaintPartyBehaviour.this.teamConfigs.entrySet()) {
-            spawnRegions.put(teamEntry.getKey(), game.mapRegions().getOrThrow(teamEntry.getValue().spawnRegion()));
-        }
+        Map<GameTeamKey, BlockBox> spawnRegions = teamConfigs.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, teamEntry -> game.mapRegions().getOrThrow(teamEntry.getValue().spawnRegion())));
+
         events.listen(GamePlayerEvents.SPAWN, (player, spawnBuilder, playerRole) -> {
-            if(playerRole == PlayerRole.PARTICIPANT){
+            if (playerRole == PlayerRole.PARTICIPANT) {
                 GameTeamKey teamKey = teams.getTeamForPlayer(player);
-                if(teamKey == null){
+                if (teamKey == null) {
                     return;
                 }
                 TeamConfig teamConfig = teamConfigs.get(teamKey);
@@ -86,29 +72,16 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
             }
         });
         events.listen(GameWorldEvents.EXPLOSION_DETONATE, (explosion, affectedBlocks, affectedEntities) -> {
-            if(explosion.getDirectSourceEntity().getType().is(HolderSet.direct(EXPLODING_COCONUT)) && explosion.getIndirectSourceEntity() instanceof ServerPlayer throwingPlayer){
+            if (explosion.getDirectSourceEntity().getType().is(HolderSet.direct(EXPLODING_COCONUT)) && explosion.getIndirectSourceEntity() instanceof ServerPlayer throwingPlayer) {
                 GameTeamKey teamKey = teams.getTeamForPlayer(throwingPlayer);
-                if(teamKey == null){
+                if (teamKey == null) {
                     return;
                 }
                 TeamConfig teamConfig = getTeamConfig(teamKey);
-                List<BlockPos> blockPos = new ArrayList<>(affectedBlocks);
-                for (BlockPos blockPo : blockPos) {
-                    BlockState blockState = game.level().getBlockState(blockPo);
-                    if(!blockState.isAir() && blockState.is(Tags.Blocks.DYED)) {
-                        if (!blockState.is(teamConfig.blockTag())) {
-                            if (!blockState.equals(neutralBlock)) {
-                                // Enemy team block, remove score from enemy
-                                GameTeamKey teamFromBlockState = getTeamFromBlockState(blockState);
-                                if(teamFromBlockState != null) {
-                                    game.statistics().forTeam(teamFromBlockState).incrementInt(StatisticKey.POINTS, -1);
-                                }
-                            }
-                            game.level().setBlock(blockPo, teamConfig.blockType(), Block.UPDATE_CLIENTS);
-                            game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
-                                    .setPos(blockPo), blockPo.getX() + 0.5, blockPo.getY() + 0.5, blockPo.getZ() + 0.5, 100, 0, 0,0,0.15F);
-                            game.statistics().forTeam(teamKey).incrementInt(StatisticKey.POINTS, 1);
-                        }
+                for (BlockPos pos : affectedBlocks) {
+                    BlockState blockState = game.level().getBlockState(pos);
+                    if (!blockState.isAir() && blockState.is(Tags.Blocks.DYED) && !blockState.is(teamConfig.blockTag())) {
+                        paintBlock(game, pos, teamKey, teamConfig, blockState);
                     }
                 }
                 affectedBlocks.clear();
@@ -117,74 +90,91 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
         });
         events.listen(GamePlayerEvents.TICK, (player) -> {
             GameTeamKey teamKey = teams.getTeamForPlayer(player);
-            if(teamKey == null){
+            if (teamKey == null) {
                 return;
             }
             BlockPos playerPos = player.getOnPos();
-            for (Map.Entry<GameTeamKey, BlockBox> entry : spawnRegions.entrySet()) {
-                if(!entry.getKey().equals(teamKey)){
-                    if(entry.getValue().contains(playerPos)){
-                        return;
-                    }
-                }
+            if (isInOpponentSpawnRegion(spawnRegions, teamKey, playerPos)) {
+                return;
             }
             TeamConfig teamConfig = getTeamConfig(teamKey);
             BlockState blockState = game.level().getBlockState(playerPos);
-            if(!blockState.isAir() && blockState.is(Tags.Blocks.DYED)){
-                if(!blockState.is(teamConfig.blockTag())){
-                    if(player.isSwimming() || player.getForcedPose() == Pose.SWIMMING){
-                        player.setSwimming(false);
-                        player.setShiftKeyDown(false);
-                        player.setForcedPose(null);
-                        PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
-                        return;
-                    }
-                    if (!hasNeighboringPaint(game, playerPos, teamConfig)) {
-                        return;
-                    }
-                    // Check if player has any blocks to place
-                    if(player.getInventory().hasAnyMatching(itemStack -> itemStack.is(teamConfig.itemTag()))) {
-                        // Player has blocks to place
-                        if (!blockState.equals(neutralBlock)) {
-                            // Enemy team block, remove score from enemy
-                            GameTeamKey teamFromBlockState = getTeamFromBlockState(blockState);
-                            if(teamFromBlockState != null) {
-                                game.statistics().forTeam(teamFromBlockState).incrementInt(StatisticKey.POINTS, -1);
-                            }
-                        }
-                        game.level().setBlock(playerPos, teamConfig.blockType(), Block.UPDATE_CLIENTS);
-                        game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
-                                .setPos(playerPos), playerPos.getX() + 0.5, playerPos.getY() + 0.5, playerPos.getZ() + 0.5, 100, 0, 0,0,0.15F);
-                        player.getInventory().removeItem(0, 1);
-                        game.statistics().forTeam(teamKey).incrementInt(StatisticKey.POINTS, 1);
-                    }
+            if (!blockState.isAir() && blockState.is(Tags.Blocks.DYED)) {
+                if (!blockState.is(teamConfig.blockTag())) {
+                    tickOnOpponentTeamBlock(game, player, playerPos, teamConfig, blockState, teamKey);
                 } else {
-                    // If we're swimming, reload.
-                    if(player.getForcedPose() == Pose.SWIMMING){
-                        if(!player.isShiftKeyDown()){
-                            player.setForcedPose(null);
-                            PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
-                        } else {
-                            if (player.getInventory().countItem(teamConfig.ammoItem.getItem()) < startAmmo) {
-                                if (game.ticks() % ammoRechargeTicks() == 0) {
-                                    player.getInventory().add(teamConfig.ammoItem.copy());
-                                    game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
-                                            .setPos(playerPos), playerPos.getX() + 0.5, playerPos.getY() + 1.5, playerPos.getZ() + 0.5, 150, 0, 0,0,0.15F);
-                                }
-                            }
-                        }
-                    } else if (player.isShiftKeyDown()) {
-                        if(player.getForcedPose() != Pose.SWIMMING) {
-                            player.setForcedPose(Pose.SWIMMING);
-                            PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.of(Pose.SWIMMING)));
-                        }
-                    }
+                    tickOnOwnTeamBlock(game, player, teamConfig, playerPos);
                 }
-            } else if(player.getForcedPose() == Pose.SWIMMING){
+            } else if (player.getForcedPose() == Pose.SWIMMING) {
                 player.setForcedPose(null);
                 PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
             }
         });
+    }
+
+    private static boolean isInOpponentSpawnRegion(Map<GameTeamKey, BlockBox> spawnRegions, GameTeamKey teamKey, BlockPos playerPos) {
+        for (Map.Entry<GameTeamKey, BlockBox> entry : spawnRegions.entrySet()) {
+            if (!entry.getKey().equals(teamKey) && entry.getValue().contains(playerPos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void tickOnOwnTeamBlock(IGamePhase game, ServerPlayer player, TeamConfig teamConfig, BlockPos playerPos) {
+        // If we're swimming, reload.
+        if (player.getForcedPose() == Pose.SWIMMING) {
+            if (!player.isShiftKeyDown()) {
+                player.setForcedPose(null);
+                PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
+            } else {
+                if (player.getInventory().countItem(teamConfig.ammoItem.getItem()) < startAmmo) {
+                    if (game.ticks() % ammoRechargeTicks() == 0) {
+                        player.getInventory().add(teamConfig.ammoItem.copy());
+                        game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
+                                .setPos(playerPos), playerPos.getX() + 0.5, playerPos.getY() + 1.5, playerPos.getZ() + 0.5, 150, 0, 0, 0, 0.15F);
+                    }
+                }
+            }
+        } else if (player.isShiftKeyDown()) {
+            if (player.getForcedPose() != Pose.SWIMMING) {
+                player.setForcedPose(Pose.SWIMMING);
+                PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.of(Pose.SWIMMING)));
+            }
+        }
+    }
+
+    private void tickOnOpponentTeamBlock(IGamePhase game, ServerPlayer player, BlockPos playerPos, TeamConfig teamConfig, BlockState blockState, GameTeamKey teamKey) {
+        if (player.isSwimming() || player.getForcedPose() == Pose.SWIMMING) {
+            player.setSwimming(false);
+            player.setShiftKeyDown(false);
+            player.setForcedPose(null);
+            PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
+            return;
+        }
+        if (!hasNeighboringPaint(game, playerPos, teamConfig)) {
+            return;
+        }
+        // Check if player has any blocks to place
+        if (player.getInventory().hasAnyMatching(itemStack -> itemStack.is(teamConfig.itemTag()))) {
+            // Player has blocks to place
+            paintBlock(game, playerPos, teamKey, teamConfig, blockState);
+            player.getInventory().removeItem(0, 1);
+        }
+    }
+
+    private void paintBlock(IGamePhase game, BlockPos pos, GameTeamKey teamKey, TeamConfig team, BlockState previousState) {
+        if (!previousState.equals(neutralBlock)) {
+            // Enemy team block, remove score from enemy
+            GameTeamKey teamFromBlockState = getTeamFromBlockState(previousState);
+            if (teamFromBlockState != null) {
+                game.statistics().forTeam(teamFromBlockState).incrementInt(StatisticKey.POINTS, -1);
+            }
+        }
+        game.level().setBlock(pos, team.blockType(), Block.UPDATE_CLIENTS);
+        game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, team.blockType())
+                .setPos(pos), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 100, 0, 0, 0, 0.15F);
+        game.statistics().forTeam(teamKey).incrementInt(StatisticKey.POINTS, 1);
     }
 
     private static boolean hasNeighboringPaint(IGamePhase game, BlockPos pos, TeamConfig teamConfig) {
@@ -192,35 +182,34 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
             if (neighborPos.equals(pos)) {
                 continue;
             }
-            if (game.level().getBlockState(neighborPos).is(teamConfig.blockTag())){
+            if (game.level().getBlockState(neighborPos).is(teamConfig.blockTag())) {
                 return true;
             }
         }
         return false;
     }
 
-    public TeamConfig getTeamConfig(GameTeamKey teamKey){
+    public TeamConfig getTeamConfig(GameTeamKey teamKey) {
         return teamConfigs.get(teamKey);
     }
 
     @Nullable
-    public GameTeamKey getTeamFromBlockState(BlockState blockState){
+    public GameTeamKey getTeamFromBlockState(BlockState blockState) {
         for (Map.Entry<GameTeamKey, TeamConfig> entry : teamConfigs.entrySet()) {
-            if(entry.getValue().blockType.equals(blockState)){
+            if (entry.getValue().blockType.equals(blockState)) {
                 return entry.getKey();
             }
         }
         return null;
     }
-    private int calculateTeamScore(){
-        int score = 0;
-        return score;
-    }
 
-    public record TeamConfig(String spawnRegion,
-                             BlockState blockType,
-                             ItemStack ammoItem,
-                             TagKey<Block> blockTag, TagKey<Item> itemTag){
+    public record TeamConfig(
+            String spawnRegion,
+            BlockState blockType,
+            ItemStack ammoItem,
+            TagKey<Block> blockTag,
+            TagKey<Item> itemTag
+    ) {
         public static final Codec<TeamConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("spawn_region").forGetter(TeamConfig::spawnRegion),
                 MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(TeamConfig::blockType),
