@@ -52,5 +52,26 @@
     "sounds": [
       "ltminigames:incorrect"
     ]
+  },
+  "quiet_explosion": {
+    "sounds": [
+      {
+        "name": "random/explode1",
+        "volume": 0.1
+      },
+      {
+        "name": "random/explode2",
+        "volume": 0.1
+      },
+      {
+        "name": "random/explode3",
+        "volume": 0.1
+      },
+      {
+        "name": "random/explode4",
+        "volume": 0.1
+      }
+    ],
+    "subtitle": "subtitles.entity.generic.explode"
   }
 }

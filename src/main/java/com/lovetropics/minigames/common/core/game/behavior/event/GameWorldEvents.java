@@ -1,10 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,6 +20,13 @@ public final class GameWorldEvents {
 		for (ChunkLoad listener : listeners) {
 			listener.onChunkLoad(chunk);
 		}
+	});
+
+	public static final GameEventType<ExplosionSound> EXPLOSION_SOUND = GameEventType.create(ExplosionSound.class, listeners -> (explosion, sound) -> {
+		for (ExplosionSound listener : listeners) {
+			sound = listener.updateExplosionSound(explosion, sound);
+		}
+		return sound;
 	});
 
 	public static final GameEventType<ExplosionDetonate> EXPLOSION_DETONATE = GameEventType.create(ExplosionDetonate.class, listeners -> (explosion, affectedBlocks, affectedEntities) -> {
@@ -55,6 +64,10 @@ public final class GameWorldEvents {
 
 	public interface ChunkLoad {
 		void onChunkLoad(ChunkAccess chunk);
+	}
+
+	public interface ExplosionSound {
+		Holder<SoundEvent> updateExplosionSound(Explosion explosion, Holder<SoundEvent> sound);
 	}
 
 	public interface ExplosionDetonate {

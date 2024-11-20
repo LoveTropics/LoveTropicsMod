@@ -12,6 +12,7 @@
     "EntityAccessor",
     "EntityMixin",
     "EntityTypeMixin",
+    "ExplosionMixin",
     "FallingBlockEntityMixin",
     "ItemStackMixin",
     "MinecraftServerMixin",

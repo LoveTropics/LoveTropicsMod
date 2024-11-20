@@ -138,6 +138,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.Disab
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableThrowingItemsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.PreventBreakBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.QuietExplosionsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleExplosionKnockbackBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScalePlayerDamageBehavior;
@@ -313,6 +314,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<CheckpointsBehavior> CHECKPOINTS = register("checkpoints", CheckpointsBehavior.CODEC);
 	public static final GameBehaviorEntry<KillInVoidBehavior> KILL_IN_VOID = register("kill_in_void", KillInVoidBehavior.CODEC);
 	public static final GameBehaviorEntry<AllowSingleFallAction> ALLOW_SINGLE_FALL = register("allow_single_fall", AllowSingleFallAction.CODEC);
+	public static final GameBehaviorEntry<QuietExplosionsBehavior> QUIET_EXPLOSIONS = register("quiet_explosions", QuietExplosionsBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

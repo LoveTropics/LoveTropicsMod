@@ -17,6 +17,7 @@ public class SoundRegistry {
 	public static final Holder<SoundEvent> COINS = register("coins");
 	public static final Holder<SoundEvent> CORRECT = register("correct");
 	public static final Holder<SoundEvent> INCORRECT = register("incorrect");
+	public static final Holder<SoundEvent> QUIET_EXPLOSION = register("quiet_explosion");
 
 	private static Holder<SoundEvent> register(String name) {
 		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(LoveTropics.location(name)));

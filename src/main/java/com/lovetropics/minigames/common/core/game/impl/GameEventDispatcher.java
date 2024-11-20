@@ -8,10 +8,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntit
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.util.Scheduler;
+import com.lovetropics.minigames.common.util.duck.ExtendedExplosion;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -403,7 +407,21 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onExplosion(ExplosionEvent.Detonate event) {
+	public void onExplosionStart(ExplosionEvent.Start event) {
+		Explosion explosion = event.getExplosion();
+		IGamePhase game = gameLookup.getGamePhaseAt(event.getLevel(), BlockPos.containing(explosion.center()));
+		if (game != null) {
+			try {
+				Holder<SoundEvent> newSound = game.invoker(GameWorldEvents.EXPLOSION_SOUND).updateExplosionSound(explosion, explosion.getExplosionSound());
+				((ExtendedExplosion) explosion).ltminigames$setSound(newSound);
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onExplosionDetonate(ExplosionEvent.Detonate event) {
 		IGamePhase game = gameLookup.getGamePhaseAt(event.getLevel(), BlockPos.containing(event.getExplosion().center()));
 		if (game != null) {
 			try {
