@@ -37,8 +37,10 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Mth;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -108,8 +110,15 @@ public class VictoryPointsBehavior implements IGameBehavior {
         events.listen(RiverRaceEvents.COLLECTABLE_PLACED, this::onCollectablePlaced);
         events.listen(RiverRaceEvents.VICTORY_POINTS_CHANGED, (team, value, lastValue) -> {
             PlayerSet playersForTeam = teams.getPlayersForTeam(team);
-            playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(value - lastValue), true);
-            playersForTeam.playSound(SoundRegistry.COINS.value(), SoundSource.NEUTRAL, 0.4f, 1);
+            int increase = value - lastValue;
+            playersForTeam.sendMessage(RiverRaceTexts.VICTORY_POINT_CHANGE.apply(increase), true);
+
+            for (int i = 0; i < increase; i++) {
+                float pitch = Mth.lerp((float) i / increase, 1.0f, 2.0f);
+                game.scheduler().runAfterTicks(5 + i * 3, () ->
+                        playersForTeam.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.NEUTRAL, 1.0f, pitch)
+                );
+            }
         });
 
         Object2IntMap<GameTeamKey> lastTeamPoints = new Object2IntArrayMap<>();
