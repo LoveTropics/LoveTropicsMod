@@ -325,7 +325,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				int z = Mth.clamp(localZ / quadSize, 0, quadCountZ - 1);
 
 				BlockState quad = quads[x + z * quadCountX];
-				world.setBlockAndUpdate(pos, quad);
+				world.setBlock(pos, quad, Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_CLIENTS);
 			}
 		}
 
@@ -333,7 +333,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			for (BlockPos pos : box) {
 				BlockState state = world.getBlockState(pos);
 				if (!state.equals(target)) {
-					world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+					world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_CLIENTS);
 				}
 			}
 		}
