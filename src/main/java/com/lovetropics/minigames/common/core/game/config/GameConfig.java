@@ -25,7 +25,8 @@ public record GameConfig(
 		int maximumParticipants,
 		@Nullable GamePhaseConfig waiting,
 		GamePhaseConfig playing,
-		boolean isMultiGame
+		boolean isMultiGame,
+		boolean hideFromList
 ) implements IGameDefinition {
 	public static Codec<GameConfig> codec(ResourceLocation id) {
 		return RecordCodecBuilder.create(i -> i.group(
@@ -38,15 +39,16 @@ public record GameConfig(
 				Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
 				GamePhaseConfig.CODEC.optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
 				Codec.BOOL.optionalFieldOf("is_multi_game").forGetter(c -> Optional.of(c.isMultiGame)),
-				GamePhaseConfig.MAP_CODEC.forGetter(c -> c.playing)
-		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, is_multi_game, active) -> {
+				GamePhaseConfig.MAP_CODEC.forGetter(c -> c.playing),
+				Codec.BOOL.optionalFieldOf("hide_from_list", false).forGetter(c -> c.hideFromList)
+		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, is_multi_game, active, hideFromList) -> {
 			ResourceLocation backendId = backendIdOpt.orElse(id);
 			String statisticsKey = statisticsKeyOpt.orElse(id.getPath());
 			Component subtitle = subtitleOpt.orElse(null);
 			boolean isMultiGame = is_multi_game.orElse(false);
 			ResourceLocation icon = iconOpt.orElse(null);
 			GamePhaseConfig waiting = waitingOpt.orElse(null);
-			return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active, isMultiGame);
+			return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active, isMultiGame, hideFromList);
 		}));
 	}
 

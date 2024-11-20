@@ -36,6 +36,7 @@ public class GameBuilder {
     @Nullable
     private GamePhaseConfig playing;
     private boolean hasMultiGame = false;
+    private boolean hideFromList;
 
     public GameBuilder(ResourceLocation id) {
         this.id = id;
@@ -94,9 +95,14 @@ public class GameBuilder {
         return this;
     }
 
+    public GameBuilder setHideFromList(boolean hideFromList) {
+        this.hideFromList = hideFromList;
+        return this;
+    }
+
     public GameConfig build() {
         Objects.requireNonNull(playing, "Playing phase must be initialized");
-        return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, playing, hasMultiGame);
+        return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, playing, hasMultiGame, hideFromList);
     }
 
     public static final class PhaseBuilder {

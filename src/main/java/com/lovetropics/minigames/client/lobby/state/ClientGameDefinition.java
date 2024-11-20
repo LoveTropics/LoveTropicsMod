@@ -24,6 +24,7 @@ public record ClientGameDefinition(
 
 	public static List<ClientGameDefinition> collectInstalled() {
 		return GameConfigs.REGISTRY.stream()
+				.filter(config -> !config.hideFromList())
 				.map(ClientGameDefinition::from)
 				.collect(Collectors.toList());
 	}

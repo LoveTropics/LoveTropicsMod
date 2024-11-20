@@ -72,6 +72,10 @@ public interface IGameDefinition {
 
 	default boolean isMultiGamePhase() {return false;}
 
+	default boolean hideFromList() {
+		return false;
+	}
+
 	IGamePhaseDefinition getPlayingPhase();
 
 	default Optional<IGamePhaseDefinition> getWaitingPhase() {
