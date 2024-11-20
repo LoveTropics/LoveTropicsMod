@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.paint_party;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -27,6 +28,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -45,12 +48,24 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
     public static final MapCodec<PaintPartyBehaviour> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.unboundedMap(GameTeamKey.CODEC, TeamConfig.CODEC).optionalFieldOf("teams", Map.of()).forGetter(b -> b.teamConfigs),
             MoreCodecs.BLOCK_STATE.optionalFieldOf("neutral_block", Blocks.WHITE_CONCRETE.defaultBlockState()).forGetter(PaintPartyBehaviour::neutralBlock),
-            Codec.INT.optionalFieldOf("starting_ammo", 32).forGetter(PaintPartyBehaviour::startAmmo),
-            Codec.INT.optionalFieldOf("ammo_recharge_ticks", 5).forGetter(PaintPartyBehaviour::ammoRechargeTicks)
+            Codec.INT.optionalFieldOf("starting_ammo", 64).forGetter(PaintPartyBehaviour::startAmmo),
+            Codec.INT.optionalFieldOf("ammo_recharge_ticks", 2).forGetter(PaintPartyBehaviour::ammoRechargeTicks)
     ).apply(i, PaintPartyBehaviour::new));
     private static final Holder<EntityType<?>> EXPLODING_COCONUT = DeferredHolder.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("tropicraft", "exploding_coconut"));
 
-    @Override
+	private static final AttributeModifier SWIMMING_SPEED_MODIFIER = new AttributeModifier(
+			LoveTropics.location("paint_party/swimming_in_paint"),
+			0.5,
+			AttributeModifier.Operation.ADD_VALUE
+	);
+    // Also allows falling down blocks, as we are sneaking!
+	private static final AttributeModifier SWIMMING_STEP_MODIFIER = new AttributeModifier(
+			LoveTropics.location("paint_party/swimming_in_paint"),
+			0.5,
+			AttributeModifier.Operation.ADD_VALUE
+	);
+
+	@Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
         Map<GameTeamKey, BlockBox> spawnRegions = teamConfigs.entrySet().stream()
@@ -109,6 +124,14 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                 player.setForcedPose(null);
                 PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
             }
+
+			if (player.isVisuallySwimming()) {
+				player.getAttribute(Attributes.MOVEMENT_SPEED).addOrUpdateTransientModifier(SWIMMING_SPEED_MODIFIER);
+				player.getAttribute(Attributes.STEP_HEIGHT).addOrUpdateTransientModifier(SWIMMING_STEP_MODIFIER);
+			} else {
+				player.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SWIMMING_SPEED_MODIFIER);
+				player.getAttribute(Attributes.STEP_HEIGHT).removeModifier(SWIMMING_STEP_MODIFIER);
+			}
         });
     }
 
@@ -128,8 +151,8 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
                 player.setForcedPose(null);
                 PacketDistributor.sendToPlayer(player, new SetForcedPoseMessage(Optional.empty()));
             } else {
-                if (player.getInventory().countItem(teamConfig.ammoItem.getItem()) < startAmmo) {
-                    if (game.ticks() % ammoRechargeTicks() == 0) {
+                if (game.ticks() % ammoRechargeTicks() == 0) {
+                    if (player.getInventory().countItem(teamConfig.ammoItem.getItem()) < startAmmo) {
                         player.getInventory().add(teamConfig.ammoItem.copy());
                         game.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, teamConfig.blockType())
                                 .setPos(playerPos), playerPos.getX() + 0.5, playerPos.getY() + 1.5, playerPos.getZ() + 0.5, 150, 0, 0, 0, 0.15F);
