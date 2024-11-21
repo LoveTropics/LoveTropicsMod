@@ -173,13 +173,15 @@ public class PlatformEntity extends Entity {
 			return Vec3.ZERO;
 		}
 		if (index >= riderOffsets.size()) {
+			float edgeBuffer = 1.0f;
+			float width = getWidth() - edgeBuffer;
 			RandomSource random = RandomSource.create(getId());
 			riderOffsets = new ArrayList<>(index + 1);
 			int failures = 0;
 			while (riderOffsets.size() <= index) {
 				float x = random.nextFloat() - 0.5f;
 				float z = random.nextFloat() - 0.5f;
-				Vec3 newOffset = new Vec3(x * getWidth(), 0.0f, z * getWidth());
+				Vec3 newOffset = new Vec3(x * width, 0.0f, z * width);
 				if (isTooClose(newOffset) && failures++ < 100) {
 					continue;
 				}
