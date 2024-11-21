@@ -84,6 +84,7 @@ public final class GameInstanceIntegrations implements IGameState {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", topLevelGame.initiator().serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
+		payload.add("teams", serializeTeamsArray());
 		addGameDefinitionData(payload);
 
 		postImportant(ConfigLT.INTEGRATIONS.minigameStartEndpoint.get(), payload);
@@ -120,6 +121,7 @@ public final class GameInstanceIntegrations implements IGameState {
 			payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
 			payload.add("statistics", phase.statistics().serialize());
 			payload.add("participants", serializeParticipantsArray());
+			payload.add("teams", serializeTeamsArray());
 
 			postImportant(ConfigLT.INTEGRATIONS.minigameEndEndpoint.get(), payload);
 
