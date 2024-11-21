@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -176,6 +177,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			for (int i = 0; i < 9; i++) {
 				player.getInventory().setItem(i, targetStack.copy());
 			}
+			game.statistics().forPlayer(player).set(StatisticKey.ROUNDS_SURVIVED, round);
 		}
 
 		float lerp = (float) round / timeDecayRounds;

@@ -39,6 +39,7 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Integer> VICTORY_POINTS = ofInt("victory_points").displays(unit("victory points"));
 
 	public static final StatisticKey<Integer> TIME_SURVIVED = ofInt("time_survived").displays(minutesSeconds());
+	public static final StatisticKey<Integer> ROUNDS_SURVIVED = ofInt("rounds_survived").displays(unit("rounds"));
 	public static final StatisticKey<CauseOfDeath> CAUSE_OF_DEATH = register(CauseOfDeath.class, "cause_of_death", CauseOfDeath::serialize);
 	public static final StatisticKey<PlayerKey> KILLED_BY = ofPlayer("killed_by");
 	public static final StatisticKey<Integer> TIME_CAMPING = ofInt("time_camping").displays(minutesSeconds());

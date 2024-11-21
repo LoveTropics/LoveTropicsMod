@@ -38,19 +38,23 @@ public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding>
 		});
 	}
 
-	public record StatisticBinding(StatisticKey<Integer> statistic, float multiplier) {
+	public record StatisticBinding(StatisticKey<Integer> statistic, float multiplier, boolean fromTeam) {
 		public static final Codec<StatisticBinding> CODEC = RecordCodecBuilder.create(i -> i.group(
 				StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(StatisticBinding::statistic),
-				Codec.FLOAT.fieldOf("multiplier").forGetter(StatisticBinding::multiplier)
+				Codec.FLOAT.fieldOf("multiplier").forGetter(StatisticBinding::multiplier),
+				Codec.BOOL.optionalFieldOf("from_team", false).forGetter(StatisticBinding::fromTeam)
 		).apply(i, StatisticBinding::new));
 
 		public int resolve(final IGamePhase game, final ServerPlayer player) {
-			float value = game.statistics().forPlayer(player).getInt(statistic);
-			final TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
-			final GameTeamKey team = teams != null ? teams.getTeamForPlayer(player) : null;
-			if (team != null) {
-				final int teamSize = teams.getPlayersForTeam(team).size();
-				value += game.statistics().forTeam(team).getInt(statistic) / (float) teamSize;
+			float value = 0.0f;
+			if (fromTeam) {
+				final TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
+				final GameTeamKey team = teams.getTeamForPlayer(player);
+				if (team != null) {
+					value += game.statistics().forTeam(team).getInt(statistic);
+				}
+			} else {
+				value = game.statistics().forPlayer(player).getInt(statistic);
 			}
 			return Mth.floor(multiplier * value);
 		}

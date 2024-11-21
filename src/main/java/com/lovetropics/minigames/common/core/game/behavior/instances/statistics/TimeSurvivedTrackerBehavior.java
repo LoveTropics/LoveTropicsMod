@@ -5,13 +5,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
 
 public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	public static final MapCodec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -32,7 +33,11 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 			startTime = game.ticks();
 
 			events.listen(GamePhaseEvents.FINISH, () -> onFinish(game));
-			events.listen(GamePlayerEvents.DEATH, (player, source) -> onPlayerDeath(game, player, source));
+			events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+				if (lastRole == PlayerRole.PARTICIPANT) {
+					onPlayerEliminated(game, player);
+				}
+			});
 		});
 	}
 
@@ -47,7 +52,7 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 		statistics.global().set(StatisticKey.TOTAL_TIME, secondsSurvived);
 	}
 
-	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player, DamageSource source) {
+	private InteractionResult onPlayerEliminated(IGamePhase game, ServerPlayer player) {
 		GameStatistics statistics = game.statistics();
 		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(game));
 
@@ -55,6 +60,6 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	}
 
 	private int getSecondsSurvived(IGamePhase game) {
-		return (int) ((game.ticks() - startTime) / 20);
+		return (int) ((game.ticks() - startTime) / SharedConstants.TICKS_PER_SECOND);
 	}
 }
