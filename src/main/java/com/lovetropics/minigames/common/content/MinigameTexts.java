@@ -305,6 +305,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.spawner_buff", "Buff Mob Spawners");
 		KEYS.add("donation.spawner_buff.description", "Double the maximum amount of mobs that spawn for the specified team!");
 		KEYS.add("donation.spawner_buff.toast", "%sender% has DOUBLED MOB SPAWNS for 1 minute!");
+		KEYS.add("donation.silverfish_infestation", "Silverfish Infestation");
+		KEYS.add("donation.silverfish_infestation.description", "Spawns Silverfish all around the specified team - mwahaha!");
+		KEYS.add("donation.silverfish_infestation.toast", "%sender% started a SILVERFISH INFESTATION! Look out!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
