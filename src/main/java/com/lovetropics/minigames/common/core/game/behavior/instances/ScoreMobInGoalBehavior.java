@@ -11,7 +11,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
-import com.lovetropics.minigames.common.core.game.state.progress.ProgressHolder;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -35,7 +34,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.lang3.mutable.MutableLong;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -52,7 +50,7 @@ public record ScoreMobInGoalBehavior(
 		Optional<StatisticKey<Integer>> targetCountStatistic,
 		Map<GameTeamKey, String> teamGoalRegions,
 		StatisticKey<Integer> statistic,
-		int spawnInterval,
+		int spawnDelay,
 		// TODO: Split the scoring, and just detect entities dying?
 		ProgressChannel channel,
 		Optional<ProgressionPeriod> scorePeriod
@@ -63,7 +61,7 @@ public record ScoreMobInGoalBehavior(
 			StatisticKey.INT_CODEC.optionalFieldOf("target_count_statistic").forGetter(ScoreMobInGoalBehavior::targetCountStatistic),
 			Codec.unboundedMap(GameTeamKey.CODEC, Codec.STRING).fieldOf("team_goal_regions").forGetter(ScoreMobInGoalBehavior::teamGoalRegions),
 			StatisticKey.typedCodec(Integer.class).fieldOf("statistic").forGetter(ScoreMobInGoalBehavior::statistic),
-			Codec.INT.optionalFieldOf("spawn_interval", 4).forGetter(ScoreMobInGoalBehavior::spawnInterval),
+			Codec.INT.optionalFieldOf("spawn_delay", SharedConstants.TICKS_PER_SECOND * 2).forGetter(ScoreMobInGoalBehavior::spawnDelay),
 			ProgressChannel.CODEC.optionalFieldOf("channel", ProgressChannel.MAIN).forGetter(ScoreMobInGoalBehavior::channel),
 			ProgressionPeriod.CODEC.optionalFieldOf("score_period").forGetter(ScoreMobInGoalBehavior::scorePeriod)
 	).apply(i, ScoreMobInGoalBehavior::new));
@@ -94,17 +92,22 @@ public record ScoreMobInGoalBehavior(
 		}
 
 		MutableInt activeCount = new MutableInt();
-		MutableLong lastSpawnTime = new MutableLong(-spawnInterval);
+		MutableInt spawnDelay = new MutableInt(0);
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			if (game.ticks() - lastSpawnTime.getValue() < spawnInterval) {
+			int targetCount = resolveTargetCount(game);
+			if (activeCount.getValue() >= targetCount) {
 				return;
 			}
-			int targetCount = resolveTargetCount(game);
-			if (activeCount.getValue() < targetCount) {
+			if (spawnDelay.getValue() > 0) {
+				spawnDelay.decrement();
+				if (spawnDelay.getValue() % SharedConstants.TICKS_PER_SECOND == 0) {
+					game.allPlayers().playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.25f, 1.0f);
+				}
+			} else {
 				spawnScoringEntity(game, spawnBox);
 				activeCount.increment();
-				lastSpawnTime.setValue(game.ticks());
+				spawnDelay.setValue(this.spawnDelay);
 			}
 		});
 
@@ -118,11 +121,7 @@ public record ScoreMobInGoalBehavior(
 			if (goal != null) {
 				scoreGoal(game, teams, goal, entity);
 				entity.discard();
-				if (activeCount.getValue() <= resolveTargetCount(game)) {
-					spawnScoringEntity(game, spawnBox);
-				} else {
-					activeCount.decrement();
-				}
+				activeCount.decrement();
 			}
 		});
 	}
@@ -133,7 +132,7 @@ public record ScoreMobInGoalBehavior(
 
 	private void spawnScoringEntity(IGamePhase game, BlockBox spawnBox) {
 		BlockPos spawnPos = findSuitableSpawn(game, spawnBox);
-		Entity entity = scoringEntity.spawn(game.level(), spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+		Entity entity = scoringEntity.spawn(game.level(), spawnPos.getX() + 0.5, spawnPos.getY() + 1.5, spawnPos.getZ() + 0.5);
 		game.level().broadcastEntityEvent(entity, EntityEvent.POOF);
 	}
 
