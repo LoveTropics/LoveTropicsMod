@@ -38,9 +38,9 @@ public record DonationPackageNotification(
 			SoundEvent.CODEC.optionalFieldOf("sound", Holder.direct(SoundEvents.TOTEM_USE)).forGetter(c -> c.sound)
 	).apply(i, DonationPackageNotification::new));
 
-	public void onReceive(final IGamePhase game, @Nullable final ServerPlayer receiver, @Nullable final String sender) {
+	public void onPlayerReceive(final IGamePhase game, @Nullable final ServerPlayer receiver, @Nullable final String sender, final Component packageName) {
 		Component targetedMessage = createTargetedMessage(sender, getReceiverName(receiver));
-		Component globalMessage = createGlobalMessage(getReceiverName(receiver));
+		Component globalMessage = createGlobalMessage(packageName, getReceiverName(receiver));
 
 		for (ServerPlayer player : game.allPlayers()) {
 			boolean targeted = player == receiver || receiver == null;
@@ -48,11 +48,11 @@ public record DonationPackageNotification(
 		}
 	}
 
-	public void onReceive(final IGamePhase game, @Nullable final GameTeam receiver, @Nullable final String sender) {
+	public void onTeamReceive(final IGamePhase game, @Nullable final GameTeam receiver, @Nullable final String sender, final Component packageName) {
 		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 
 		Component targetedMessage = createTargetedMessage(sender, getReceiverName(receiver));
-		Component globalMessage = createGlobalMessage(getReceiverName(receiver));
+		Component globalMessage = createGlobalMessage(packageName, getReceiverName(receiver));
 
 		for (ServerPlayer player : game.allPlayers()) {
 			boolean targeted = receiver == null || teams != null && teams.isOnTeam(player, receiver.key());
@@ -80,8 +80,8 @@ public record DonationPackageNotification(
 		return message.apply(Map.of("sender", getSenderName(sender), "receiver", receiverName));
 	}
 
-	private Component createGlobalMessage(Component receiverName) {
-		return MinigameTexts.PACKAGE_RECEIVED.apply(receiverName);
+	private Component createGlobalMessage(Component packageName, Component receiverName) {
+		return MinigameTexts.PACKAGE_RECEIVED.apply(receiverName, packageName.copy().withStyle(sentiment.textStyle()));
 	}
 
 	public NotificationStyle createStyle(final NotificationStyle.Color color, final long visibleTime) {

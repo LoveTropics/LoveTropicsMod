@@ -291,7 +291,7 @@
   "ltminigames.minigame.donation.mute_team_vc": "Mute Team Voice Channel",
   "ltminigames.minigame.donation.mute_team_vc.description": "How will your favorite team succeed at trivia if they cannot speak through voice for 1 minute? Let's find out!",
   "ltminigames.minigame.donation.mute_team_vc.toast": "%sender% has MUTED YOUR TEAM VOICE CHANNEL for 1 minute!",
-  "ltminigames.minigame.donation.package_received": "%s received a package!",
+  "ltminigames.minigame.donation.package_received": "%s received: %s",
   "ltminigames.minigame.donation.player_dummy_package": "Player Dummy Package",
   "ltminigames.minigame.donation.player_dummy_package.description": "Turn every player in the game into a dummy-version of your Minecraft avatar!",
   "ltminigames.minigame.donation.player_dummy_package.toast": "Everyone is %sender%'!",

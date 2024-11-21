@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -64,6 +65,14 @@ public record NotificationStyle(NotificationIcon icon, Sentiment sentiment, Colo
 
 		Sentiment(String name) {
 			this.name = name;
+		}
+
+		public ChatFormatting textStyle() {
+			return switch (this) {
+				case NEUTRAL -> ChatFormatting.YELLOW;
+				case POSITIVE -> ChatFormatting.GREEN;
+				case NEGATIVE -> ChatFormatting.RED;
+			};
 		}
 
 		public String getName() {
