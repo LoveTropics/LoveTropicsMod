@@ -284,6 +284,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.invert_controls_package", "Invert Controls");
 		KEYS.add("donation.invert_controls_package.description", "For those that want the players to suffer: invert the players' vertical mouse control!");
 		KEYS.add("donation.invert_controls_package.toast", "%sender% has INVERTED MOUSE CONTROLS for 1 minute!");
+		KEYS.add("donation.mute_team_vc", "Mute Team Voice Channel");
+		KEYS.add("donation.mute_team_vc.description", "How will your favorite team succeed at trivia if they cannot speak through voice for 1 minute? Let's find out!");
+		KEYS.add("donation.mute_team_vc.toast", "%sender% has MUTED YOUR TEAM VOICE CHANNEL for 1 minute!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
