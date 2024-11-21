@@ -31,6 +31,8 @@ import java.util.stream.Stream;
 public final class TeamState implements IGameState, Iterable<GameTeam> {
 	public static final GameStateKey<TeamState> KEY = GameStateKey.create("Teams");
 
+	public static final TeamState EMPTY = new TeamState(List.of());
+
 	private final List<GameTeam> teams;
 
 	private final Object2ObjectMap<GameTeamKey, GameTeam> teamsByKey = new Object2ObjectOpenHashMap<>();

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.content.river_race.behaviour.KillInVoidB
 import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
+import com.lovetropics.minigames.common.core.game.behavior.action.TeamActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CheckpointsBehavior;
@@ -151,6 +152,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.TntAu
 import com.lovetropics.minigames.common.core.game.behavior.instances.world.FillChestsByMarkerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.world.ForceLoadRegionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.world.GenerateEntitiesBehavior;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
@@ -327,6 +329,7 @@ public class GameBehaviorTypes {
 
 	public static final GameBehaviorEntry<ApplyToBehavior<Plot, PlotActionTarget>> APPLY_TO_PLOT = register("apply_to_plot", ApplyToBehavior.PLOT_CODEC);
 	public static final GameBehaviorEntry<ApplyToBehavior<ServerPlayer, PlayerActionTarget>> APPLY_TO_PLAYER = register("apply_to_player", ApplyToBehavior.PLAYER_CODEC);
+	public static final GameBehaviorEntry<ApplyToBehavior<GameTeam, TeamActionTarget>> APPLY_TO_TEAM = register("apply_to_team", ApplyToBehavior.TEAM_CODEC);
 
 	public static <T extends IGameBehavior> GameBehaviorEntry<T> register(final String name, final MapCodec<T> codec) {
 		return REGISTRATE.object(name).behavior(codec).register();

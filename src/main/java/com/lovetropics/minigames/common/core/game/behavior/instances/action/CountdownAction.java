@@ -61,7 +61,7 @@ public final class CountdownAction<T> implements IGameBehavior {
 		long remainingTicks = entry.time() - game.ticks();
 		if (remainingTicks <= 0) {
 			if (actions.target.type() == target.type()) {
-				return actions.applyIf(target::type, game, entry.context, entry.sources);
+				return actions.applyIf(target.type(), game, entry.context, entry.sources);
 			}
 
 			return actions.apply(game, entry.context);

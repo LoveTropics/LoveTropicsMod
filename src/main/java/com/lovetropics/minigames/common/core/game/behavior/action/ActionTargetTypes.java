@@ -19,6 +19,7 @@ public class ActionTargetTypes {
 
     public static final DeferredHolder<Codec<? extends ActionTarget<?>>, Codec<PlayerActionTarget>> PLAYER = register("player", PlayerActionTarget.CODEC);
     public static final DeferredHolder<Codec<? extends ActionTarget<?>>, Codec<PlotActionTarget>> PLOT = register("plot", PlotActionTarget.CODEC);
+    public static final DeferredHolder<Codec<? extends ActionTarget<?>>, Codec<TeamActionTarget>> TEAM = register("team", TeamActionTarget.CODEC);
     public static final DeferredHolder<Codec<? extends ActionTarget<?>>, Codec<NoneActionTarget>> NONE = register("none", NoneActionTarget.CODEC);
 
     public static <T extends ActionTarget<?>> DeferredHolder<Codec<? extends ActionTarget<?>>, Codec<T>> register(final String name, final Codec<T> codec) {

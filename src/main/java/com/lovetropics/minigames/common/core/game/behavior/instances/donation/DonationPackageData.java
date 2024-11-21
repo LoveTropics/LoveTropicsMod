@@ -13,7 +13,8 @@ public record DonationPackageData(
 		String id,
 		PackageType packageType,
 		Category category,
-		PackagePlayerSelect playerSelect,
+		TargetSelectionMode targetSelectionMode,
+		boolean applyToTeam,
 		Component name,
 		Component description,
 		Optional<Double> donationAmount
@@ -22,14 +23,15 @@ public record DonationPackageData(
 			Codec.STRING.fieldOf("id").forGetter(DonationPackageData::id),
 			PackageType.CODEC.fieldOf("package_type").forGetter(DonationPackageData::packageType),
 			Category.CODEC.fieldOf("category").orElse(Category.OTHER).forGetter(DonationPackageData::category),
-			PackagePlayerSelect.CODEC.fieldOf("player_select").orElse(PackagePlayerSelect.RANDOM).forGetter(DonationPackageData::playerSelect),
+			TargetSelectionMode.CODEC.fieldOf("player_select").orElse(TargetSelectionMode.RANDOM).forGetter(DonationPackageData::targetSelectionMode),
+			Codec.BOOL.optionalFieldOf("apply_to_team", false).forGetter(DonationPackageData::applyToTeam),
 			ComponentSerialization.CODEC.fieldOf("name").forGetter(DonationPackageData::name),
 			ComponentSerialization.CODEC.fieldOf("description").forGetter(DonationPackageData::description),
 			Codec.DOUBLE.optionalFieldOf("donation_amount").forGetter(DonationPackageData::donationAmount)
 	).apply(i, DonationPackageData::new));
 
 	public DonationPackageData apply(final PackageCostModifierBehavior.State costModifier) {
-		return new DonationPackageData(id, packageType, category, playerSelect, name, description, donationAmount.map(costModifier::apply));
+		return new DonationPackageData(id, packageType, category, targetSelectionMode, applyToTeam, name, description, donationAmount.map(costModifier::apply));
 	}
 
 	public Payload asPayload() {

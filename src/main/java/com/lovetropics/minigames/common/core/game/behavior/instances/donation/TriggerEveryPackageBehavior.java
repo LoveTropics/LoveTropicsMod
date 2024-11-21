@@ -10,6 +10,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -52,15 +54,21 @@ public record TriggerEveryPackageBehavior(Set<String> exclude) implements IGameB
 	}
 
 	private static InteractionResult triggerPackage(final IGamePhase game, final DonationPackageData packageData, final GamePackage sourcePackage) {
-		final Optional<UUID> targetPlayer = switch (packageData.playerSelect()) {
-			case SPECIFIC -> {
-				final List<ServerPlayer> participants = Lists.newArrayList(game.participants());
-				yield Util.getRandomSafe(participants, game.random()).map(Entity::getUUID);
-			}
-			default -> Optional.empty();
-		};
+		Optional<UUID> targetPlayer = Optional.empty();
+		Optional<GameTeamKey> targetTeam = Optional.empty();
 
-		final GamePackage gamePackage = new GamePackage(packageData.id(), sourcePackage.sendingPlayerName(), targetPlayer);
+		if (packageData.targetSelectionMode() == TargetSelectionMode.SPECIFIC) {
+			if (packageData.applyToTeam()) {
+				TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+				List<GameTeamKey> teamKeys = teams != null ? List.copyOf(teams.getTeamKeys()) : List.of();
+				targetTeam = Util.getRandomSafe(teamKeys, game.random());
+			} else {
+				List<ServerPlayer> participants = Lists.newArrayList(game.participants());
+				targetPlayer = Util.getRandomSafe(participants, game.random()).map(Entity::getUUID);
+			}
+		}
+
+		final GamePackage gamePackage = new GamePackage(packageData.id(), sourcePackage.sendingPlayerName(), targetPlayer, targetTeam);
 		return game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
 	}
 

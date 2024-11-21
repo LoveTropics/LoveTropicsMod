@@ -15,6 +15,7 @@ import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import java.util.List;
 
 public record PlotActionTarget(Target target) implements ActionTarget<Plot> {
+    public static final PlotActionTarget ALL = new PlotActionTarget(Target.ALL);
     public static final Codec<PlotActionTarget> CODEC = Target.CODEC.xmap(PlotActionTarget::new, PlotActionTarget::target);
 
     @Override

@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class GameStateMap {
@@ -48,5 +49,9 @@ public final class GameStateMap {
 			throw new GameException(Component.literal("Missing expected game state of key: " + key.getName()));
 		}
 		return state;
+	}
+
+	public <T extends IGameState> T getOrDefault(GameStateKey<T> key, T orDefault) {
+		return Objects.requireNonNullElse(getOrNull(key), orDefault);
 	}
 }

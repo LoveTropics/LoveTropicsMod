@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class GameActionEvents {
@@ -29,11 +30,19 @@ public final class GameActionEvents {
         return applied;
     });
 
+    public static final GameEventType<ApplyToTeam> APPLY_TO_TEAM = GameEventType.create(ApplyToTeam.class, listeners -> (context, team) -> {
+        boolean applied = false;
+        for (ApplyToTeam listener : listeners) {
+            applied |= listener.apply(context, team);
+        }
+        return applied;
+    });
+
     private GameActionEvents() {
     }
 
     public static boolean matches(GameEventType<?> type) {
-        return type == APPLY || type == APPLY_TO_PLOT || type == APPLY_TO_PLAYER;
+        return type == APPLY || type == APPLY_TO_PLOT || type == APPLY_TO_PLAYER || type == APPLY_TO_TEAM;
     }
 
     public interface Apply {
@@ -46,5 +55,9 @@ public final class GameActionEvents {
 
     public interface ApplyToPlot {
         boolean apply(GameActionContext context, Plot plot);
+    }
+
+    public interface ApplyToTeam {
+        boolean apply(GameActionContext context, GameTeam team);
     }
 }

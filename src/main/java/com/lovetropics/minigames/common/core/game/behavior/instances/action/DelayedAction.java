@@ -29,7 +29,7 @@ public record DelayedAction<T>(
 			int ticks = delay.sample(game.random());
 			game.scheduler().runAfterTicks(ticks, () -> {
 				if (actions.target.type() == target.type()) {
-					actions.applyIf(target::type, game, context, targets);
+					actions.applyIf(target.type(), game, context, targets);
 				} else {
 					actions.apply(game, context);
 				}

@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,13 +18,17 @@ import java.util.function.Supplier;
 
 public record ApplyToBehavior<T, A extends ActionTarget<T>>(A target, GameActionList<T> actions, Supplier<GameBehaviorType<ApplyToBehavior<T, A>>> type) implements IGameBehavior {
     public static final MapCodec<ApplyToBehavior<Plot, PlotActionTarget>> PLOT_CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
-            PlotActionTarget.Target.CODEC.optionalFieldOf("target", PlotActionTarget.Target.ALL).xmap(PlotActionTarget::new, PlotActionTarget::target).forGetter(ApplyToBehavior::target),
+            PlotActionTarget.CODEC.optionalFieldOf("target", PlotActionTarget.ALL).forGetter(ApplyToBehavior::target),
             GameActionList.codec(ActionTargetTypes.PLOT, new PlotActionTarget(PlotActionTarget.Target.SOURCE)).fieldOf("actions").forGetter(ApplyToBehavior::actions)
     ).apply(in, (a, b) -> new ApplyToBehavior<>(a, b, GameBehaviorTypes.APPLY_TO_PLOT)));
     public static final MapCodec<ApplyToBehavior<ServerPlayer, PlayerActionTarget>> PLAYER_CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
-            PlayerActionTarget.Target.CODEC.optionalFieldOf("target", PlayerActionTarget.Target.ALL).xmap(PlayerActionTarget::new, PlayerActionTarget::target).forGetter(ApplyToBehavior::target),
+            PlayerActionTarget.CODEC.optionalFieldOf("target", PlayerActionTarget.ALL).forGetter(ApplyToBehavior::target),
             GameActionList.codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE).fieldOf("actions").forGetter(ApplyToBehavior::actions)
     ).apply(in, (a, b) -> new ApplyToBehavior<>(a, b, GameBehaviorTypes.APPLY_TO_PLAYER)));
+    public static final MapCodec<ApplyToBehavior<GameTeam, TeamActionTarget>> TEAM_CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
+            TeamActionTarget.CODEC.optionalFieldOf("target", TeamActionTarget.ALL).forGetter(ApplyToBehavior::target),
+            GameActionList.codec(ActionTargetTypes.TEAM, TeamActionTarget.SOURCE).fieldOf("actions").forGetter(ApplyToBehavior::actions)
+    ).apply(in, (a, b) -> new ApplyToBehavior<>(a, b, GameBehaviorTypes.APPLY_TO_TEAM)));
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {

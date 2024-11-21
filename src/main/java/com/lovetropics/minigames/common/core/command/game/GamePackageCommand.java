@@ -52,7 +52,7 @@ public class GamePackageCommand {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
-			GamePackage gamePackage = new GamePackage(type, "LoveTropics", Optional.ofNullable(target).map(Entity::getUUID));
+			GamePackage gamePackage = new GamePackage(type, "LoveTropics", Optional.ofNullable(target).map(Entity::getUUID), Optional.empty());
 			InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
 			switch (result) {
 				case SUCCESS, CONSUME, CONSUME_PARTIAL -> ctx.getSource().sendSuccess(() -> Component.translatable("Successfully sent '%s'", type), false);

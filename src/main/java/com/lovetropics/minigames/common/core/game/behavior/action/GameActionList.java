@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -21,6 +22,7 @@ import java.util.function.Supplier;
 
 public class GameActionList<T> {
     public static final GameActionList<ServerPlayer> EMPTY = new GameActionList<>(IGameBehavior.EMPTY, PlayerActionTarget.SOURCE);
+    public static final GameActionList<GameTeam> EMPTY_TEAM = new GameActionList<>(IGameBehavior.EMPTY, TeamActionTarget.SOURCE);
     public static final GameActionList<Void> EMPTY_VOID = new GameActionList<>(IGameBehavior.EMPTY, NoneActionTarget.INSTANCE);
 
     public static final MapCodec<GameActionList<?>> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -32,6 +34,7 @@ public class GameActionList<T> {
     public static final MapCodec<GameActionList<ServerPlayer>> PLAYER_MAP_CODEC = mapCodec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
 	public static final MapCodec<GameActionList<Void>> VOID_MAP_CODEC = mapCodec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
     public static final Codec<GameActionList<ServerPlayer>> PLAYER_CODEC = codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
+    public static final Codec<GameActionList<GameTeam>> TEAM_CODEC = codec(ActionTargetTypes.TEAM, TeamActionTarget.SOURCE);
     public static final Codec<GameActionList<Void>> VOID_CODEC = codec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
 
 	public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
@@ -95,11 +98,15 @@ public class GameActionList<T> {
         registered = true;
     }
 
-    public <T1> boolean applyIf(Supplier<Codec<? extends ActionTarget<T1>>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
-        if (type.get() == target.type()) {
-            return apply(phase, context, (Iterable<T>) sources);
-        }
-        return false;
+	public <T1> boolean applyIf(Codec<? extends ActionTarget<T1>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
+		if (type == target.type()) {
+			return apply(phase, context, (Iterable<T>) sources);
+		}
+		return false;
+	}
+
+    public <T1> boolean applyIf(Supplier<? extends Codec<? extends ActionTarget<T1>>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
+        return applyIf(type.get(), phase, context, sources);
     }
 
     public boolean apply(IGamePhase phase, GameActionContext context) {

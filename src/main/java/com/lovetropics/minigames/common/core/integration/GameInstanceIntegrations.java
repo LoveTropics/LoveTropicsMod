@@ -10,12 +10,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameTeamEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
-import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionHandler;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionRequest;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
@@ -58,6 +60,7 @@ public final class GameInstanceIntegrations implements IGameState {
 
 		phaseListeners.listen(GamePlayerEvents.REMOVE, p -> sendParticipantsList());
 		phaseListeners.listen(GamePlayerEvents.SET_ROLE, (p, r, lr) -> sendParticipantsList());
+		phaseListeners.listen(GameTeamEvents.TEAMS_ALLOCATED, this::sendParticipantsList);
 	}
 
 	public UUID getUuid() {
@@ -168,6 +171,7 @@ public final class GameInstanceIntegrations implements IGameState {
 	private void sendParticipantsList() {
 		JsonObject payload = new JsonObject();
 		payload.add("participants", serializeParticipantsArray());
+		payload.add("teams", serializeTeamsArray());
 		post(ConfigLT.INTEGRATIONS.minigamePlayerUpdateEndpoint.get(), payload);
 	}
 
@@ -177,6 +181,18 @@ public final class GameInstanceIntegrations implements IGameState {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;
+	}
+
+	private JsonArray serializeTeamsArray() {
+		TeamState teams = gameStack.getLast().instanceState().getOrNull(TeamState.KEY);
+		if (teams == null) {
+			return new JsonArray();
+		}
+		JsonArray teamsArray = new JsonArray();
+		for (GameTeam team : teams) {
+			teamsArray.add(GameTeam.Payload.CODEC.encodeStart(JsonOps.INSTANCE, team.asPayload()).getOrThrow());
+		}
+		return teamsArray;
 	}
 
 	private void requestQueuedActions() {

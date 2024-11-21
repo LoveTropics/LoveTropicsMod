@@ -15,6 +15,7 @@ import java.util.List;
 
 public record PlayerActionTarget(Target target) implements ActionTarget<ServerPlayer> {
     public static final PlayerActionTarget SOURCE = new PlayerActionTarget(Target.SOURCE);
+    public static final PlayerActionTarget ALL = new PlayerActionTarget(Target.ALL);
     public static final Codec<PlayerActionTarget> CODEC = Target.CODEC.xmap(PlayerActionTarget::new, PlayerActionTarget::target);
 
     @Override
