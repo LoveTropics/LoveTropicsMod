@@ -44,6 +44,7 @@ public final class MinigameTexts {
 	public static final Component TREASURE_DIG_TEAMS = KEYS.add("treasure_dig_teams", "Treasure Dig (Teams)");
 	public static final Component COLUMNS_OF_CHAOS = KEYS.add("columns_of_chaos", "Columns of Chaos");
 	public static final Component COLUMNS_OF_CHAOS_TEAMS = KEYS.add("columns_of_chaos_teams", "Columns of Chaos (Teams)");
+	public static final Component COLUMNS_OF_CHAOS_TEAMS_ENDLESS = KEYS.add("columns_of_chaos_teams_endless", "Columns of Chaos (Teams, Endless)");
 	public static final Component PAINT_PARTY = KEYS.add("paint_party", "Paint Party");
 	public static final Component ERUPTIVE_SPLEEF = KEYS.add("eruptive_spleef", "Eruptive Spleef");
 	public static final Component ERUPTIVE_SPLEEF_TEAMS = KEYS.add("eruptive_spleef_teams", "Eruptive Spleef (Teams)");
