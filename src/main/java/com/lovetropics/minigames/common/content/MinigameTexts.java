@@ -210,6 +210,15 @@ public final class MinigameTexts {
 		KEYS.add("donation.manatee_madness", "Manatee Madness");
 		KEYS.add("donation.manatee_madness.description", "Turn every player into a Manatee");
 		KEYS.add("donation.manatee_madness.toast", "Everyone is a Manatee!");
+		KEYS.add("donation.glorious_gibnuts", "Glorious Gibnuts");
+		KEYS.add("donation.glorious_gibnuts.description", "Turn all players into Gibnuts! So cute!");
+		KEYS.add("donation.glorious_gibnuts.toast", "Awww, %sender% has TURNED EVERYONE INTO A GIBNUT!");
+		KEYS.add("donation.seriously_shoebill", "Seriously, Shoebills?");
+		KEYS.add("donation.seriously_shoebill.description", "Turn all players into the fantastic Shoebill Stork.");
+		KEYS.add("donation.seriously_shoebill.toast", "%sender% has TURNED EVERYONE INTO SHOEBILL STORKS!");
+		KEYS.add("donation.this_will_be_a_breeze", "This Will be a Breeze");
+		KEYS.add("donation.this_will_be_a_breeze.description", "I mean - the players, they will be Breezes! Includes 10 bonus Wind Charges!");
+		KEYS.add("donation.this_will_be_a_breeze.toast", "%sender% has TURNED EVERYONE INTO THE BREEZE!");
 		KEYS.add("donation.big_leaps", "Many Big Leaps");
 		KEYS.add("donation.big_leaps.description", "Turn the dial down on pesky gravity - gravity is reduced!");
 		KEYS.add("donation.big_leaps.toast", "Take a big leap! Gravity has been reduced!");
@@ -287,6 +296,12 @@ public final class MinigameTexts {
 		KEYS.add("donation.mute_team_vc", "Mute Team Voice Channel");
 		KEYS.add("donation.mute_team_vc.description", "How will your favorite team succeed at trivia if they cannot speak through voice for 1 minute? Let's find out!");
 		KEYS.add("donation.mute_team_vc.toast", "%sender% has MUTED YOUR TEAM VOICE CHANNEL for 1 minute!");
+		KEYS.add("donation.team_coins", "Gift Coins");
+		KEYS.add("donation.team_coins.description", "Give 20 Tropicoins to every player on the team of your choice!");
+		KEYS.add("donation.team_coins.toast", "%sender% has sent you 20 Tropicoins!");
+		KEYS.add("donation.money_grows_on_trees", "Money Does Grow on Trees");
+		KEYS.add("donation.money_grows_on_trees.description", "For all players on the team of your choice, Leaves will drop Tropicoins for 45 seconds!");
+		KEYS.add("donation.money_grows_on_trees.toast", "Thanks %sender%! LEAVES DROP TROPICOINS for 45 seconds!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");

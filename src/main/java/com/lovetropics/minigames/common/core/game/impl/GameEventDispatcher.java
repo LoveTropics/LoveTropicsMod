@@ -42,6 +42,7 @@ import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.BlockGrowFeatureEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
@@ -499,6 +500,17 @@ public final class GameEventDispatcher {
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch item pickup event", e);
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onBlockDrops(BlockDropsEvent event) {
+		if (event.getBreaker() instanceof ServerPlayer player) {
+			IGamePhase game = gameLookup.getGamePhaseFor(player);
+			if (game == null) {
+				return;
+			}
+			game.invoker(GameWorldEvents.BLOCK_DROPS).updateBlockDrops(player, event.getPos(), event.getState(), event.getBlockEntity(), event.getTool(), event.getDrops());
 		}
 	}
 

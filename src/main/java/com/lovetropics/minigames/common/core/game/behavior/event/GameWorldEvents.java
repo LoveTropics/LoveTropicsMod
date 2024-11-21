@@ -4,11 +4,15 @@ import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
@@ -59,6 +63,12 @@ public final class GameWorldEvents {
 		}
 	});
 
+	public static final GameEventType<BlockDrops> BLOCK_DROPS = GameEventType.create(BlockDrops.class, listeners -> (player, pos, blockState, blockEntity, tool, drops) -> {
+		for (BlockDrops listener : listeners) {
+			listener.updateBlockDrops(player, pos, blockState, blockEntity, tool, drops);
+		}
+	});
+
 	private GameWorldEvents() {
 	}
 
@@ -84,5 +94,9 @@ public final class GameWorldEvents {
 
 	public interface BlockLanded {
 		void onBlockLanded(ServerLevel level, BlockPos pos, BlockState state);
+	}
+
+	public interface BlockDrops {
+		void updateBlockDrops(ServerPlayer player, BlockPos pos, BlockState blockState, @Nullable BlockEntity blockEntity, ItemStack tool, List<ItemEntity> drops);
 	}
 }
