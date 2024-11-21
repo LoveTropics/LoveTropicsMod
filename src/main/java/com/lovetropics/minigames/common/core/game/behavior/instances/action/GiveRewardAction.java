@@ -41,7 +41,7 @@ public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding>
 	public record StatisticBinding(StatisticKey<Integer> statistic, float multiplier, boolean fromTeam) {
 		public static final Codec<StatisticBinding> CODEC = RecordCodecBuilder.create(i -> i.group(
 				StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(StatisticBinding::statistic),
-				Codec.FLOAT.fieldOf("multiplier").forGetter(StatisticBinding::multiplier),
+				Codec.FLOAT.optionalFieldOf("multiplier", 1.0f).forGetter(StatisticBinding::multiplier),
 				Codec.BOOL.optionalFieldOf("from_team", false).forGetter(StatisticBinding::fromTeam)
 		).apply(i, StatisticBinding::new));
 
