@@ -28,6 +28,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -162,7 +163,23 @@ public record PaintPartyBehaviour(Map<GameTeamKey, TeamConfig> teamConfigs, Bloc
         });
 
         events.listen(PaintPartyEvents.PAINTBALL_HIT, (eventLevel, entity, pos) -> {
-            Explosion explosion = new Explosion(eventLevel, entity, entity.getX(), entity.getY() + 1, entity.getZ(), 4f, false, Explosion.BlockInteraction.KEEP);
+            Entity owner = entity.getOwner();
+            if (!(owner instanceof ServerPlayer player)) {
+                return;
+            }
+
+            GameTeamKey teamKey = teams.getTeamForPlayer(player);
+            if (teamKey == null) {
+                return;
+            }
+            BlockState state = eventLevel.getBlockState(pos);
+
+            float rad = 2.5f;
+            if (state.is(neutralBlock.getBlock()) || state.is(getTeamConfig(teamKey).blockType.getBlock())) {
+                rad = 4f;
+            }
+
+            Explosion explosion = new Explosion(eventLevel, entity, entity.getX(), entity.getY() + 1, entity.getZ(), rad, false, Explosion.BlockInteraction.KEEP);
             explosion.explode();
         });
     }
