@@ -500,6 +500,7 @@
   "ltminigames.minigame.spectating_notification": "You are a %s!\nScroll or use the arrow keys to select players.\nHold %s and scroll to zoom.",
   "ltminigames.minigame.spectating_notification.key": "Left Control",
   "ltminigames.minigame.spectating_notification.spectator": "spectator",
+  "ltminigames.minigame.speed_carb_golf": "Speed Carb Golf",
   "ltminigames.minigame.spleef": "Spleef",
   "ltminigames.minigame.spleef.countdown.subtitle": "> Spleef In <",
   "ltminigames.minigame.spleef.countdown.title": "◁ %s ▷",

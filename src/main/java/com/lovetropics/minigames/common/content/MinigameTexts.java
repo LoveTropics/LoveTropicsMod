@@ -48,6 +48,7 @@ public final class MinigameTexts {
 	public static final Component ERUPTIVE_SPLEEF = KEYS.add("eruptive_spleef", "Eruptive Spleef");
 	public static final Component ERUPTIVE_SPLEEF_TEAMS = KEYS.add("eruptive_spleef_teams", "Eruptive Spleef (Teams)");
 	public static final Component PARKOUR_RACE_TEAMS = KEYS.add("parkour_race_teams", "Parkour Race (Teams)");
+	public static final Component SPEED_CARB_GOLF = KEYS.add("speed_carb_golf", "Speed Carb Golf");
 
 	// TODO: These should move into SurviveTheTideTexts
 	public static final Component[] SURVIVE_THE_TIDE_INTRO = {

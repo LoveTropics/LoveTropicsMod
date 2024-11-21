@@ -31,6 +31,8 @@ import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.river_race.RiverRace;
 import com.lovetropics.minigames.common.content.river_race.RiverRaceTexts;
 import com.lovetropics.minigames.common.content.river_race.render.RiverRaceBarRenderer;
+import com.lovetropics.minigames.common.content.speed_carb_golf.SpeedCarbGolf;
+import com.lovetropics.minigames.common.content.speed_carb_golf.SpeedCarbGolfTexts;
 import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
@@ -136,6 +138,7 @@ public class LoveTropics {
                     BlockPartyTexts.KEYS.forEach(consumer);
                     ColumnsOfChaosTexts.KEYS.forEach(consumer);
                     PaintPartyTexts.KEYS.forEach(consumer);
+                    SpeedCarbGolfTexts.KEYS.forEach(consumer);
                     CraftingBeeTexts.KEYS.forEach(consumer);
                     ConnectFourTexts.KEYS.forEach(consumer);
                     SurviveTheTideTexts.KEYS.forEach(consumer);
@@ -178,6 +181,7 @@ public class LoveTropics {
         TreasureDig.init();
         ColumnsOfChaos.init();
         PaintParty.init();
+        SpeedCarbGolf.init();
 
         DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
         PlayerDisguise.ATTACHMENT_TYPES.register(modBus);
