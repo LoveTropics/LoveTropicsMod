@@ -5,9 +5,11 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.util.world.gamedata.GameDataStorage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -21,15 +23,22 @@ import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.scores.Objective;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,6 +54,9 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
             ResourceLocation.CODEC.optionalFieldOf("change_hole_number_function", ResourceLocation.fromNamespaceAndPath("lt", "world_games/minigolf/core/change_id")).forGetter(SpeedCarbGolfBehaviour::changeHoleNumberFunction),
             ResourceLocation.CODEC.optionalFieldOf("start_hole_function", ResourceLocation.fromNamespaceAndPath("lt", "world_games/minigolf/core/start")).forGetter(SpeedCarbGolfBehaviour::startHoleFunction)
     ).apply(i, SpeedCarbGolfBehaviour::new));
+
+    private static final Holder<EntityType<?>> FIDDLER_CRAB = DeferredHolder.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("tropicraft", "fiddler_crab"));
+
     private static final Logger LOGGER = LogManager.getLogger(SpeedCarbGolfBehaviour.class);
 
     @Override
@@ -63,6 +75,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         StructurePlaceSettings structureplacesettings = new StructurePlaceSettings().addProcessor(BlockIgnoreProcessor.AIR);
         Map<UUID, String> assignedHoles = new HashMap<>();
         Map<GameTeamKey, List<String>> teamProgress = new HashMap<>();
+        Map<String, HoleConfig> holeConfigs = new HashMap<>();
         for(int i = 0; i < holesPerTeam; i++) {
             Util.shuffle(holesToPickFrom, level.getRandom());
             ResourceLocation pickedHole = holesToPickFrom.removeFirst();
@@ -108,6 +121,73 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
 //                }
 //            }
 //        });
+        events.listen(GameWorldEvents.ENTITY_REMOVED, (entity) -> {
+            if(entity.getType().builtInRegistryHolder().is(FIDDLER_CRAB)){
+                if(entity.getTags().contains("golfCrab")){
+                    String hole = "";
+                    for(String tag : entity.getTags()){
+                        if(tag.startsWith("hole")){
+                            hole = tag;
+                            break;
+                        }
+                    }
+                    if(!hole.isBlank()){
+                        hole = hole.replace("hole", "");
+                        hole = hole.replace("Crab", "");
+                        Objective globalGolfObjective = game.level().getScoreboard().getObjective("golf.global");
+                        if(game.level().getScoreboard().getPlayerScoreInfo(entity, globalGolfObjective).value() == 2){
+                            UUID foundPlayer = null;
+                            for (Map.Entry<UUID, String> uuidStringEntry : assignedHoles.entrySet()) {
+                                if(uuidStringEntry.getValue().equalsIgnoreCase(hole)){
+                                    foundPlayer = uuidStringEntry.getKey();
+                                    break;
+                                }
+                            }
+                            if(foundPlayer != null){
+                                ServerPlayer player = game.allPlayers().getPlayerBy(foundPlayer);
+                                CompoundTag gameData = GameDataStorage.get(level).get(ResourceLocation.fromNamespaceAndPath("lt", "golf"), foundPlayer);
+                                GameTeamKey teamKey = teams.getTeamForPlayer(player);
+                                game.statistics().forTeam(teamKey)
+                                        .incrementInt(StatisticKey.POINTS, gameData.getInt("hole" + hole));
+                                teamProgress.get(teamKey).remove(hole);
+                                String nextHole = teamProgress.get(teamKey).getFirst();
+                                UUID nextPlayer = null;
+                                for (Map.Entry<UUID, String> uuidStringEntry : assignedHoles.entrySet()) {
+                                    if(uuidStringEntry.getValue().equalsIgnoreCase(nextHole)){
+                                        nextPlayer = uuidStringEntry.getKey();
+                                        break;
+                                    }
+                                }
+                                // WHOS THE NEXT PLAYER?!
+                                if(nextPlayer != null){
+                                    ServerPlayer nextPlayerP = game.allPlayers().getPlayerBy(nextPlayer);
+                                    startHoleForPlayer(game, nextPlayerP, nextHole, level, startHole);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        events.listen(GameWorldEvents.ENTITY_ADDED, (entity) -> {
+            if(entity.getType() == EntityType.MARKER){
+                if(entity.getTags().contains("golfStart") || entity.getTags().contains("golfEnd")){
+                    System.out.println(entity.getTags());
+                    boolean isStart = entity.getTags().contains("golfStart");
+                    for (String s : game.mapRegions().keySet()) {
+                        if(game.mapRegions().getOrThrow(s).contains(entity.blockPosition())){
+                            HoleConfig holeConfig = holeConfigs.get(s);
+                            String oldTag = "hole" + holeConfig.oldName + (isStart ? "Start" : "End");
+                            String newTag = "hole" + holeConfig.newName + (isStart ? "Start" : "End");
+                            System.out.println("Found marker in " + s + " and removing " + oldTag + " and adding " + newTag);
+                            entity.removeTag(oldTag);
+                            entity.addTag(newTag);
+                            return;
+                        }
+                    }
+                }
+            }
+        });
         events.listen(GameTeamEvents.TEAMS_ALLOCATED, () -> {
             int x = 1;
             for(GameTeam team : teams){
@@ -118,7 +198,8 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                     ResourceLocation pickedHole = pickedHoles.get(i);
                     String regionKey = holeRegions.get(team.key()).get(i);
                     BlockBox region = game.mapRegions().getOrThrow(regionKey);
-                    loadGolfHole(team, level, pickedHole, structureplacesettings, region, regionKey, holeNumber,
+                    holeConfigs.put(regionKey, new HoleConfig(potentialHoles.get(pickedHole), holeNumber));
+                    loadGolfHole(game, team, level, pickedHole, structureplacesettings, region, regionKey, holeNumber,
                             changeHoleNumber, commandSourceStack, true);
                     if(players.hasNext()) {
                         assignedHoles.put(players.next().getUUID(), holeNumber);
@@ -134,16 +215,20 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
             String playerHole = assignedHoles.get(player);
             if(playerHole.equalsIgnoreCase(teamProgress.get(playerTeam).getFirst())){
                 spawnBuilder.run(serverPlayer -> {
-                    serverPlayer.addTag("in.golf.area");
-                    CompoundTag startArgs = new CompoundTag();
-                    startArgs.putString("hole", playerHole);
-                    CommandSourceStack commandSourceStack1 = game.server().createCommandSourceStack().withLevel(level)
-                            .withEntity(serverPlayer)
-                            .withSuppressedOutput().withPermission(3).withSource(game.server());
-                    executeFunction(startHole, startArgs, commandSourceStack1);
+                    startHoleForPlayer(game, serverPlayer, playerHole, level, startHole);
                 });
             }
         });
+    }
+
+    private static void startHoleForPlayer(IGamePhase game, ServerPlayer serverPlayer, String playerHole, ServerLevel level, CommandFunction<CommandSourceStack> startHole) {
+        serverPlayer.addTag("in.golf.area");
+        CompoundTag startArgs = new CompoundTag();
+        startArgs.putString("hole", playerHole);
+        CommandSourceStack commandSourceStack1 = game.server().createCommandSourceStack().withLevel(level)
+                .withEntity(serverPlayer)
+                .withSuppressedOutput().withPermission(3).withSource(game.server());
+        executeFunction(startHole, startArgs, commandSourceStack1);
     }
 
     private void quickLoadGolfHole(GameTeam team, ServerLevel level,
@@ -171,7 +256,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         }
     }
 
-    private void loadGolfHole(GameTeam team, ServerLevel level, ResourceLocation pickedHole,
+    private void loadGolfHole(IGamePhase game, GameTeam team, ServerLevel level, ResourceLocation pickedHole,
                               StructurePlaceSettings structureplacesettings, BlockBox region, String regionKey,
                               String holeNumber, CommandFunction<CommandSourceStack> changeHoleNumber,
                               CommandSourceStack commandSourceStack, boolean renameHole) {
@@ -183,17 +268,19 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                 teamSettings.setRotationPivot(new BlockPos(9, 0, 9));
             }
            boolean hasImported = structureTemplate
-                    .get().placeInWorld(level, region.min().offset(0, -4, 0),
+                    .get().placeInWorld(level, region.min().offset(0, -3, 0),
                             region.min(), teamSettings, level.getRandom(), 2);
            if(hasImported){
                if(renameHole){
-                   CompoundTag args = new CompoundTag();
-                   args.putString("region", regionKey);
-                   args.putString("old", potentialHoles.get(pickedHole));
-                   args.putString("new", holeNumber);
-                   executeFunction(changeHoleNumber, args, commandSourceStack);
-                   // Run it again, just in-case
-                   executeFunction(changeHoleNumber, args, commandSourceStack);
+                   game.scheduler().runAfterSeconds(5, () -> {
+//                       CompoundTag args = new CompoundTag();
+//                       args.putString("region", regionKey);
+//                       args.putString("old", potentialHoles.get(pickedHole));
+//                       args.putString("new", holeNumber);
+//                       executeFunction(changeHoleNumber, args, commandSourceStack);
+                       // Run it again, just in-case
+//                       executeFunction(changeHoleNumber, args, commandSourceStack);
+                   });
                }
                LOGGER.info("Have placed {} in region {}", pickedHole, regionKey);
            }
@@ -210,4 +297,6 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
             });
         } catch (Exception e){}
     }
+
+    public record HoleConfig(String oldName, String newName) {}
 }

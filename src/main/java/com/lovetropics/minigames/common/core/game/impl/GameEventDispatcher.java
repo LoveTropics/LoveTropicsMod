@@ -32,6 +32,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityMountEvent;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -530,6 +532,22 @@ public final class GameEventDispatcher {
 
 		@Override
 		public void dataChanged(AbstractContainerMenu containerMenu, int dataSlotIndex, int value) {
+		}
+	}
+
+	@SubscribeEvent
+	public void onEntityAddedToLevel(EntityJoinLevelEvent event){
+		IGamePhase gamePhase = gameLookup.getGamePhaseInDimension(event.getLevel());
+		if(gamePhase != null){
+			gamePhase.invoker(GameWorldEvents.ENTITY_ADDED).onEntityAdded(event.getEntity());
+		}
+	}
+
+	@SubscribeEvent
+	public void onEntityRemovedFromLevel(EntityLeaveLevelEvent event){
+		IGamePhase gamePhase = gameLookup.getGamePhaseInDimension(event.getLevel());
+		if(gamePhase != null){
+			gamePhase.invoker(GameWorldEvents.ENTITY_REMOVED).onEntityRemoved(event.getEntity());
 		}
 	}
 }

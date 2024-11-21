@@ -69,6 +69,18 @@ public final class GameWorldEvents {
 		}
 	});
 
+	public static final GameEventType<EntityAdded> ENTITY_ADDED = GameEventType.create(EntityAdded.class, listeners -> (entity) -> {
+		for (EntityAdded listener : listeners) {
+			listener.onEntityAdded(entity);
+		}
+	});
+
+	public static final GameEventType<EntityRemoved> ENTITY_REMOVED = GameEventType.create(EntityRemoved.class, listeners -> (entity) -> {
+		for (EntityRemoved listener : listeners) {
+			listener.onEntityRemoved(entity);
+		}
+	});
+
 	private GameWorldEvents() {
 	}
 
@@ -98,5 +110,13 @@ public final class GameWorldEvents {
 
 	public interface BlockDrops {
 		void updateBlockDrops(ServerPlayer player, BlockPos pos, BlockState blockState, @Nullable BlockEntity blockEntity, ItemStack tool, List<ItemEntity> drops);
+	}
+
+	public interface EntityAdded {
+		void onEntityAdded(Entity entity);
+	}
+
+	public interface EntityRemoved {
+		void onEntityRemoved(Entity entity);
 	}
 }
