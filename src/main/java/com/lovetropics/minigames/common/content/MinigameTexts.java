@@ -308,6 +308,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.silverfish_infestation", "Silverfish Infestation");
 		KEYS.add("donation.silverfish_infestation.description", "Spawns Silverfish all around the specified team - mwahaha!");
 		KEYS.add("donation.silverfish_infestation.toast", "%sender% started a SILVERFISH INFESTATION! Look out!");
+		KEYS.add("donation.feed_the_hungry", "Feed the Hungry");
+		KEYS.add("donation.feed_the_hungry.description", "Gives Saturation to the team of your choice!");
+		KEYS.add("donation.feed_the_hungry.toast", "%sender% has given you SATURATION for 1 minute!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
