@@ -35,6 +35,10 @@ public final class GameEventType<T> {
 		return empty;
 	}
 
+	public Class<T> type() {
+		return type;
+	}
+
 	public interface Combinator<T> {
 		T apply(T[] listeners);
 	}

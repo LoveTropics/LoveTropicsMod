@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class GameEventListeners implements EventRegistrar {
 	private final Reference2ObjectMap<GameEventType<?>, List<Object>> listeners = new Reference2ObjectOpenHashMap<>();
@@ -44,6 +45,10 @@ public final class GameEventListeners implements EventRegistrar {
 				acceptUnchecked(handler, entry.getKey(), listener);
 			}
 		}
+	}
+
+	public Set<GameEventType<?>> eventTypes() {
+		return invokers.keySet();
 	}
 
 	@SuppressWarnings("unchecked")

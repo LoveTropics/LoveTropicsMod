@@ -9,7 +9,9 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.MutableInvoker;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -21,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,6 +55,9 @@ public record ApplyForTimeAction(
 
 		final State state = new State();
 		nested.register(game, state.nestedListeners);
+		for (final GameEventType<?> type : state.nestedListeners.eventTypes()) {
+			state.nestedInvokers.put(type, MutableInvoker.addTo(events, type));
+		}
 
 		events.listen(GameActionEvents.APPLY, context -> state.tryApply(game, context));
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> state.tryApplyTo(game, context, player));
@@ -67,6 +73,7 @@ public record ApplyForTimeAction(
 		private static final long NOT_ACTIVE = -1;
 
 		private final GameEventListeners nestedListeners = new GameEventListeners();
+		private final Map<GameEventType<?>, MutableInvoker<?>> nestedInvokers = new HashMap<>();
 
 		private long finishTime = NOT_ACTIVE;
 		private final Object2LongMap<UUID> playerFinishTimes = new Object2LongOpenHashMap<>();
@@ -81,7 +88,7 @@ public record ApplyForTimeAction(
 				tick.apply(game, GameActionContext.EMPTY);
 				if (time >= finishTime) {
 					clear.apply(game, GameActionContext.EMPTY);
-					game.events().removeAll(nestedListeners);
+					nestedInvokers.forEach((type, invoker) -> invoker.clear());
 					finishTime = NOT_ACTIVE;
 				}
 			}
@@ -117,7 +124,9 @@ public record ApplyForTimeAction(
 
 		private boolean tryApply(final IGamePhase game, final GameActionContext context) {
 			if (finishTime == NOT_ACTIVE && apply.apply(game, context)) {
-				game.events().addAll(nestedListeners);
+				nestedInvokers.forEach((type, invoker) ->
+						invoker.setUnchecked(nestedListeners.invoker(type))
+				);
 				finishTime = game.ticks() + (long) seconds * SharedConstants.TICKS_PER_SECOND;
 				return true;
 			}

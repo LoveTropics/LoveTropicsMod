@@ -2,14 +2,18 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.MinigameTexts;
+import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressChannel;
 import com.lovetropics.minigames.common.core.game.state.progress.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
@@ -114,16 +118,43 @@ public record ScoreMobInGoalBehavior(
 		BooleanSupplier canScore = scorePeriod.map(period -> period.createPredicate(game, channel)).orElse(() -> true);
 
 		events.listen(GameLivingEntityEvents.TICK, entity -> {
-			if (entity.getType() != scoringEntity.type() || !canScore.getAsBoolean()) {
+			if (!canScoreWith(entity) || !canScore.getAsBoolean()) {
 				return;
 			}
 			Goal goal = getGoalAt(goals, entity.position());
 			if (goal != null) {
-				scoreGoal(game, teams, goal, entity);
-				entity.discard();
-				activeCount.decrement();
+				if (!scoreGoal(game, teams, goal, entity)) {
+					return;
+				}
+				if (entity instanceof ServerPlayer player) {
+					SpawnBuilder spawn = new SpawnBuilder(player);
+					game.invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, PlayerRole.PARTICIPANT);
+					spawn.teleportAndApply(player);
+				} else {
+					entity.discard();
+					activeCount.decrement();
+				}
 			}
 		});
+	}
+
+	private boolean canBeScoredIn(TeamState teams, LivingEntity entity, Goal goal) {
+		if (entity instanceof ServerPlayer player) {
+			// It's a bit much if the player can
+			return !teams.isOnTeam(player, goal.offensiveTeam);
+		}
+		return true;
+	}
+
+	private boolean canScoreWith(LivingEntity entity) {
+		if (entity.getType() == scoringEntity.type()) {
+			return true;
+		}
+		if (entity instanceof ServerPlayer player && !player.isSpectator()) {
+			PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+			return disguise != null && disguise.type().entityType() == scoringEntity.type();
+		}
+		return false;
 	}
 
 	private int resolveTargetCount(IGamePhase game) {
@@ -158,14 +189,24 @@ public record ScoreMobInGoalBehavior(
 		return bestPos;
 	}
 
-	private void scoreGoal(IGamePhase game, TeamState teams, Goal goal, LivingEntity entity) {
+	private boolean scoreGoal(IGamePhase game, TeamState teams, Goal goal, LivingEntity entity) {
+		ServerPlayer responsiblePlayer = entity.getLastAttacker() instanceof ServerPlayer p ? p : null;
+		// PVP crabs!
+		if (responsiblePlayer == null && entity instanceof ServerPlayer player) {
+			responsiblePlayer = player;
+			// Don't let the player walk into the opponent's goal, that's a bit much
+			if (teams.isOnTeam(player, goal.offensiveTeam)) {
+				return false;
+			}
+		}
+
 		game.statistics().forTeam(goal.offensiveTeam).incrementInt(statistic, 1);
 
-		ServerPlayer scoringPlayer = entity.getLastAttacker() instanceof ServerPlayer p ? p : null;
 		// Not necessarily the player who scored
 		GameTeam scoringTeam = Objects.requireNonNull(teams.getTeamByKey(goal.offensiveTeam));
+		addScoreEffects(game, teams, goal, responsiblePlayer, scoringTeam);
 
-		addScoreEffects(game, teams, goal, scoringPlayer, scoringTeam);
+		return true;
 	}
 
 	private static void addScoreEffects(IGamePhase game, TeamState teams, Goal goal, @Nullable ServerPlayer scoringPlayer, GameTeam scoringTeam) {

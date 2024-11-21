@@ -312,6 +312,10 @@ public final class MinigameTexts {
 		KEYS.add("donation.feed_the_hungry.description", "Gives Saturation to the team of your choice!");
 		KEYS.add("donation.feed_the_hungry.toast", "%sender% has given you SATURATION for 1 minute!");
 
+		KEYS.add("donation.pvp_crabs", "Crab Hockey: PvP");
+		KEYS.add("donation.pvp_crabs.description", "Turn every player into a Crab, and allow PvP - players can score with each other!");
+		KEYS.add("donation.pvp_crabs.toast", "%sender% has enabled PVP CRAB HOCKEY for 1 minute!");
+
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
 		KEYS.add("event.lightning_storm_event.toast", "Chat started a LIGHTNING STORM!");
