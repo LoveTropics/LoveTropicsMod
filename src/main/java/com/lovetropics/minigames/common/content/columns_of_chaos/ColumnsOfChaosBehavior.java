@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.columns_of_chaos;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -20,8 +19,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -46,7 +46,7 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
             Codec.INT.optionalFieldOf("decrease_over_rounds", 20).forGetter(b -> b.decreaseOverRounds),
             Codec.INT.optionalFieldOf("max_countdown_ticks", (10 * 20)).forGetter(b -> b.decreaseOverRounds),
             Codec.INT.optionalFieldOf("min_countdown_ticks", (2 * 20)).forGetter(b -> b.decreaseOverRounds),
-            TagKey.hashedCodec(Registries.ITEM).listOf().fieldOf("exclusion_tags").forGetter(b -> b.exclusionTags),
+            RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("excluded_items").forGetter(b -> b.excludedItems),
             Codec.STRING.fieldOf("floor_region").forGetter(b -> b.floorRegionName)
     ).apply(i, ColumnsOfChaosBehavior::new));
     private final int pillarHeight;
@@ -55,19 +55,19 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
     private final int maxCountdownTicks;
     private final int minCountdownTicks;
     private final String floorRegionName;
-    private final List<TagKey<Item>> exclusionTags;
+    private final Optional<HolderSet<Item>> excludedItems;
     private List<ItemStack> filteredItems;
     private BlockBox floorRegion;
     @Nullable
     private State state;
 
-    public ColumnsOfChaosBehavior(int pillarHeight, int itemInterval, int decreaseOverRounds, int maxCountdownTicks, int minCountdownTicks, List<TagKey<Item>> exclusionTags, String floorRegionName) {
+    public ColumnsOfChaosBehavior(int pillarHeight, int itemInterval, int decreaseOverRounds, int maxCountdownTicks, int minCountdownTicks, Optional<HolderSet<Item>> excludedItems, String floorRegionName) {
         this.pillarHeight = pillarHeight;
         this.itemInterval = itemInterval;
         this.decreaseOverRounds = decreaseOverRounds;
         this.maxCountdownTicks = maxCountdownTicks;
         this.minCountdownTicks = minCountdownTicks;
-        this.exclusionTags = exclusionTags;
+        this.excludedItems = excludedItems;
         this.floorRegionName = floorRegionName;
     }
 
@@ -106,30 +106,20 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.START, () -> {
             state = startCountingDown(game, 0);
         });
-        Predicate<Holder<Item>> blackList = stack -> {
-            for (TagKey<Item> exclusionTag : exclusionTags) {
-                if (stack.is(exclusionTag)) {
-                    return false;
-                }
-            }
-            return true;
-        };
-       filteredItems = new ArrayList<>();
+        filteredItems = new ArrayList<>();
         CreativeModeTab.ItemDisplayParameters parameters = new CreativeModeTab.ItemDisplayParameters(game.level().enabledFeatures(), true, game.level().registryAccess());
         BuiltInRegistries.CREATIVE_MODE_TAB.holders().forEach(holder -> {
             CreativeModeTab tab = holder.value();
             if (tab.getType() != CreativeModeTab.Type.SEARCH) {
                 tab.buildContents(parameters);
                 tab.getDisplayItems().forEach(itemStack -> {
-                    if (blackList.test(itemStack.getItemHolder())) {
+                    if (excludedItems.isEmpty() || itemStack.is(excludedItems.get())) {
                         filteredItems.add(itemStack);
                     }
                 });
             }
         });
-        events.listen(GamePhaseEvents.TICK, () -> {
-            this.tick(game);
-        });
+        events.listen(GamePhaseEvents.TICK, () -> tick(game));
     }
 
     private void tick(IGamePhase game) {
@@ -187,42 +177,6 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
         }
         return new Interval(round, game.ticks() + itemInterval);
     }
-
-    public int pillarHeight() {
-        return pillarHeight;
-    }
-
-    public int itemInterval() {
-        return itemInterval;
-    }
-
-    public List<TagKey<Item>> exclusionTags() {
-        return exclusionTags;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (ColumnsOfChaosBehavior) obj;
-        return this.pillarHeight == that.pillarHeight &&
-                this.itemInterval == that.itemInterval &&
-                Objects.equals(this.exclusionTags, that.exclusionTags);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pillarHeight, itemInterval, exclusionTags);
-    }
-
-    @Override
-    public String toString() {
-        return "PillarsOfWealthBehaviour[" +
-                "pillarHeight=" + pillarHeight + ", " +
-                "itemInterval=" + itemInterval + ", " +
-                "exclusionTags=" + exclusionTags + ']';
-    }
-
 
     interface State {
         @Nullable
