@@ -49,6 +49,11 @@ public class FluidFiller {
 				Math.min(maxZ, chunkPos.getMaxBlockZ())
 		);
 
+		// Shouldn't happen, but we shouldn't try to fill tide outside the given area
+		if (chunkMin.getX() > chunkMax.getX() || chunkMin.getZ() > chunkMax.getZ()) {
+			return 0;
+		}
+
 		long updatedBlocks = 0;
 
 		int fromSection = SectionPos.blockToSectionCoord(fromY);
