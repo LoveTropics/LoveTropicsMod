@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -43,7 +44,9 @@ public record GivePlayerHeadPackageBehavior(boolean forced) implements IGameBeha
 
 	private ItemStack createHeadForSender(String sendingPlayer) {
 		final ItemStack senderHead = new ItemStack(Items.PLAYER_HEAD);
-		senderHead.set(DataComponents.PROFILE, new ResolvableProfile(Optional.of(sendingPlayer), Optional.empty(), new PropertyMap()));
+		if (StringUtil.isValidPlayerName(sendingPlayer)) {
+			senderHead.set(DataComponents.PROFILE, new ResolvableProfile(Optional.of(sendingPlayer), Optional.empty(), new PropertyMap()));
+		}
 		return senderHead;
 	}
 }
