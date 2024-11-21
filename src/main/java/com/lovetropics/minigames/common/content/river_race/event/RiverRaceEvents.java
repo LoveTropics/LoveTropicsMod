@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.BaseSpawner;
 
 public class RiverRaceEvents {
 
@@ -40,6 +41,13 @@ public class RiverRaceEvents {
         }
     });
 
+	public static final GameEventType<ModifyMaxSpawnCount> MODIFY_MAX_SPAWN_COUNT = GameEventType.create(ModifyMaxSpawnCount.class, listeners -> (pos, count) -> {
+		for (ModifyMaxSpawnCount listener : listeners) {
+			count = listener.modifyMaxSpawnCount(pos, count);
+		}
+		return count;
+	});
+
     public interface AnswerTriviaQuestion {
         void onAnswer(ServerPlayer player, TriviaType triviaType, BlockPos triviaPos);
     }
@@ -58,5 +66,9 @@ public class RiverRaceEvents {
 
     public interface UnlockZone {
         void onUnlockZone(String id);
+    }
+
+    public interface ModifyMaxSpawnCount {
+        int modifyMaxSpawnCount(BlockPos pos, int count);
     }
 }

@@ -386,6 +386,9 @@ public class GamePhase implements IGamePhase {
 
 	@Override
 	public long ticks() {
+		if (startTime == 0) {
+			return 0;
+		}
 		return level().getGameTime() - startTime;
 	}
 

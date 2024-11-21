@@ -302,6 +302,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.money_grows_on_trees", "Money Does Grow on Trees");
 		KEYS.add("donation.money_grows_on_trees.description", "For all players on the team of your choice, Leaves will drop Tropicoins for 45 seconds!");
 		KEYS.add("donation.money_grows_on_trees.toast", "Thanks %sender%! LEAVES DROP TROPICOINS for 45 seconds!");
+		KEYS.add("donation.spawner_buff", "Buff Mob Spawners");
+		KEYS.add("donation.spawner_buff.description", "Double the maximum amount of mobs that spawn for the specified team!");
+		KEYS.add("donation.spawner_buff.toast", "%sender% has DOUBLED MOB SPAWNS for 1 minute!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");

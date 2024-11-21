@@ -1,6 +1,9 @@
 package com.lovetropics.minigames.common.core.extension;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.river_race.event.RiverRaceEvents;
+import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.mixin.BaseSpawnerAccessor;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
@@ -9,8 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -54,6 +59,20 @@ public class LimitedSpawnerAttachment {
 	}
 
 	@SubscribeEvent
+	public static void onPreSpawnPlacementCheck(MobSpawnEvent.SpawnPlacementCheck event) {
+		if (event.getSpawnType() != MobSpawnType.SPAWNER) {
+			return;
+		}
+		ServerLevel level = event.getLevel().getLevel();
+		BlockPos pos = event.getPos();
+		if (level.getBlockEntity(pos) instanceof SpawnerBlockEntity blockEntity) {
+			blockEntity.getExistingData(ATTACHMENT).ifPresent(attachment ->
+					((BaseSpawnerAccessor) blockEntity.getSpawner()).setMaxNearbyEntities(attachment.getMaxCount(level, pos))
+			);
+		}
+	}
+
+	@SubscribeEvent
 	public static void onCheckSpawn(MobSpawnEvent.PositionCheck event) {
 		BaseSpawner spawner = event.getSpawner();
 		if (spawner == null || spawner.getOwner() == null) {
@@ -62,11 +81,7 @@ public class LimitedSpawnerAttachment {
 		Either<BlockEntity, Entity> owner = spawner.getOwner();
 		getAttachment(owner).ifPresent(attachment -> {
 			ServerLevel level = event.getLevel().getLevel();
-			if (!attachment.checkCanSpawn(level)) {
-				BlockPos pos = owner.map(BlockEntity::getBlockPos, Entity::blockPosition);
-				((BaseSpawnerAccessor) spawner).invokeDelay(level, pos);
-				event.setResult(MobSpawnEvent.PositionCheck.Result.FAIL);
-			}
+			attachment.onCheckSpawn(event, (BaseSpawnerAccessor) spawner, level, owner);
 		});
 	}
 
@@ -85,9 +100,23 @@ public class LimitedSpawnerAttachment {
 		);
 	}
 
-	private boolean checkCanSpawn(ServerLevel level) {
+	private void onCheckSpawn(MobSpawnEvent.PositionCheck event, BaseSpawnerAccessor spawner, ServerLevel level, Either<BlockEntity, Entity> owner) {
 		pruneDeadMobs(level);
-		return spawnedMobs.size() < maxCount;
+
+		BlockPos pos = owner.map(BlockEntity::getBlockPos, Entity::blockPosition);
+		int maxCount = getMaxCount(level, pos);
+		if (spawnedMobs.size() >= maxCount) {
+			spawner.invokeDelay(level, pos);
+			event.setResult(MobSpawnEvent.PositionCheck.Result.FAIL);
+		}
+	}
+
+	private int getMaxCount(ServerLevel level, BlockPos pos) {
+		IGamePhase game = IGameManager.get().getGamePhaseAt(level, pos);
+		if (game != null) {
+			return game.invoker(RiverRaceEvents.MODIFY_MAX_SPAWN_COUNT).modifyMaxSpawnCount(pos, maxCount);
+		}
+		return maxCount;
 	}
 
 	private void pruneDeadMobs(ServerLevel level) {

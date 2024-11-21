@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.content.river_race.block.TriviaType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,11 +27,16 @@ import java.util.Objects;
 public class RiverRaceState implements IGameState {
 	public static final GameStateKey.Defaulted<RiverRaceState> KEY = GameStateKey.create("River Race", RiverRaceState::new);
 
+	private final Map<GameTeamKey, BlockBox> teamRegions = new HashMap<>();
 	private final List<Zone> zones = new ArrayList<>();
 	private Direction forwardDirection = Direction.NORTH;
 
 	@Nullable
 	private Zone currentZone;
+
+	public void setTeamRegion(GameTeamKey team, BlockBox region) {
+		teamRegions.put(team, region);
+	}
 
 	public void setForwardDirection(Direction forwardDirection) {
 		this.forwardDirection = forwardDirection;
@@ -116,6 +122,16 @@ public class RiverRaceState implements IGameState {
 			ItemStack collectable = zone.collectable;
 			if (collectable != null && ItemStack.isSameItemSameComponents(collectable, itemStack)) {
 				return zone;
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	public GameTeamKey getTeamAt(BlockPos pos) {
+		for (Map.Entry<GameTeamKey, BlockBox> entry : teamRegions.entrySet()) {
+			if (entry.getValue().contains(pos)) {
+				return entry.getKey();
 			}
 		}
 		return null;
