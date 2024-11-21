@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.speed_carb_golf;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
@@ -162,6 +163,19 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                                 if(nextPlayer != null){
                                     ServerPlayer nextPlayerP = game.allPlayers().getPlayerBy(nextPlayer);
                                     startHoleForPlayer(game, nextPlayerP, nextHole, level, startHole);
+                                } else {
+                                    boolean areAllTeamsEmpty = true;
+                                    for (GameTeamKey gameTeamKey : teamProgress.keySet()) {
+                                        if(!teamProgress.get(gameTeamKey).isEmpty()){
+                                            areAllTeamsEmpty = false;
+                                            break;
+                                        }
+                                    }
+                                    if(areAllTeamsEmpty) {
+                                        if (!game.invoker(GameLogicEvents.REQUEST_GAME_OVER).requestGameOver()) {
+                                            game.requestStop(GameStopReason.finished());
+                                        }
+                                    }
                                 }
                             }
                         }
