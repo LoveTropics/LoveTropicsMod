@@ -75,7 +75,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         int holesPerTeam = holeRegions.get(teams.iterator().next().key()).size();
         List<ResourceLocation> pickedHoles = new ArrayList<>();
         StructurePlaceSettings structureplacesettings = new StructurePlaceSettings().addProcessor(BlockIgnoreProcessor.AIR);
-        Map<UUID, String> assignedHoles = new HashMap<>();
+        Map<String, UUID> assignedHoles = new HashMap<>();
         Map<GameTeamKey, List<String>> teamProgress = new HashMap<>();
         Map<String, HoleConfig> holeConfigs = new HashMap<>();
         for(int i = 0; i < holesPerTeam; i++) {
@@ -138,13 +138,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                         hole = hole.replace("Crab", "");
                         Objective globalGolfObjective = game.level().getScoreboard().getObjective("golf.global");
                         if(game.level().getScoreboard().getPlayerScoreInfo(entity, globalGolfObjective).value() == 2){
-                            UUID foundPlayer = null;
-                            for (Map.Entry<UUID, String> uuidStringEntry : assignedHoles.entrySet()) {
-                                if(uuidStringEntry.getValue().equalsIgnoreCase(hole)){
-                                    foundPlayer = uuidStringEntry.getKey();
-                                    break;
-                                }
-                            }
+                            UUID foundPlayer = assignedHoles.get(hole);
                             if(foundPlayer != null){
                                 ServerPlayer player = game.allPlayers().getPlayerBy(foundPlayer);
                                 CompoundTag gameData = GameDataStorage.get(level).get(ResourceLocation.fromNamespaceAndPath("lt", "golf"), foundPlayer);
@@ -153,13 +147,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                                         .incrementInt(StatisticKey.POINTS, gameData.getInt("hole" + hole));
                                 teamProgress.get(teamKey).remove(hole);
                                 String nextHole = teamProgress.get(teamKey).getFirst();
-                                UUID nextPlayer = null;
-                                for (Map.Entry<UUID, String> uuidStringEntry : assignedHoles.entrySet()) {
-                                    if(uuidStringEntry.getValue().equalsIgnoreCase(nextHole)){
-                                        nextPlayer = uuidStringEntry.getKey();
-                                        break;
-                                    }
-                                }
+                                UUID nextPlayer = assignedHoles.get(nextHole);
                                 // WHOS THE NEXT PLAYER?!
                                 if(nextPlayer != null){
                                     ServerPlayer nextPlayerP = game.allPlayers().getPlayerBy(nextPlayer);
@@ -221,7 +209,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                         players = playersForTeam.iterator();
                     }
                     if(players.hasNext()) {
-                        assignedHoles.put(players.next().getUUID(), holeNumber);
+                        assignedHoles.put(holeNumber, players.next().getUUID());
                     }
                     holes.add(holeNumber);
                 }
@@ -231,10 +219,11 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         });
         events.listen(GamePlayerEvents.SPAWN, (player, spawnBuilder, otherThing) -> {
             GameTeamKey playerTeam = teams.getTeamForPlayer(player);
-            String playerHole = assignedHoles.get(player);
-            if(playerHole.equalsIgnoreCase(teamProgress.get(playerTeam).getFirst())){
+            String currentTeamHole = teamProgress.get(playerTeam).getFirst();
+            UUID targetPlayer = assignedHoles.get(currentTeamHole);
+            if(player == targetPlayer){
                 spawnBuilder.run(serverPlayer -> {
-                    startHoleForPlayer(game, serverPlayer, playerHole, level, startHole);
+                    startHoleForPlayer(game, serverPlayer, currentTeamHole, level, startHole);
                 });
             }
         });
