@@ -25,7 +25,7 @@ public final class RiverRaceBarRenderer {
 
 	private static final int MAP_WIDTH = 373;
 	private static final int MAP_HEIGHT = 24;
-	private static final int MAP_MARGIN_X = 2;
+	private static final int MAP_MARGIN_X = 4;
 	private static final int MAP_MARGIN_Y = 4;
 
 	private static final int BAR_HEIGHT = 2;
