@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 
 @EventBusSubscriber(modid = LoveTropics.ID)
 public final class BackendIntegrations {
-	public static final boolean DEBUG_LOGGING_BACKEND = true;
+	public static final boolean DEBUG_LOGGING_BACKEND = false;
 
 	private static final Supplier<BackendIntegrations> INSTANCE = Suppliers.memoize(BackendIntegrations::new);
 
