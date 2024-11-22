@@ -6,11 +6,13 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
 import org.apache.commons.lang3.function.ToBooleanBiFunction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record PlayerActionTarget(Target target) implements ActionTarget<ServerPlayer> {
@@ -47,10 +49,12 @@ public record PlayerActionTarget(Target target) implements ActionTarget<ServerPl
         SOURCE("source"),
         PARTICIPANTS("participants"),
         SPECTATORS("spectators"),
+        // TODO: Can we do better than this?
+        PARTICIPANTS_EXCEPT_SOURCE("participants_except_source"),
         ALL("all"),
         ;
 
-        public static final Codec<PlayerActionTarget.Target> CODEC = MoreCodecs.stringVariants(values(), PlayerActionTarget.Target::getSerializedName);
+        public static final Codec<Target> CODEC = MoreCodecs.stringVariants(values(), Target::getSerializedName);
 
         private final String name;
 
@@ -65,7 +69,14 @@ public record PlayerActionTarget(Target target) implements ActionTarget<ServerPl
                 case SOURCE -> Lists.newArrayList(sources);
                 case PARTICIPANTS -> Lists.newArrayList(game.participants());
                 case SPECTATORS -> Lists.newArrayList(game.spectators());
-                case ALL -> Lists.newArrayList(game.allPlayers());
+				case PARTICIPANTS_EXCEPT_SOURCE -> {
+                    List<ServerPlayer> players = Lists.newArrayList(game.participants());
+                    for (ServerPlayer source : sources) {
+                        players.remove(source);
+                    }
+                    yield players;
+                }
+				case ALL -> Lists.newArrayList(game.allPlayers());
             };
         }
 
