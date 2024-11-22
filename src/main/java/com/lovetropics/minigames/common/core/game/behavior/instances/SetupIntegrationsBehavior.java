@@ -43,9 +43,12 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 
 		AtomicBoolean finished = new AtomicBoolean();
 		events.listen(GameLogicEvents.GAME_OVER, winner -> {
-			if (finished.compareAndSet(false, true)) {
-				integrations.finish(game);
-			}
+			// TODO Hackfix: run at the end of the tick so that all behaviors can respond to the game over event first
+			game.scheduler().runAfterTicks(0, () -> {
+				if (finished.compareAndSet(false, true)) {
+					integrations.finish(game);
+				}
+			});
 		});
 
 		events.listen(GamePhaseEvents.STOP, reason -> {
