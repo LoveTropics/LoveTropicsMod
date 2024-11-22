@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
@@ -49,8 +50,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
         this.items = items;
     }
 
-    @Nullable
-    private Multimap<Plot, Entity> sentEnemies;
+    private Multimap<Plot, Entity> sentEnemies = HashMultimap.create();
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -58,10 +58,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
 
         events.listen(BbEvents.MODIFY_WAVE_MODS, (entities, random, world, plot, waveIndex) -> entities.addAll(sentEnemies.removeAll(plot)));
         events.listen(GamePhaseEvents.START, () -> sentEnemies = Multimaps.synchronizedMultimap(Multimaps.newListMultimap(new HashMap<>(), LinkedList::new)));
-        events.listen(GamePhaseEvents.STOP, reason -> {
-            sentEnemies.clear();
-            sentEnemies = null;
-        });
+        events.listen(GamePhaseEvents.STOP, reason -> sentEnemies.clear());
 
         final var plots = game.state().getOrThrow(PlotsState.KEY);
         events.listen(GamePlayerEvents.USE_ITEM, (player, hand) -> {
