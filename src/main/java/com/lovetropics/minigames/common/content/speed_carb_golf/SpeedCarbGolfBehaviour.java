@@ -72,7 +72,7 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         CommandFunction<CommandSourceStack> startHole = serverFunctionManager.get(startHoleFunction).orElseThrow();
         CommandSourceStack commandSourceStack = game.server().createCommandSourceStack().withLevel(level)
                 .withSuppressedOutput().withPermission(3).withSource(game.server());
-        TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
+        TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
         ResourceLocation blankHoleId = ResourceLocation.fromNamespaceAndPath("lt","golf/blank");
         List<ResourceLocation> holesToPickFrom = new ArrayList<>(potentialHoles.keySet());
         int holesPerTeam = holeRegions.get(teams.iterator().next().key()).size();
@@ -146,6 +146,9 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                                 UUID foundPlayer = assignedHoles.get(hole);
                                 if (foundPlayer != null) {
                                     ServerPlayer player = game.allPlayers().getPlayerBy(foundPlayer);
+                                    if (player == null) {
+                                        return;
+                                    }
                                     CompoundTag gameData = GameDataStorage.get(level).get(ResourceLocation.fromNamespaceAndPath("lt", "golf"), foundPlayer);
                                     GameTeamKey teamKey = teams.getTeamForPlayer(player);
                                     game.statistics().forTeam(teamKey)
@@ -252,6 +255,9 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         });
         events.listen(GamePlayerEvents.SPAWN, (player, spawnBuilder, otherThing) -> {
             GameTeamKey playerTeam = teams.getTeamForPlayer(player);
+            if (playerTeam == null) {
+                return;
+            }
             String currentTeamHole = teamProgress.get(playerTeam).getFirst();
             UUID targetPlayer = assignedHoles.get(currentTeamHole);
             if(player == targetPlayer){
