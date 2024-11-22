@@ -104,7 +104,7 @@ public final class GameInstanceIntegrations implements IGameState {
 			payload.add("subtitle", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, subtitle).getOrThrow());
 		}
 
-		IGamePhase activeGame = gameStack.getLast();
+		IGamePhase activeGame = activeGame();
 		GamePackageState packageState = activeGame.state().getOrNull(GamePackageState.KEY);
 		List<DonationPackageData> packageList = packageState != null ? List.copyOf(packageState.packages()) : List.of();
 		payload.add("packages", PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList).getOrThrow());
@@ -179,14 +179,19 @@ public final class GameInstanceIntegrations implements IGameState {
 
 	private JsonArray serializeParticipantsArray() {
 		JsonArray participantsArray = new JsonArray();
-		for (ServerPlayer participant : gameStack.getLast().participants()) {
+		for (ServerPlayer participant : activeGame().participants()) {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;
 	}
 
+	// TODO: We shouldn't get here with empty stack! Please fix!
+	private IGamePhase activeGame() {
+		return gameStack.isEmpty() ? topLevelGame : gameStack.getLast();
+	}
+
 	private JsonArray serializeTeamsArray() {
-		TeamState teams = gameStack.getLast().instanceState().getOrNull(TeamState.KEY);
+		TeamState teams = activeGame().instanceState().getOrNull(TeamState.KEY);
 		if (teams == null) {
 			return new JsonArray();
 		}
@@ -236,9 +241,8 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	void tick(MinecraftServer server) {
-		// TODO: How can we get in here with gamestack empty???
-		if (!closed && !gameStack.isEmpty()) {
-			actions.pollGameActions(gameStack.getLast(), server.getTickCount());
+		if (!closed ) {
+			actions.pollGameActions(activeGame(), server.getTickCount());
 		}
 	}
 
@@ -247,7 +251,7 @@ public final class GameInstanceIntegrations implements IGameState {
 			return;
 		}
 		if ("poll".equals(type)) {
-			gameStack.getLast().invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
+			activeGame().invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
 		} else if (crud == Crud.CREATE) {
 			Optional<GameActionType> actionType = GameActionType.getFromId(type);
 			if (actionType.isPresent()) {
