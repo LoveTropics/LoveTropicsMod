@@ -17,6 +17,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
@@ -29,6 +30,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -40,6 +42,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnorePr
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -137,32 +140,64 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
                         hole = hole.replace("hole", "");
                         hole = hole.replace("Crab", "");
                         Objective globalGolfObjective = game.level().getScoreboard().getObjective("golf.global");
-                        if(game.level().getScoreboard().getPlayerScoreInfo(entity, globalGolfObjective).value() == 2){
-                            UUID foundPlayer = assignedHoles.get(hole);
-                            if(foundPlayer != null){
-                                ServerPlayer player = game.allPlayers().getPlayerBy(foundPlayer);
-                                CompoundTag gameData = GameDataStorage.get(level).get(ResourceLocation.fromNamespaceAndPath("lt", "golf"), foundPlayer);
-                                GameTeamKey teamKey = teams.getTeamForPlayer(player);
-                                game.statistics().forTeam(teamKey)
-                                        .incrementInt(StatisticKey.POINTS, gameData.getInt("hole" + hole));
-                                teamProgress.get(teamKey).remove(hole);
-                                String nextHole = teamProgress.get(teamKey).getFirst();
-                                UUID nextPlayer = assignedHoles.get(nextHole);
-                                // WHOS THE NEXT PLAYER?!
-                                if(nextPlayer != null){
-                                    ServerPlayer nextPlayerP = game.allPlayers().getPlayerBy(nextPlayer);
-                                    startHoleForPlayer(game, nextPlayerP, nextHole, level, startHole);
-                                } else {
-                                    boolean areAllTeamsEmpty = true;
-                                    for (GameTeamKey gameTeamKey : teamProgress.keySet()) {
-                                        if(!teamProgress.get(gameTeamKey).isEmpty()){
-                                            areAllTeamsEmpty = false;
-                                            break;
+                        if(globalGolfObjective != null){
+                            ReadOnlyScoreInfo scoreInfo = game.level().getScoreboard().getPlayerScoreInfo(entity, globalGolfObjective);
+                            if(scoreInfo != null && scoreInfo.value() == 2) {
+                                UUID foundPlayer = assignedHoles.get(hole);
+                                if (foundPlayer != null) {
+                                    ServerPlayer player = game.allPlayers().getPlayerBy(foundPlayer);
+                                    CompoundTag gameData = GameDataStorage.get(level).get(ResourceLocation.fromNamespaceAndPath("lt", "golf"), foundPlayer);
+                                    GameTeamKey teamKey = teams.getTeamForPlayer(player);
+                                    game.statistics().forTeam(teamKey)
+                                            .incrementInt(StatisticKey.POINTS, gameData.getInt("hole" + hole));
+                                    teamProgress.get(teamKey).remove(hole);
+                                    if(teamProgress.get(teamKey).isEmpty()){
+                                        boolean areAllTeamsEmpty = true;
+                                        for (GameTeamKey gameTeamKey : teamProgress.keySet()) {
+                                            if (!teamProgress.get(gameTeamKey).isEmpty()) {
+                                                areAllTeamsEmpty = false;
+                                                break;
+                                            }
                                         }
+                                        teams.getPlayersForTeam(teamKey)
+                                                .showTitle(SpeedCarbGolfTexts.ALL_HOLES_COMPLETE.withStyle(ChatFormatting.GREEN), null, 20, 40, 20);
+                                        if(areAllTeamsEmpty){
+                                            game.scheduler().runAfterSeconds(2, () -> {
+                                                if (!game.invoker(GameLogicEvents.REQUEST_GAME_OVER).requestGameOver()) {
+                                                    game.requestStop(GameStopReason.finished());
+                                                }
+                                            });
+                                        }
+                                        return;
+                                    } else {
+                                        teams.getPlayersForTeam(teamKey)
+                                                .showTitle(SpeedCarbGolfTexts.HOLE_COMPLETE.withStyle(ChatFormatting.GREEN), SpeedCarbGolfTexts.MOVE_ON.withStyle(ChatFormatting.BLUE), 20, 40, 20);
                                     }
-                                    if(areAllTeamsEmpty) {
-                                        if (!game.invoker(GameLogicEvents.REQUEST_GAME_OVER).requestGameOver()) {
-                                            game.requestStop(GameStopReason.finished());
+                                    String nextHole = teamProgress.get(teamKey).getFirst();
+                                    UUID nextPlayer = assignedHoles.get(nextHole);
+                                    // WHOS THE NEXT PLAYER?!
+                                    if (nextPlayer != null) {
+                                        ServerPlayer nextPlayerP = game.allPlayers().getPlayerBy(nextPlayer);
+                                        startHoleForPlayer(game, nextPlayerP, nextHole, level, startHole);
+                                        nextPlayerP.sendSystemMessage(SpeedCarbGolfTexts.YOUR_TURN.withStyle(ChatFormatting.GREEN));
+                                        MutableComponent component = SpeedCarbGolfTexts.PLAYERS_TURN.apply(nextPlayerP.getDisplayName()).withStyle(ChatFormatting.GREEN);
+                                        teams.getPlayersForTeam(teamKey).forEach(serverPlayer -> {
+                                            if(serverPlayer != nextPlayerP){
+                                                serverPlayer.sendSystemMessage(component);
+                                            }
+                                        });
+                                    } else {
+                                        boolean areAllTeamsEmpty = true;
+                                        for (GameTeamKey gameTeamKey : teamProgress.keySet()) {
+                                            if (!teamProgress.get(gameTeamKey).isEmpty()) {
+                                                areAllTeamsEmpty = false;
+                                                break;
+                                            }
+                                        }
+                                        if (areAllTeamsEmpty) {
+                                            if (!game.invoker(GameLogicEvents.REQUEST_GAME_OVER).requestGameOver()) {
+                                                game.requestStop(GameStopReason.finished());
+                                            }
                                         }
                                     }
                                 }
@@ -175,14 +210,12 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
         events.listen(GameWorldEvents.ENTITY_ADDED, (entity) -> {
             if(entity.getType() == EntityType.MARKER){
                 if(entity.getTags().contains("golfStart") || entity.getTags().contains("golfEnd")){
-                    System.out.println(entity.getTags());
                     boolean isStart = entity.getTags().contains("golfStart");
                     for (String s : game.mapRegions().keySet()) {
                         if(game.mapRegions().getOrThrow(s).contains(entity.blockPosition())){
                             HoleConfig holeConfig = holeConfigs.get(s);
                             String oldTag = "hole" + holeConfig.oldName + (isStart ? "Start" : "End");
                             String newTag = "hole" + holeConfig.newName + (isStart ? "Start" : "End");
-                            System.out.println("Found marker in " + s + " and removing " + oldTag + " and adding " + newTag);
                             entity.removeTag(oldTag);
                             entity.addTag(newTag);
                             return;
@@ -224,6 +257,13 @@ public record SpeedCarbGolfBehaviour(Map<ResourceLocation, String> potentialHole
             if(player == targetPlayer){
                 spawnBuilder.run(serverPlayer -> {
                     startHoleForPlayer(game, serverPlayer, currentTeamHole, level, startHole);
+                    serverPlayer.sendSystemMessage(SpeedCarbGolfTexts.YOUR_TURN.withStyle(ChatFormatting.GREEN));
+                    MutableComponent component = SpeedCarbGolfTexts.PLAYERS_TURN.apply(serverPlayer.getDisplayName()).withStyle(ChatFormatting.GREEN);
+                    teams.getPlayersForTeam(playerTeam).forEach(otherPlayer -> {
+                        if(otherPlayer.getUUID() != targetPlayer){
+                            otherPlayer.sendSystemMessage(component);
+                        }
+                    });
                 });
             }
         });
