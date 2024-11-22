@@ -23,7 +23,6 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
             Codec.INT.fieldOf("wave_size").forGetter(b -> b.waveSize)
     ).apply(instance, SpawnSurpriseWaveBehavior::new));
     private final int waveSize;
-    private PlotsState plots;
 
     public SpawnSurpriseWaveBehavior(int waveSize) {
         this.waveSize = waveSize;
@@ -31,14 +30,16 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        plots = game.state().getOrThrow(PlotsState.KEY);
+        PlotsState plots = game.state().getOrThrow(PlotsState.KEY);
 
-        events.listen(GameActionEvents.APPLY_TO_PLOT, (context, plot) -> {
+        events.listen(GameActionEvents.APPLY, context -> {
             ServerLevel world = game.level();
 
-            BbMobSpawner.spawnWaveEntities(world, world.getRandom(),
-                    plot, waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave,
-                    (entities, random, w, plot1, waveIndex) -> {});
+            for (Plot plot : plots) {
+                BbMobSpawner.spawnWaveEntities(world, world.getRandom(),
+                        plot, waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave,
+                        (entities, random, w, plot1, waveIndex) -> {});
+            }
 
             return true;
         });
