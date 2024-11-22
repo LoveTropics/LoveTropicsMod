@@ -113,7 +113,7 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
             if (tab.getType() != CreativeModeTab.Type.SEARCH) {
                 tab.buildContents(parameters);
                 tab.getDisplayItems().forEach(itemStack -> {
-                    if (excludedItems.isEmpty() || itemStack.is(excludedItems.get())) {
+                    if (excludedItems.isEmpty() || !itemStack.is(excludedItems.get())) {
                         filteredItems.add(itemStack);
                     }
                 });
