@@ -120,6 +120,12 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
             }
         });
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
+        events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+            if (lastRole == PlayerRole.PARTICIPANT) {
+                game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
+                game.allPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
+            }
+        });
     }
 
     private void tick(IGamePhase game) {
@@ -139,9 +145,7 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
         for (ServerPlayer player : participants) {
             double y = player.getY();
             if (y < player.level().getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
-                game.setPlayerRole(player, PlayerRole.SPECTATOR);
-                game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
-                game.allPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
+                player.hurt(player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
             }
         }
     }
