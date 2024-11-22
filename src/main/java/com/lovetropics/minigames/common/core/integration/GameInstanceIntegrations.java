@@ -9,8 +9,10 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameTeamEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.SubGameEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
@@ -58,9 +60,22 @@ public final class GameInstanceIntegrations implements IGameState {
 		this.integrations = integrations;
 		actions = new GameActionHandler(this);
 
+		gameStack.addLast(topLevelGame);
+
 		phaseListeners.listen(GamePlayerEvents.REMOVE, p -> sendParticipantsList());
 		phaseListeners.listen(GamePlayerEvents.SET_ROLE, (p, r, lr) -> sendParticipantsList());
 		phaseListeners.listen(GameTeamEvents.TEAMS_ALLOCATED, this::sendParticipantsList);
+
+		phaseListeners.listen(SubGameEvents.CREATE, (subGame, subEvents) -> {
+			gameStack.addLast(subGame);
+			subEvents.listen(GamePhaseEvents.DESTROY, () -> {
+				gameStack.removeLast();
+				sendPackagesUpdate();
+				sendParticipantsList();
+			});
+			sendPackagesUpdate();
+			sendParticipantsList();
+		});
 	}
 
 	public UUID getUuid() {
@@ -68,13 +83,13 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	public void start(IGamePhase phase, EventRegistrar events) {
-		gameStack.addLast(phase);
+		if (phase != gameStack.peekLast()) {
+			throw new IllegalStateException("Tried to send start event for game that was not active");
+		}
 
 		if (phase == topLevelGame) {
 			sendMinigameStart();
 			requestQueuedActions();
-		} else {
-			sendPackagesUpdate();
 		}
 
 		events.addAll(phaseListeners);
@@ -111,12 +126,7 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	public void finish(IGamePhase phase) {
-		if (gameStack.peekLast() != phase) {
-			return;
-		}
-		gameStack.removeLast();
-
-		if (gameStack.isEmpty()) {
+		if (phase == topLevelGame) {
 			JsonObject payload = new JsonObject();
 			payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
 			payload.add("statistics", phase.statistics().serialize());
@@ -126,23 +136,13 @@ public final class GameInstanceIntegrations implements IGameState {
 			postImportant(ConfigLT.INTEGRATIONS.minigameEndEndpoint.get(), payload);
 
 			close();
-		} else {
-			sendPackagesUpdate();
 		}
 	}
 
 	public void cancel(IGamePhase phase) {
-		if (gameStack.peekLast() != phase) {
-			return;
-		}
-		gameStack.removeLast();
-		phase.events().removeAll(phaseListeners);
-
-		if (gameStack.isEmpty()) {
+		if (phase == topLevelGame) {
 			postImportant(ConfigLT.INTEGRATIONS.minigameCancelEndpoint.get(), new JsonObject());
 			close();
-		} else {
-			sendPackagesUpdate();
 		}
 	}
 
@@ -185,9 +185,8 @@ public final class GameInstanceIntegrations implements IGameState {
 		return participantsArray;
 	}
 
-	// TODO: We shouldn't get here with empty stack! Please fix!
 	private IGamePhase activeGame() {
-		return gameStack.isEmpty() ? topLevelGame : gameStack.getLast();
+		return gameStack.getLast();
 	}
 
 	private JsonArray serializeTeamsArray() {

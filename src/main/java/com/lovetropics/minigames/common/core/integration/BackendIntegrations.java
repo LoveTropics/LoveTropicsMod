@@ -28,6 +28,8 @@ import java.util.function.Supplier;
 
 @EventBusSubscriber(modid = LoveTropics.ID)
 public final class BackendIntegrations {
+	public static final boolean DEBUG_LOGGING_BACKEND = true;
+
 	private static final Supplier<BackendIntegrations> INSTANCE = Suppliers.memoize(BackendIntegrations::new);
 
 	private static final Logger LOGGER = LogManager.getLogger(BackendIntegrations.class);
@@ -42,8 +44,8 @@ public final class BackendIntegrations {
 					.build()
 	);
 
-	private final IntegrationSender sender = IntegrationSender.open();
-	private final IntegrationSender pollSender = IntegrationSender.openPoll();
+	private final IntegrationSender sender = DEBUG_LOGGING_BACKEND ? IntegrationSender.LOGGING : IntegrationSender.open();
+	private final IntegrationSender pollSender = DEBUG_LOGGING_BACKEND ? IntegrationSender.LOGGING : IntegrationSender.openPoll();
 
 	private final BackendProxy proxy;
 
@@ -169,7 +171,7 @@ public final class BackendIntegrations {
 	}
 
 	public boolean isConnected() {
-		return proxy.isConnected();
+		return DEBUG_LOGGING_BACKEND || proxy.isConnected();
 	}
 
 	void closeInstance(GameInstanceIntegrations instance) {

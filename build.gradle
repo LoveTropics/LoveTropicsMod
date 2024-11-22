@@ -88,7 +88,7 @@ neoForge {
         }
 
         configureEach {
-            logLevel = org.slf4j.event.Level.WARN
+            logLevel = org.slf4j.event.Level.INFO
             ideName = project.name + " - " + ideName.get()
         }
     }
