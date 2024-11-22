@@ -236,12 +236,16 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	void tick(MinecraftServer server) {
-		if (!closed) {
+		// TODO: How can we get in here with gamestack empty???
+		if (!closed && !gameStack.isEmpty()) {
 			actions.pollGameActions(gameStack.getLast(), server.getTickCount());
 		}
 	}
 
 	void handlePayload(JsonObject object, String type, Crud crud) {
+		if (closed) {
+			return;
+		}
 		if ("poll".equals(type)) {
 			gameStack.getLast().invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
 		} else if (crud == Crud.CREATE) {
