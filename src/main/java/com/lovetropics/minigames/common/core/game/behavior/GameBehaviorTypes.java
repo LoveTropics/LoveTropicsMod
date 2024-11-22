@@ -136,6 +136,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.pha
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.AllowPlayerKnockbackBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerAttacksBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelSelfDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DamageInWaterBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableThrowingItemsBehavior;
@@ -199,6 +200,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GameFinishTrigger> GAME_FINISH = register("game_finish", GameFinishTrigger.CODEC);
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
+	public static final GameBehaviorEntry<CancelSelfDamageBehavior> CANCEL_SELF_DAMAGE = register("cancel_self_damage", CancelSelfDamageBehavior.CODEC);
 	public static final GameBehaviorEntry<ScalePlayerDamageBehavior> SCALE_PLAYER_DAMAGE = register("scale_player_damage", ScalePlayerDamageBehavior.CODEC);
 	public static final GameBehaviorEntry<AllowPlayerKnockbackBehavior> ALLOW_PLAYER_KNOCKBACK = register("allow_player_knockback", AllowPlayerKnockbackBehavior.CODEC);
 	public static final GameBehaviorEntry<ScaleDamageBehavior> SCALE_DAMAGE = register("scale_damage", ScaleDamageBehavior.CODEC);
