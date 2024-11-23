@@ -84,20 +84,14 @@ public record DisguiseType(
 	}
 
 	public DisguiseType clear(DisguiseType other) {
-		DisguiseType result = this;
-		if (Objects.equals(entity, other.entity)) {
-			result = result.withEntity(null);
-		}
-		if (scale == other.scale) {
-			result = result.withScale(1.0f);
-		}
-		if (Objects.equals(customName, other.customName)) {
-			result = result.withCustomName(null);
-		}
-		if (Objects.equals(skinProfile, other.skinProfile)) {
-			result = result.withSkinProfile(null);
-		}
-		return result;
+		DisguiseType clearTo = DEFAULT;
+		return new DisguiseType(
+				Objects.equals(entity, other.entity) ? clearTo.entity : entity,
+				scale == other.scale ? clearTo.scale : scale,
+				changesSize == other.changesSize ? clearTo.changesSize : changesSize,
+				Objects.equals(customName, other.customName) ? clearTo.customName : customName,
+				Objects.equals(skinProfile, other.skinProfile) ? clearTo.skinProfile : skinProfile
+		);
 	}
 
 	public DisguiseType withEntity(@Nullable EntityConfig entity) {
