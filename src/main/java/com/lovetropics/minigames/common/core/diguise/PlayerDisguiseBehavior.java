@@ -2,7 +2,9 @@ package com.lovetropics.minigames.common.core.diguise;
 
 import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,9 +14,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -99,5 +104,37 @@ public final class PlayerDisguiseBehavior {
 		to.update(from.position() - to.position() - from.speed(), 1.0f);
 		to.setSpeed(from.speed(0.0f));
 		to.update(from.speed(), 1.0f);
+	}
+
+	public static void onDisguiseChange(LivingEntity entity) {
+		if (entity instanceof Player player) {
+			player.refreshDisplayName();
+			if (player instanceof ServerPlayer serverPlayer) {
+				serverPlayer.refreshTabListName();
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerNameFormat(PlayerEvent.NameFormat event) {
+		event.setDisplayname(updateDisplayName(event.getEntity(), event.getDisplayname()));
+	}
+
+	@SubscribeEvent
+	public static void onPlayerTabListNameFormat(PlayerEvent.TabListNameFormat event) {
+		event.setDisplayName(updateDisplayName(event.getEntity(), event.getDisplayName()));
+	}
+
+	@Contract("_,!null->!null")
+	@Nullable
+	private static Component updateDisplayName(Player player, @Nullable Component name) {
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+		if (disguise != null) {
+			Component customName = disguise.type().customName();
+			if (customName != null) {
+				return customName;
+			}
+		}
+		return name;
 	}
 }

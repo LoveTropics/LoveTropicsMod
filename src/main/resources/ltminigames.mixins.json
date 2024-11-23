@@ -41,7 +41,8 @@
     "client.MinecraftMixin",
     "client.MouseHandlerMixin",
     "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor"
+    "client.PoseStackAccessor",
+    "client.disguise.AbstractClientPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,5 +1,8 @@
 package com.lovetropics.minigames.client;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
@@ -7,18 +10,22 @@ import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguiseBehavior;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.item.MinigameItems;
+import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.scores.Team;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -26,10 +33,26 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
 @EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
     private static final Minecraft CLIENT = Minecraft.getInstance();
     private static final EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();
+
+    private static final LoadingCache<ResolvableProfile, Supplier<PlayerSkin>> SKIN_LOOKUP_CACHE = CacheBuilder.newBuilder()
+            .expireAfterAccess(Duration.ofSeconds(15))
+            .build(new CacheLoader<>() {
+				@Override
+				public Supplier<PlayerSkin> load(ResolvableProfile profile) {
+                    GameProfile gameProfile = profile.gameProfile();
+                    CompletableFuture<PlayerSkin> future = Minecraft.getInstance().getSkinManager().getOrLoad(gameProfile);
+					PlayerSkin defaultSkin = DefaultPlayerSkin.get(gameProfile);
+					return () -> future.getNow(defaultSkin);
+				}
+			});
 
     @SubscribeEvent
     public static void onRenderPlayerPre(RenderLivingEvent.Pre<?, ?> event) {
@@ -184,8 +207,7 @@ public final class ClientPlayerDisguises {
     }
 
     public static void updateClientDisguise(int id, DisguiseType disguiseType) {
-        Entity entity = Minecraft.getInstance().level.getEntity(id);
-        if (entity != null) {
+        if (Minecraft.getInstance().level.getEntity(id) instanceof LivingEntity entity) {
             PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
             if (disguise != null) {
                 disguise.set(disguiseType);
@@ -203,5 +225,9 @@ public final class ClientPlayerDisguises {
             float scale = Math.max(disguise.getEffectiveScale(), 0.5f);
             event.setDistance(event.getDistance() * scale);
         }
+    }
+
+    public static PlayerSkin getSkin(ResolvableProfile profile) {
+        return SKIN_LOOKUP_CACHE.getUnchecked(profile).get();
     }
 }

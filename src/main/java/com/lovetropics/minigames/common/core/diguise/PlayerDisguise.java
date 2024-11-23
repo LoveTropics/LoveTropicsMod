@@ -80,6 +80,7 @@ public final class PlayerDisguise {
         this.disguise = disguise;
         disguisedEntity = disguise.createEntityFor(entity);
         entity.refreshDimensions();
+        PlayerDisguiseBehavior.onDisguiseChange(entity);
     }
 
     public DisguiseType type() {

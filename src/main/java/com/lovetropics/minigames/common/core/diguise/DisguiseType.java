@@ -9,11 +9,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
@@ -21,15 +24,29 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean changesSize) {
+public record DisguiseType(
+		@Nullable EntityConfig entity,
+		float scale,
+		boolean changesSize,
+		@Nullable Component customName,
+		@Nullable ResolvableProfile skinProfile
+) {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f, true);
+	public static final DisguiseType DEFAULT = new DisguiseType(
+			(EntityConfig) null,
+			1.0f,
+			true,
+			null,
+			null
+	);
 
 	public static final MapCodec<DisguiseType> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityConfig.CODEC.optionalFieldOf("entity").forGetter(c -> Optional.ofNullable(c.entity)),
 			Codec.FLOAT.optionalFieldOf("scale", 1.0f).forGetter(c -> c.scale),
-			Codec.BOOL.optionalFieldOf("changes_size", true).forGetter(c -> c.changesSize)
+			Codec.BOOL.optionalFieldOf("changes_size", true).forGetter(c -> c.changesSize),
+			ComponentSerialization.CODEC.optionalFieldOf("custom_name").forGetter(c -> Optional.ofNullable(c.customName)),
+			ResolvableProfile.CODEC.optionalFieldOf("skin_profile").forGetter(c -> Optional.ofNullable(c.skinProfile))
 	).apply(i, DisguiseType::new));
 
 	public static final Codec<DisguiseType> CODEC = MAP_CODEC.codec();
@@ -38,11 +55,13 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 			EntityConfig.STREAM_CODEC.apply(ByteBufCodecs::optional), c -> Optional.ofNullable(c.entity),
 			ByteBufCodecs.FLOAT, DisguiseType::scale,
 			ByteBufCodecs.BOOL, DisguiseType::changesSize,
+			ComponentSerialization.STREAM_CODEC.apply(ByteBufCodecs::optional), c -> Optional.ofNullable(c.customName),
+			ResolvableProfile.STREAM_CODEC.apply(ByteBufCodecs::optional), c -> Optional.ofNullable(c.skinProfile),
 			DisguiseType::new
 	);
 
-	private DisguiseType(Optional<EntityConfig> entity, float scale, boolean changesSize) {
-		this(entity.orElse(null), scale, changesSize);
+	private DisguiseType(Optional<EntityConfig> entity, float scale, boolean changesSize, Optional<Component> customName, Optional<ResolvableProfile> skinProfile) {
+		this(entity.orElse(null), scale, changesSize, customName.orElse(null), skinProfile.orElse(null));
 	}
 
 	@Nullable
@@ -72,6 +91,12 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 		if (scale == other.scale) {
 			result = result.withScale(1.0f);
 		}
+		if (Objects.equals(customName, other.customName)) {
+			result = result.withCustomName(null);
+		}
+		if (Objects.equals(skinProfile, other.skinProfile)) {
+			result = result.withSkinProfile(null);
+		}
 		return result;
 	}
 
@@ -79,11 +104,28 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 		if (Objects.equals(entity, this.entity)) {
 			return this;
 		}
-		return new DisguiseType(entity, scale, changesSize);
+		return new DisguiseType(entity, scale, changesSize, customName, skinProfile);
 	}
 
 	public DisguiseType withScale(float scale) {
-		return new DisguiseType(entity, scale, changesSize);
+		if (scale == this.scale) {
+			return this;
+		}
+		return new DisguiseType(entity, scale, changesSize, customName, skinProfile);
+	}
+
+	public DisguiseType withCustomName(@Nullable Component customName) {
+		if (Objects.equals(customName, this.customName)) {
+			return this;
+		}
+		return new DisguiseType(entity, scale, changesSize, customName, skinProfile);
+	}
+
+	public DisguiseType withSkinProfile(@Nullable ResolvableProfile skinProfile) {
+		if (Objects.equals(skinProfile, this.skinProfile)) {
+			return this;
+		}
+		return new DisguiseType(entity, scale, changesSize, customName, skinProfile);
 	}
 
 	public record EntityConfig(EntityType<?> type, @Nullable CompoundTag nbt, boolean applyAttributes) {

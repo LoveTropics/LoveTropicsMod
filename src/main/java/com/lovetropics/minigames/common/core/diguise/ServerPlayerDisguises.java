@@ -1,13 +1,17 @@
 package com.lovetropics.minigames.common.core.diguise;
 
+import com.google.common.collect.Iterables;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.network.PlayerDisguiseMessage;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.Holder;
@@ -18,6 +22,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -25,39 +31,64 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import static com.mojang.brigadier.arguments.FloatArgumentType.floatArg;
 import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
+import static net.minecraft.commands.Commands.*;
 import static net.minecraft.commands.arguments.CompoundTagArgument.compoundTag;
 import static net.minecraft.commands.arguments.CompoundTagArgument.getCompoundTag;
 
 @EventBusSubscriber(modid = LoveTropics.ID)
 public final class ServerPlayerDisguises {
 	private static final SimpleCommandExceptionType NOT_LIVING_ENTITY = new SimpleCommandExceptionType(Component.literal("Not a living entity"));
+	private static final SimpleCommandExceptionType ONLY_ONE_PLAYER = new SimpleCommandExceptionType(Component.literal("Can only "));
 
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 		// @formatter:off
 		event.getDispatcher().register(
-			Commands.literal("disguise").requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
-				.then(Commands.literal("as")
-					.then(Commands.argument("entity", ResourceArgument.resource(event.getBuildContext(), Registries.ENTITY_TYPE))
+			literal("disguise").requires(source -> source.hasPermission(LEVEL_GAMEMASTERS))
+				.then(literal("as")
+					.then(argument("entity", ResourceArgument.resource(event.getBuildContext(), Registries.ENTITY_TYPE))
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
 						.executes(context -> disguiseAsEntity(context, ResourceArgument.getSummonableEntityType(context, "entity"), null))
-							.then(Commands.argument("nbt", compoundTag())
+							.then(argument("nbt", compoundTag())
 								.executes(context -> disguiseAsEntity(context, ResourceArgument.getSummonableEntityType(context, "entity"), getCompoundTag(context, "nbt")))
 							)
 					)
 				)
-				.then(Commands.literal("scale")
-					.then(Commands.argument("scale", floatArg(0.1f, 20.0f))
+				.then(literal("skin")
+						.then(literal("as")
+								.then(argument("player", GameProfileArgument.gameProfile())
+										.executes(context -> disguiseSkin(context, GameProfileArgument.getGameProfiles(context, "player")))
+								)
+						)
+						.then(literal("clear")
+								.executes(ServerPlayerDisguises::clearSkin)
+						)
+				)
+				.then(literal("name")
+						.then(literal("as")
+								.then(argument("name", ComponentArgument.textComponent(event.getBuildContext()))
+										.executes(context -> disguiseName(context, ComponentArgument.getComponent(context, "name")))
+								)
+						)
+						.then(literal("clear")
+								.executes(ServerPlayerDisguises::clearName)
+						)
+				)
+				.then(literal("scale")
+					.then(argument("scale", floatArg(0.1f, 20.0f))
 						.executes(context -> disguiseScale(context, getFloat(context, "scale")))
 					)
 				)
-				.then(Commands.literal("clear")
+				.then(literal("clear")
 					.executes(ServerPlayerDisguises::clearDisguise)
 				)
 		);
@@ -112,6 +143,52 @@ public final class ServerPlayerDisguises {
 		return Command.SINGLE_SUCCESS;
 	}
 
+	private static int disguiseSkin(CommandContext<CommandSourceStack> context, Collection<GameProfile> profiles) throws CommandSyntaxException {
+		ServerPlayer player = context.getSource().getPlayerOrException();
+		if (profiles.size() != 1) {
+			throw EntityArgument.ERROR_NOT_SINGLE_PLAYER.create();
+		}
+
+		GameProfile sourceProfile = Iterables.getOnlyElement(profiles);
+		CompletableFuture<ResolvableProfile> future = SkullBlockEntity.fetchGameProfile(sourceProfile.getId())
+				.thenApply(optional -> new ResolvableProfile(optional.orElse(sourceProfile)));
+
+		if (future.isDone()) {
+			updateType(player, disguise -> disguise.withSkinProfile(future.join()));
+			return Command.SINGLE_SUCCESS;
+		}
+
+		// Just put something in there for now, and replace it later
+		DisguiseType temporaryDisguise = updateType(player, disguise -> disguise.withSkinProfile(new ResolvableProfile(sourceProfile)));
+		future.thenAcceptAsync(
+				resolvedProfile -> updateType(player, replacedDisguise -> {
+					// The skin changed again before we resolved it, don't replace
+					if (!Objects.equals(replacedDisguise.skinProfile(), temporaryDisguise.skinProfile())) {
+						return replacedDisguise;
+					}
+					return replacedDisguise.withSkinProfile(resolvedProfile);
+				}),
+				context.getSource().getServer()
+		);
+
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int clearSkin(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		updateType(getLivingEntity(context), d -> d.withSkinProfile(null));
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int disguiseName(CommandContext<CommandSourceStack> context, Component name) throws CommandSyntaxException {
+		updateType(getLivingEntity(context), d -> d.withCustomName(name));
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int clearName(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		updateType(getLivingEntity(context), d -> d.withCustomName(null));
+		return Command.SINGLE_SUCCESS;
+	}
+
 	private static int disguiseScale(CommandContext<CommandSourceStack> context, float scale) throws CommandSyntaxException {
 		updateType(getLivingEntity(context), d -> d.withScale(scale));
 		return Command.SINGLE_SUCCESS;
@@ -141,8 +218,15 @@ public final class ServerPlayerDisguises {
 		}
 	}
 
-	public static void updateType(LivingEntity entity, UnaryOperator<DisguiseType> operator) {
-		update(entity, disguise -> disguise.set(operator.apply(disguise.type())));
+	public static DisguiseType updateType(LivingEntity entity, UnaryOperator<DisguiseType> operator) {
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
+		if (disguise != null) {
+			DisguiseType newDisguise = operator.apply(disguise.type());
+			disguise.set(newDisguise);
+			onSetDisguise(entity);
+			return newDisguise;
+		}
+		return DisguiseType.DEFAULT;
 	}
 
 	public static void clear(LivingEntity entity) {
