@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.diguise.PlayerDisguiseBehavior;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.item.MinigameItems;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -20,13 +19,12 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 
 @EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
@@ -196,26 +194,14 @@ public final class ClientPlayerDisguises {
     }
 
     @SubscribeEvent
-    public static void onPositionCamera(ViewportEvent.ComputeCameraAngles event) {
-        Camera camera = event.getCamera();
-        if (!camera.isDetached()) {
-            return;
-        }
-
-        if (camera.getEntity() instanceof Player player) {
+    public static void calculateCameraDistance(CalculateDetachedCameraDistanceEvent event) {
+		if (event.getCamera().getEntity() instanceof Player player) {
             PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
             if (disguise == null) {
                 return;
             }
-
             float scale = Math.max(disguise.getEffectiveScale(), 0.5f);
-            if (scale == 1.0f) {
-                return;
-            }
-
-            Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
-            camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
-            camera.move(-camera.getMaxZoom(4.0f * scale), 0.0f, 0.0f);
+            event.setDistance(event.getDistance() * scale);
         }
     }
 }
