@@ -43,6 +43,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class BlockPartyBehavior implements IGameBehavior {
 	public static final MapCodec<BlockPartyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -150,14 +152,19 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			return;
 		}
 
+		List<ServerPlayer> eliminated = new ArrayList<>();
 		PlayerSet participants = game.participants();
 		for (ServerPlayer player : participants) {
 			double y = player.getY();
 			if (y < player.level().getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
-				game.setPlayerRole(player, PlayerRole.SPECTATOR);
-				game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
-				game.allPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
+				eliminated.add(player);
 			}
+		}
+
+		for (ServerPlayer player : eliminated) {
+			game.setPlayerRole(player, PlayerRole.SPECTATOR);
+			game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
+			game.allPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
 		}
 	}
 
