@@ -75,7 +75,6 @@ public class TriviaQuestionScreen extends Screen {
     private final TriviaBehaviour.TriviaQuestion question;
     private final BlockPos triviaBlockPos;
     private TriviaBlockEntity.TriviaBlockState triviaBlockState;
-    private final LinearLayout layout = LinearLayout.vertical().spacing(25);
     private final Set<AnswerButton> buttons = new HashSet<>();
 
     public TriviaQuestionScreen(BlockPos triviaBlockPos, TriviaBehaviour.TriviaQuestion question, TriviaBlockEntity.TriviaBlockState blockState) {
@@ -87,7 +86,8 @@ public class TriviaQuestionScreen extends Screen {
 
     @Override
     protected void init() {
-        int maxWidth = Window.BASE_WIDTH - 40;
+        int maxWidth = Math.max(Window.BASE_WIDTH - 40, (width * 2) / 3);
+        LinearLayout layout = LinearLayout.vertical().spacing(25);
 
         buttons.clear();
         layout.defaultCellSetting().alignHorizontallyCenter();
@@ -122,14 +122,9 @@ public class TriviaQuestionScreen extends Screen {
 			layout.addChild(answerLayout);
 		}
 
-        repositionElements();
-        layout.visitWidgets(this::addRenderableWidget);
-    }
-
-    @Override
-    protected void repositionElements() {
         layout.arrangeElements();
         FrameLayout.centerInRectangle(layout, 0, 0, width, height);
+        layout.visitWidgets(this::addRenderableWidget);
     }
 
     @Override
