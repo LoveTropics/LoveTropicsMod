@@ -142,11 +142,15 @@ public final class ColumnsOfChaosBehavior implements IGameBehavior {
         }
 
         PlayerSet participants = game.participants();
+        List<ServerPlayer> eliminated = new ArrayList<>();
         for (ServerPlayer player : participants) {
             double y = player.getY();
             if (y < player.level().getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
-                player.hurt(player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
+                eliminated.add(player);
             }
+        }
+        for (ServerPlayer player : eliminated) {
+            player.hurt(player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
         }
     }
 
