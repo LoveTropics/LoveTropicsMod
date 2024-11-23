@@ -36,6 +36,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SpleefBehavior implements IGameBehavior {
@@ -226,11 +227,13 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void checkPlayerDeath() {
+        List<ServerPlayer> playersToKill = new ArrayList<>();
         for (ServerPlayer player : game.participants()) {
             if (deathRegion.intersects(player.getBoundingBox())) {
-                killPlayer(player);
+                playersToKill.add(player);
             }
         }
+        playersToKill.forEach(this::killPlayer);
     }
 
     /**
