@@ -18,6 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -180,7 +181,9 @@ public final class ServerPlayerDisguises {
 	}
 
 	private static int disguiseName(CommandContext<CommandSourceStack> context, Component name) throws CommandSyntaxException {
-		updateType(getLivingEntity(context), d -> d.withCustomName(name));
+		LivingEntity entity = getLivingEntity(context);
+		Component resolvedName = ComponentUtils.updateForEntity(context.getSource(), name, entity, 0);
+		updateType(entity, d -> d.withCustomName(resolvedName));
 		return Command.SINGLE_SUCCESS;
 	}
 
