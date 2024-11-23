@@ -133,6 +133,18 @@ public class ConnectFourBehavior implements IGameBehavior {
         var expected = teamBlocks.get(playingTeams.current().key).powder;
         if (expected != placed.getBlock()) return InteractionResult.FAIL;
 
+        int x = blockToGridX(pos);
+        if (x < 0 || x >= pieces.length) {
+            return InteractionResult.FAIL;
+        }
+
+		PlacedPiece[] column = pieces[x];
+		if (column[column.length - 1] != null) {
+            // Column already filled
+            player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.BLOCKS, 1.0f, 1.0f);
+			return InteractionResult.FAIL;
+		}
+
         var below = pos.below();
         pendingGate = new PendingGate(below, player.level().getBlockState(below));
         player.level().setBlock(below, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
