@@ -222,7 +222,7 @@ public final class ClientPlayerDisguises {
             if (disguise == null) {
                 return;
             }
-            float scale = Math.max(disguise.getEffectiveScale(), 0.5f);
+            float scale = Math.max(disguise.getEffectiveScale(), 1.0f);
             event.setDistance(event.getDistance() * scale);
         }
     }
